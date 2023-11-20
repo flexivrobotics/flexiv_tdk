@@ -1,0 +1,70 @@
+cmake_minimum_required(VERSION 3.18.6)
+
+# ===================================================================
+#      PROJECT SETUP
+# ===================================================================
+project(flexiv_omni_teleop VERSION 0.6.0)
+
+# Configure build type
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "CMake build type" FORCE)
+endif()
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Debug" "RelWithDebInfo")
+
+# Set static library
+message("OS: ${CMAKE_SYSTEM_NAME}")
+message("Processor: ${CMAKE_SYSTEM_PROCESSOR}")
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+  set(TELEOP_STATIC_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/lib/libflexiv_omni_teleop.${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_SYSTEM_NAME}.a")
+else()
+  message(FATAL_ERROR "OS:${CMAKE_SYSTEM_NAME} with processor:${CMAKE_SYSTEM_PROCESSOR} is currently not supported.")
+endif()
+
+# ===================================================================
+#      PROJECT DEPENDENCIES
+# ===================================================================
+# Threads
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+if(Threads_FOUND)
+  message(STATUS "Found Threads: HAVE_PTHREAD = ${THREADS_HAVE_PTHREAD_ARG}")
+endif()
+
+# ===================================================================
+#      CREATE LIBRARY
+# ===================================================================
+# Create an INTERFACE library with no source file to compile
+add_library(${PROJECT_NAME} INTERFACE)
+
+# Create an alias of the library using flexiv namespace, 
+# to imitate the install target which uses flexiv namespace.
+add_library(flexiv::omni::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
+target_include_directories(${PROJECT_NAME} INTERFACE 
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
+target_link_libraries(${PROJECT_NAME} INTERFACE
+  ${TELEOP_STATIC_LIBRARY}
+  Threads::Threads
+  rt
+)
+
+# Use moderate compiler warning option 
+if(CMAKE_HOST_UNIX)
+  target_compile_options(${PROJECT_NAME} INTERFACE -Wall -Wextra)
+else()
+  target_compile_options(${PROJECT_NAME} INTERFACE /W1)
+endif()
+
+# Install the INTERFACE library
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/FlexivInstallLibrary.cmake)
+FlexivInstallLibrary()
+
+# Also install Eigen headers
+install(
+  DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/eigen3/Eigen
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} 
+)
