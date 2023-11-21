@@ -12,3 +12,4 @@ release/
 *.csv
 log/
 .history/
+cloned/
