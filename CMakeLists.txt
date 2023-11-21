@@ -31,6 +31,24 @@ if(Threads_FOUND)
   message(STATUS "Found Threads: HAVE_PTHREAD = ${THREADS_HAVE_PTHREAD_ARG}")
 endif()
 
+# Eigen3
+find_package(Eigen3 REQUIRED)
+if(Eigen3_FOUND)
+  message(STATUS "Found Eigen3: ${Eigen3_DIR}")
+endif()
+
+# Fast-CDR
+find_package(fastcdr 1.0.24 REQUIRED)
+if(fastcdr_FOUND)
+  message(STATUS "Found fastcdr: ${fastcdr_DIR}")
+endif()
+
+# Fast-DDS (Fast-RTPS)
+find_package(fastrtps 2.6.2 REQUIRED)
+if(fastrtps_FOUND)
+  message(STATUS "Found fastrtps: ${fastrtps_DIR}")
+endif()
+
 # ===================================================================
 #      CREATE LIBRARY
 # ===================================================================
@@ -49,7 +67,9 @@ target_include_directories(${PROJECT_NAME} INTERFACE
 target_link_libraries(${PROJECT_NAME} INTERFACE
   ${TELEOP_STATIC_LIBRARY}
   Threads::Threads
-  rt
+  Eigen3::Eigen
+  fastrtps
+  fastcdr
 )
 
 # Use moderate compiler warning option 
@@ -62,9 +82,3 @@ endif()
 # Install the INTERFACE library
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/FlexivInstallLibrary.cmake)
 FlexivInstallLibrary()
-
-# Also install Eigen headers
-install(
-  DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/eigen3/Eigen
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} 
-)
