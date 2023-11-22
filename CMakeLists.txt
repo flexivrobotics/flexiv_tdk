@@ -16,10 +16,21 @@ message("OS: ${CMAKE_SYSTEM_NAME}")
 message("Processor: ${CMAKE_SYSTEM_PROCESSOR}")
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-  set(TELEOP_STATIC_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/lib/libflexiv_omni_teleop.${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_SYSTEM_NAME}.a")
+  if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64")
+    set(TELEOP_STATIC_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/lib/libflexiv_omni_teleop.x86_64-linux-gnu.a")
+  else()
+    message(FATAL_ERROR "Linux with ${CMAKE_SYSTEM_PROCESSOR} processor is currently not supported.")
+  endif()
 else()
   message(FATAL_ERROR "OS:${CMAKE_SYSTEM_NAME} with processor:${CMAKE_SYSTEM_PROCESSOR} is currently not supported.")
 endif()
+
+# Set default install prefix
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    message(FATAL_ERROR "CMAKE_INSTALL_PREFIX must be set to a non-default value. Please set it explicitly using -DCMAKE_INSTALL_PREFIX=<path-to-your-install-directory>")
+endif()
+# Add to CMAKE_PREFIX_PATH so the sub-dependencies can also be found
+list(APPEND CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX})
 
 # ===================================================================
 #      PROJECT DEPENDENCIES
