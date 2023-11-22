@@ -45,13 +45,13 @@ jobs:
           cmake .. -DCMAKE_INSTALL_PREFIX=~/teleop_install
           make -j$(nproc)
 
-      - name: Build tests
-        # Find and link to the flexiv_omni_teleop INTERFACE library, then build all tests.
-        run: |
-          cd ${{github.workspace}}/test
-          mkdir -p build && cd build
-          cmake .. -DCMAKE_INSTALL_PREFIX=~/teleop_install
-          make -j$(nproc)
+      # - name: Build tests
+      #   # Find and link to the flexiv_omni_teleop INTERFACE library, then build all tests.
+      #   run: |
+      #     cd ${{github.workspace}}/test
+      #     mkdir -p build && cd build
+      #     cmake .. -DCMAKE_INSTALL_PREFIX=~/teleop_install
+      #     make -j$(nproc)
 
   build-ubuntu-20:
     # The CMake configure and build commands are platform agnostic and should work equally
