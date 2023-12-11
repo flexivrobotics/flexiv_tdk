@@ -27,8 +27,9 @@ public:
      * @brief [Blocking] Create a flexiv::omni::teleop instance as the main teleoperation interface.
      * Robot2RobotTeleop services will initialize and connection with the robots will be
      * established.
-     * @param[in] localSN Serial number of the local robot
-     * @param[in] remoteSN Serial number of the remote robot
+     * @param[in] localSN Serial number of the local robot.
+     * @param[in] remoteSN Serial number of the remote robot.
+     * @param [in] licensePath Path to the license config json file.
      * @throw std::runtime_error if the initialization sequence failed.
      * @throw std::logic_error if the connected robot does not have a valid license; or this
      * Teleop library version is incompatible with the connected robot; or model of the connected
@@ -36,7 +37,8 @@ public:
      * @warning This constructor blocks until the initialization sequence is successfully finished
      * and connection with the robot is established.
      */
-    Robot2RobotTeleop(const std::string& localSN, const std::string& remoteSN);
+    Robot2RobotTeleop(
+        const std::string& localSN, const std::string& remoteSN, const std::string& licensePath);
     virtual ~Robot2RobotTeleop();
 
     /**
