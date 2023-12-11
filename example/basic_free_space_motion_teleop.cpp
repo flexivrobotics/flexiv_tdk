@@ -22,15 +22,17 @@ void printHelp()
     std::cout<<"Invalid program arguments"<<std::endl;
     std::cout<<"     -l     [necessary] serial number of local robot."<<std::endl;
     std::cout<<"     -r     [necessary] serial number of remote robot."<<std::endl;
-    std::cout<<"Usage: ./test_flexiv_omni_teleop -l Rizon4s-123456 -r Rizon4s-654321"<<std::endl;
+    std::cout<<"     -c     [necessary] license config file path."<<std::endl;
+    std::cout<<"Usage: ./test_flexiv_omni_teleop -l Rizon4s-123456 -r Rizon4s-654321 -c <path-to-license-config.json>"<<std::endl;
     // clang-format on
 }
 
 struct option k_longOptions[] = {
     // clang-format off
-    {"local SN",      required_argument,  0, 'l'},
-    {"remote SN",       required_argument,  0, 'r'},
-    {0,                0,                  0,  0 }
+    {"local SN",                required_argument,  0, 'l'},
+    {"remote SN",               required_argument,  0, 'r'},
+    {"config file of license",  required_argument,  0, 'c'},
+    {0,                      0,                     0,  0 }
     // clang-format on
 };
 
@@ -38,6 +40,7 @@ int main(int argc, char* argv[])
 {
     std::string remoteSN;
     std::string localSN;
+    std::string licCfgPath;
     bool isBlocking = false;
     int opt = 0;
     int longIndex = 0;
@@ -51,19 +54,22 @@ int main(int argc, char* argv[])
                 localSN = std::string(optarg);
                 std::cout << "Local SN: " + localSN << std::endl;
                 break;
+            case 'c':
+                licCfgPath = std::string(optarg);
+                std::cout << "License config file: " + licCfgPath;
+                break;
             default:
                 printHelp();
                 return 1;
         }
     }
-    if (localSN.empty() || remoteSN.empty()) {
+    if (localSN.empty() || remoteSN.empty() || licCfgPath.empty()) {
         printHelp();
         return 1;
     }
 
     try {
-
-        flexiv::omni::teleop::Robot2RobotTeleop teleop(localSN, remoteSN);
+        flexiv::omni::teleop::Robot2RobotTeleop teleop(localSN, remoteSN, licCfgPath);
 
         // Enable teleop robots
         teleop.enable();
