@@ -25,9 +25,10 @@ else()
   message(FATAL_ERROR "OS:${CMAKE_SYSTEM_NAME} with processor:${CMAKE_SYSTEM_PROCESSOR} is currently not supported.")
 endif()
 
-# Set default install prefix
+# Set install prefix to non default
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    message(FATAL_ERROR "CMAKE_INSTALL_PREFIX must be set to a non-default value. Please set it explicitly using -DCMAKE_INSTALL_PREFIX=<path-to-your-install-directory>")
+    message(FATAL_ERROR "CMAKE_INSTALL_PREFIX must be set to a non-default value.
+    Please set it explicitly using -DCMAKE_INSTALL_PREFIX=<path-to-your-install-directory> or using cmake-gui")
 endif()
 # Add to CMAKE_PREFIX_PATH so the sub-dependencies can also be found
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX})
@@ -60,6 +61,14 @@ if(fastrtps_FOUND)
   message(STATUS "Found fastrtps: ${fastrtps_DIR}")
 endif()
 
+# Boost-filesystem
+find_package(Boost 1.72.0 COMPONENTS filesystem REQUIRED)
+if(Boost_FOUND)
+  message(STATUS "Found Boost: ${Boost_DIR}")
+endif()
+
+
+
 # ===================================================================
 #      CREATE LIBRARY
 # ===================================================================
@@ -81,6 +90,7 @@ target_link_libraries(${PROJECT_NAME} INTERFACE
   Eigen3::Eigen
   fastrtps
   fastcdr
+  Boost::filesystem
 )
 
 # Use moderate compiler warning option 

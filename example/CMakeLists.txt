@@ -8,6 +8,15 @@ if(NOT CMAKE_BUILD_TYPE)
    set(CMAKE_BUILD_TYPE Release CACHE STRING "CMake build type" FORCE) 
 endif()
 
+# Set default install prefix
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    message(FATAL_ERROR "CMAKE_INSTALL_PREFIX must be set to a non-default value.
+   Please set it explicitly using -DCMAKE_INSTALL_PREFIX=<path-to-your-install-directory> or using cmake-gui")
+endif()
+
+# Add to CMAKE_PREFIX_PATH so the sub-dependencies can also be found
+list(APPEND CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX})
+
 set(EXAMPLE_LIST
     basic_free_space_motion_teleop
 )
