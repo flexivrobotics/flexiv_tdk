@@ -42,8 +42,8 @@ public:
     virtual ~Robot2RobotTeleop();
 
     /**
-     * @brief [Blocking] First, the remote robot will go to the home pose, and then the local will
-     * go to the same pose as the remote
+     * @brief [Blocking] Initialize teleoperation robots states and coordinate bias between local
+     * and remote.
      * @throw std::logic_error if the robot is not connected.
      * @throw std::runtime_error if failed to execute the request.
      * @note This function blocks until the request is successfully executed.
@@ -80,8 +80,13 @@ public:
     void clearFault(void);
 
     /**
-     * @brief [Blocking/Non-blocking] Run teleoperation. The remote will always maintain the same
-     * pose as the local while the user operates the local.
+     * @brief [Blocking/Non-blocking] Run teleoperation. The remote will always imitate the
+     * movements of the local.
+     * @note The remote pose will not exactly the same as that of the local. User can keep the
+     * remote still by pressing the pedal, while the local can drag freely. When the local reaches
+     * an appropriate pose, release the pedal and the remote will follow the local again.
+     * @warning Please connect the pedal to the DI0 and 24V channel of the local control box. And
+     * ensure that the circuit only connects when the pedal is pressed down.
      * @param [in] isBlocking True to block the whole program while running teleoperation, false to
      * set a non-blocking running behavior.
      * @throw std::runtime_error if failed to execute the request.
