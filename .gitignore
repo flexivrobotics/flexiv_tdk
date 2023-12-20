@@ -1,0 +1,15 @@
+bin/
+build*/
+install/
+config.h
+doc/html
+html/
+.vscode
+*.pyc
+release/
+*.pb.h
+*.pb.cc
+*.csv
+log/
+.history/
+cloned/

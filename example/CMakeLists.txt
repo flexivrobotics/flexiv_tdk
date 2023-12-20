@@ -1,0 +1,36 @@
+cmake_minimum_required(VERSION 3.18.6)
+
+project(flexiv_omni_teleop_example)
+
+SET(CMAKE_VERBOSE_MAKEFILE ON)
+
+if(NOT CMAKE_BUILD_TYPE)
+   set(CMAKE_BUILD_TYPE Release CACHE STRING "CMake build type" FORCE) 
+endif()
+
+# Set default install prefix
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    message(FATAL_ERROR "CMAKE_INSTALL_PREFIX must be set to a non-default value.
+   Please set it explicitly using -DCMAKE_INSTALL_PREFIX=<path-to-your-install-directory> or using cmake-gui")
+endif()
+
+# Add to CMAKE_PREFIX_PATH so the sub-dependencies can also be found
+list(APPEND CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX})
+
+set(EXAMPLE_LIST
+    basic_free_space_motion_teleop
+)
+
+find_package(flexiv_omni_teleop REQUIRED)
+if(flexiv_omni_teleop_FOUND)
+   message(STATUS "Found flexiv_omni_teleop:${flexiv_omni_teleop_DIR}") 
+endif()
+
+
+foreach(example ${EXAMPLE_LIST})
+   add_executable(${example} ${example}.cpp) 
+   target_link_libraries(${example} flexiv::omni::flexiv_omni_teleop)
+   set_target_properties(${example} PROPERTIES
+   CXX_STANDARD 17
+   CXX_STANDARD_REQUIRED ON)
+endforeach()
