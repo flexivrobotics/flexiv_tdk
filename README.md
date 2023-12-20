@@ -18,7 +18,7 @@ The Flexiv Omni Teleop SDK provides C++ APIs for developing complex and customiz
 
 ### Applying for a license
 1. Run the generator to generate your feature ID and provide the feature id to apply for the license.
-Note: The feature id is a unique identifier for your application and is binded to your local computer. Please generate feature ID and use license on the same computer.
+Note: The feature id is a unique identifier for your application and is bound to your local computer. Please generate feature ID and use license on the same computer.
 
 ### Compile and install for Linux
 
