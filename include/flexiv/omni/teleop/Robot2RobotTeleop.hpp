@@ -1,18 +1,15 @@
 /**
  * @file Robot2RobotTeleop.hpp
- * @copyright Copyright (C) 2016-2023 Flexiv Ltd. All Rights Reserved.
+ * @copyright Copyright (C) 2016-2024 Flexiv Ltd. All Rights Reserved.
  */
 #pragma once
 
 #include <string>
 #include <memory>
-
+#include <flexiv/omni/teleop/TeleopDefs.hpp>
 namespace flexiv {
 namespace omni {
 namespace teleop {
-
-/** Robot Cartesian-space degrees of freedom \f$ m \f$ */
-constexpr size_t k_cartDOF = 6;
 
 /**
  * @brief Main interface for robot-robot teleop, containing several function categories
@@ -27,8 +24,8 @@ public:
      * @brief [Blocking] Create a flexiv::omni::teleop instance as the main teleoperation interface.
      * Robot2RobotTeleop services will initialize and connection with the robots will be
      * established.
-     * @param[in] localSN Serial number of the local robot.
-     * @param[in] remoteSN Serial number of the remote robot.
+     * @param[in] localSN Serial number of the local robot
+     * @param[in] remoteSN Serial number of the remote robot
      * @param [in] licensePath Path to the license config json file.
      * @throw std::runtime_error if the initialization sequence failed.
      * @throw std::logic_error if the connected robot does not have a valid license; or this
@@ -118,6 +115,29 @@ public:
      * run.
      */
     void setRemoteCartesianStiffness(const std::array<double, k_cartDOF>& stiffness);
+
+    /**
+     * @brief [Non-blocking] Set the local robot axis locking command.
+     *
+     * @param[in] cmd User input command to lock the motion of the specified axis in the reference
+     * coordinate.
+     */
+    void setLocalAxisLockCmd(const AxisLockDefs& cmd);
+
+    /**
+     * @brief [Non-blocking] Get the local robot axis locking status
+     *
+     * @param[out] data Current axis locking state of local robot.
+     */
+    void getLocalAxisLockState(AxisLockDefs& data);
+
+    /**
+     * @brief [Non-blocking] Get the local robot axis locking status
+     * @warning This fuction is less efficient than the other overloaded one as additional runtime
+     * memory allocation and data copying are performed.
+     * @return AxisLockDefs
+     */
+    AxisLockDefs getLocalAxisLockState(void);
 
 private:
     class Impl;
