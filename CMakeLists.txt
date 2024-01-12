@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.18.6)
 # ===================================================================
 #      PROJECT SETUP
 # ===================================================================
-project(flexiv_omni_teleop VERSION 0.6.0)
+project(flexiv_omni_teleop VERSION 0.7.0)
 
 # Configure build type
 if(NOT CMAKE_BUILD_TYPE)
