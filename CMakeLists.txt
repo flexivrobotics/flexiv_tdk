@@ -67,6 +67,11 @@ if(Boost_FOUND)
   message(STATUS "Found Boost: ${Boost_DIR}")
 endif()
 
+# OpenSSL
+find_package(OpenSSL REQUIRED)
+if(OpenSSL_FOUND)
+  message(STATUS "Found OpenSSL, version: ${OPENSSL_VERSION}, libraries: ${OPENSSL_LIBRARIES}")
+endif()
 
 
 # ===================================================================
@@ -86,6 +91,7 @@ target_include_directories(${PROJECT_NAME} INTERFACE
 
 target_link_libraries(${PROJECT_NAME} INTERFACE
   ${TELEOP_STATIC_LIBRARY}
+  ${OPENSSL_LIBRARIES}
   Threads::Threads
   Eigen3::Eigen
   fastrtps

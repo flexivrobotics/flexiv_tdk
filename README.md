@@ -25,7 +25,7 @@ Note: The feature id is a unique identifier for your application and is bound to
 1. In a new Terminal, install C++ compiler, Git, and CMake (with GUI) using the package manager:
 
    ```bash
-   sudo apt install build-essential git cmake cmake-qt-gui -y
+   sudo apt install build-essential libssl-dev git cmake cmake-qt-gui -y
    ```
 2. Choose a directory for installing ``flexiv_omni_teleop`` library and all its dependencies. For example, a new folder named ``teleop_install`` under the home directory.
 3. Please ensure that your network connection is unobstructed. Then, in a new Terminal, run the provided script to compile and install all dependencies to the installation directory chosen in step 2:
