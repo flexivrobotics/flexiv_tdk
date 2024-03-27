@@ -21,9 +21,9 @@ echo "Dependencies will be installed to: $INSTALL_DIR"
 
 # Use specified number for parallel build jobs, otherwise use number of cores 
 if [ -n "$2" ] ;then
-    NUM_JOBS=$2
+    export NUM_JOBS=$2
 else
-    NUM_JOBS=$(nproc)
+    export NUM_JOBS=$(nproc)
 fi
 echo "Number of parallel build jobs: $NUM_JOBS"
 
@@ -32,11 +32,11 @@ echo "Number of parallel build jobs: $NUM_JOBS"
 mkdir -p cloned && cd cloned
 
 # Build and install all dependencies to INSTALL_DIR
-bash $SCRIPTPATH/scripts/install_eigen.sh $INSTALL_DIR $NUM_JOBS
-bash $SCRIPTPATH/scripts/install_tinyxml2.sh $INSTALL_DIR $NUM_JOBS
-bash $SCRIPTPATH/scripts/install_foonathan_memory.sh $INSTALL_DIR $NUM_JOBS
-bash $SCRIPTPATH/scripts/install_Fast-CDR.sh $INSTALL_DIR $NUM_JOBS
-bash $SCRIPTPATH/scripts/install_Fast-DDS.sh $INSTALL_DIR $NUM_JOBS
-bash $SCRIPTPATH/scripts/install_boost.sh $INSTALL_DIR $NUM_JOBS
+bash $SCRIPTPATH/scripts/install_eigen.sh $INSTALL_DIR 
+bash $SCRIPTPATH/scripts/install_tinyxml2.sh $INSTALL_DIR 
+bash $SCRIPTPATH/scripts/install_foonathan_memory.sh $INSTALL_DIR
+bash $SCRIPTPATH/scripts/install_Fast-CDR.sh $INSTALL_DIR
+bash $SCRIPTPATH/scripts/install_Fast-DDS.sh $INSTALL_DIR
+bash $SCRIPTPATH/scripts/install_boost.sh $INSTALL_DIR
 
 echo ">>>>>>>>>> Finished <<<<<<<<<<"
