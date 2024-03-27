@@ -18,7 +18,7 @@ endif()
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX})
 
 set(EXAMPLE_LIST
-    basic_free_space_motion_teleop
+    basic_teleop
 )
 
 find_package(flexiv_omni_teleop REQUIRED)
