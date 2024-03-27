@@ -1,6 +1,6 @@
 # Flexiv Omni Teleop SDK
 
-![CMake Badge](https://github.com/flexivrobotics/flexiv_omni_teleop/actions/workflows/cmake.yml/badge.svg) ![Version](https://img.shields.io/badge/version-0.7-blue.svg) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
+![CMake Badge](https://github.com/flexivrobotics/flexiv_omni_teleop/actions/workflows/cmake.yml/badge.svg) ![Version](https://img.shields.io/badge/version-1.0-blue.svg) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 The Flexiv Omni Teleop SDK provides C++ APIs for developing complex and customized applications involving robot-robot or device-robot teleoperation. The supported devices are listed below.
 
