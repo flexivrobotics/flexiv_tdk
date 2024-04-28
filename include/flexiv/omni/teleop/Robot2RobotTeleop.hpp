@@ -40,9 +40,8 @@ public:
   virtual ~Robot2RobotTeleop();
 
   /**
-   * @brief [Blocking] Initialize teleoperation robots states and coordinate bias between local and
-   * remote.
-   * @throw std::logic_error if the robot is not connected.
+   * @brief [Blocking] Initialize teleoperation robots states
+   * @throw std::logic_error if robots are not connected.
    * @throw std::runtime_error if failed to execute the request.
    * @note This function blocks until the request is successfully executed.
    */
@@ -50,7 +49,8 @@ public:
 
   /**
    * @brief [Blocking] Enable the teleoperation, if all E-stop are released and there's no
-   * fault, robots will release brakes, and becomes operational a few seconds later.
+   * fault, both local and remote robots will release brakes, and becomes operational a few seconds
+   * later.
    * @throw std::logic_error if the robot is not connected.
    * @throw std::runtime_error if failed to execute the request.
    * @note This function blocks until the request is successfully executed.
@@ -71,51 +71,34 @@ public:
   bool isFault(void);
 
   /**
-   * @brief [Blocking] Clear minor fault.
-   * @throw std::runtime_error if failed to execute the request.
-   * @note This function blocks until the request is successfully executed.
+   * @brief [Non-blocking] Whether the teleop robots are normally operational, which requires the
+   * following conditions to be met: enabled, brakes fully released, in auto-remote mode, no fault,
+   * and not in reduced state.
+   * @return True: operational, false: not operational.
+   * @warning The robot won't execute any command until it becomes normally operational.
    */
-  void clearFault(void);
+  bool isOperational(void);
 
   /**
-   * @brief [Blocking/Non-blocking] Run teleoperation. The remote will always imitate the movements
-   * of the local.
+   * @brief [Blocking] Clear minor fault of the teleop robots.
+   * @return True: successfully cleared fault, false: cannot clear fault.
+   * @throw std::runtime_error if failed to deliver the request.
+   * @note This function blocks until fault on local and remote is successfully cleared or
+   * maximum number of attempts is reached.
+   */
+  bool clearFault(void);
+
+  /**
+   * @brief [Non-blocking] Run teleoperation. The remote will always imitate the movements of the
+   * local and feedback the external wrench to the local.
    * @note The remote pose will not exactly the same as that of the local. User can keep the remote
    * still by releasing the pedal, while the local can drag freely. When the local reaches an
    * appropriate pose, press down the pedal and the remote will follow the local again.
-   * @warning Please connect the pedal to the DI0 and 24V channel of the local control box. And
+   * @note Please connect the pedal to the DI0 and 24V channel of the local control box. And
    * ensure that the circuit only connects when the pedal is pressed down.
-   * @param [in] isBlocking True to block the whole program while running teleoperation, false to
-   * set a non-blocking running behavior.
    * @throw std::runtime_error if failed to execute the request.
    */
-  void run(bool isBlocking);
-
-  /**
-   * @brief [Non-blocking] Set local robot Cartesian motion stiffness.
-   * @param[in] stiffness Cartesian motion stiffness: \f$ K_d \in \mathbb{R}^{6 \times 1} \f$.
-   * Consists of \f$ \mathbb{R}^{3 \times 1} \f$ linear stiffness and \f$
-   * \mathbb{R}^{3 \times 1} \f$ angular stiffness: \f$ [k_x, k_y, k_z, k_{Rx}, k_{Ry}, k_{Rz}]^T
-   * \f$. Valid range: [0, RobotInfo::nominalK]. Unit: \f$ [N/m]~[Nm/rad] \f$.
-   * @throw std::invalid_argument if [stiffness] contains any value outside the valid range.
-   * @throw std::logic_error if local robot is not initialized.
-   * @warning The local robot will automatically reset to its nominal stiffness upon re-entering
-   * run.
-   */
-  void setLocalCartesianStiffness(const std::array<double, k_cartDOF>& stiffness);
-
-  /**
-   * @brief [Non-blocking] Set local robot Cartesian motion stiffness.
-   * @param[in] stiffness Cartesian motion stiffness: \f$ K_d \in \mathbb{R}^{6 \times 1} \f$.
-   * Consists of \f$ \mathbb{R}^{3 \times 1} \f$ linear stiffness and \f$
-   * \mathbb{R}^{3 \times 1} \f$ angular stiffness: \f$ [k_x, k_y, k_z, k_{Rx}, k_{Ry}, k_{Rz}]^T
-   * \f$. Valid range: [0, RobotInfo::nominalK]. Unit: \f$ [N/m]~[Nm/rad] \f$.
-   * @throw std::invalid_argument if [stiffness] contains any value outside the valid range.
-   * @throw std::logic_error if local robot is not initialized.
-   * @warning The local robot will automatically reset to its nominal stiffness upon re-entering
-   * run.
-   */
-  void setRemoteCartesianStiffness(const std::array<double, k_cartDOF>& stiffness);
+  void run(void);
 
   /**
    * @brief [Non-blocking] Set preferred joint positions for the null-space posture control of local
@@ -202,49 +185,6 @@ public:
    * @return AxisLockDefs
    */
   AxisLockDefs getLocalAxisLockState(void);
-
-  /**
-   * @brief [Blocking] Initialize the gripper installed at the end of remote robot.
-   * @note This function blocks until the initialization is finished.
-   */
-  void initRemoteGripper(void);
-
-  /**
-   * @brief [Non-blocking] Grasp with direct force control. Requires the mounted gripper to
-   * support direct force control.
-   * @param[in] force Target gripping force. Positive: closing force, negative: opening force [N].
-   * @warning Target inputs outside the valid range (specified in gripper's configuration file)
-   * will be saturated.
-   */
-  void gripperGrasp(double force);
-
-  /**
-   * @brief [Non-blocking] Move the gripper fingers with position control.
-   * @param[in] width Target opening width [m].
-   * @param[in] velocity Closing/opening velocity, cannot be 0 [m/s].
-   * @param[in] force_limit Maximum output force during movement [N]. If not specified, default
-   * force limit of the mounted gripper will be used.
-   * @warning Target inputs outside the valid range (specified in gripper's configuration file)
-   * will be saturated.
-   */
-  void gripperMove(double width, double velocity, double force_limit = 0);
-
-  /**
-   * @brief [Blocking] Stop the gripper.
-   * @note This function blocks until the gripper control is transferred back to plan/primitive.
-   */
-  void gripperStop(void);
-
-  /**
-   * @brief [Non-blocking] Access the current gripper states.
-   */
-  void getGripperStates(remoteGripperStates& output);
-
-  /**
-   * @brief [Non-blocking] Whether the gripper fingers are moving.
-   * @return True: moving, false: stopped.
-   */
-  bool gripperMoving(void) const;
 
 private:
   class Impl;

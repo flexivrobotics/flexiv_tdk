@@ -18,7 +18,7 @@ endif()
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX})
 
 set(EXAMPLE_LIST
-    basic_teleop
+    basic_cart_teleop
 )
 
 find_package(flexiv_omni_teleop REQUIRED)
