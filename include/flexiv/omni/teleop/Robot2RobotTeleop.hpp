@@ -157,6 +157,21 @@ public:
   void setRemoteMaxWrench(const std::array<double, k_cartDOF>& max_wrench);
 
   /**
+   * @brief [Non-blocking] Set the repulsive wrench in world/TCP frame for the remote robot.
+   * @param[in] repulsiveWrench The virtual repulsive wrench that will applied on the remote
+   * robot.(force and moment): \f$ repulsiveW \in \mathbb{R}^{6 \times 1} \f$. Consists of \f$
+   * \mathbb{R}^{3 \times 1} \f$ repulsive force and \f$ \mathbb{R}^{3 \times 1} \f$ repulsive
+   * moment: \f$ [f_x, f_y, f_z, m_x, m_y, m_z]^T \f$. Unit: \f$ [N]~[Nm] \f$.
+   *  @param[in] inWorld Flag to indicate that the repulsive wrench is in World frame or TCP frame.
+   * true in World frame, false in TCP frame.
+   * @note This virtual repulsive wrench will only work on those unlocked axis.
+   * @see setLocalAxisLockCmd
+   * @see getLocalAxisLockState
+   */
+  void setRepulsiveWrench(
+      const std::array<double, k_cartDOF>& repulsiveWrench, bool inWorld = true);
+
+  /**
    * @brief [Non-blocking] Access general information of the local robot.
    * @return TeleopRobotInfo instance.
    */
