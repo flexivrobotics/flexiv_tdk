@@ -1,8 +1,8 @@
 /**
- * @file basic_teleop.cpp
+ * @file basics1_cartesian_teleop.cpp
  * @copyright Copyright (C) 2016-2024 Flexiv Ltd. All Rights Reserved.
- * @brief Force feedback teleoperation example
- * @date 2023-08-22
+ * @brief Basic Omni-Teleop example
+ * @date 2024-05-10
  */
 
 #include <flexiv/omni/teleop/Robot2RobotTeleop.hpp>
@@ -23,7 +23,6 @@ std::atomic<bool> g_stop_sched = {false};   ///< Atomic signal to stop scheduler
 void printHelp()
 {
     // clang-format off
-
     std::cout << "Invalid program arguments"<<std::endl;
     std::cout << "Required arguments: [remote_robot_SN] [local_robot_SN] [path_to_omni_licenseCfg.json]" << std::endl;
     std::cout << "    remote_robot_SN: serial number of remote robot" << std::endl;
@@ -220,8 +219,6 @@ int main(int argc, char* argv[])
 
         // Wait for elbow posture ready
         std::this_thread::sleep_for(std::chrono::seconds(3));
-
-        // Run teleop
 
         // Add periodic task with 1ms interval and highest applicable priority
         scheduler.AddTask(std::bind(&periodicTeleopTask, std::ref(teleop)), "HP periodic teleop", 1,
