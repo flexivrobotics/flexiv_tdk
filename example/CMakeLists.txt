@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18.6)
+cmake_minimum_required(VERSION 3.22.1)
 
 project(flexiv_omni_teleop_example)
 
@@ -18,7 +18,7 @@ endif()
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX})
 
 set(EXAMPLE_LIST
-   basics1_cart_teleop
+   basics1_cartesian_teleop
 )
 
 find_package(flexiv_omni_teleop REQUIRED)
