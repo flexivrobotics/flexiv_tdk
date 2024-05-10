@@ -28,6 +28,7 @@ void printHelp()
     std::cout << "Required arguments: [remote_robot_SN] [local_robot_SN] [path_to_omni_licenseCfg.json]" << std::endl;
     std::cout << "    remote_robot_SN: serial number of remote robot" << std::endl;
     std::cout << "    local_robot_SN: serial number of local robot" << std::endl;
+    std::cout << "    path_to_omni_licenseCfg: path to the Omni license config json file" << std::endl;
     std::cout<<"Usage: ./basic1_cart_teleop  Rizon4s-123456  Rizon4s-654321 <path/to/licensCfg.json>"<<std::endl;
     // clang-format on
 }
@@ -177,14 +178,17 @@ void periodicConsoleTask(flexiv::omni::teleop::Robot2RobotTeleop& teleop)
 
 int main(int argc, char* argv[])
 {
-    std::string remoteSN = argv[1];
-    std::string localSN = argv[2];
-    std::string licCfgPath = argv[3];
+    std::string remoteSN;
+    std::string localSN;
+    std::string licCfgPath;
 
-    if (localSN.empty() || remoteSN.empty() || licCfgPath.empty()) {
+    if (argc != 4) {
         printHelp();
         return 1;
     }
+    remoteSN = argv[1];
+    localSN = argv[2];
+    licCfgPath = argv[3];
 
     std::cout << "Flexiv Omni-Teleop example" << std::endl;
     std::cout << "Copyright (C) 2016-2024 Flexiv" << std::endl;
