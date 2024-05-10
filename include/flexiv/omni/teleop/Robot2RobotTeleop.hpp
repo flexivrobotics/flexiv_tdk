@@ -12,8 +12,8 @@ namespace omni {
 namespace teleop {
 
 /**
- * @brief Main interface for robot-robot teleop, containing several function categories
- * and background services.
+ * @brief Main interface for robot-robot teleop in Cartesian space, containing several function
+ * categories and background services.
  */
 class Robot2RobotTeleop
 {
@@ -23,11 +23,15 @@ public:
   Robot2RobotTeleop(Robot2RobotTeleop&&) = delete;
   Robot2RobotTeleop& operator=(const Robot2RobotTeleop&) = delete;
   /**
-   * @brief [Blocking] Create a flexiv::omni::teleop instance as the main teleoperation interface.
-   * Robot2RobotTeleop services will initialize and connection with the robots will be established.
-   * @param[in] localSN Serial number of the local robot
-   * @param[in] remoteSN Serial number of the remote robot
-   * @param [in] licensePath Path to the license config json file.
+   * @brief [Blocking] Create a flexiv::omni::teleop instance as the main Omni-Teleop interface.
+   * Omni-Teleop services will initialize and connection with the local and remote robot will be
+   * established.
+   * @param[in] localSN Serial number of the local robot, e.g. Rizon4s-062001. Only Rizon4s is
+   * supported.
+   * @param[in] remoteSN Serial number of the remote robot, e.g. Rizon4s-062002. Only Rizon4s is
+   * supported.
+   * @param [in] licensePath Path to the omni license config json file. See README.md to apply for
+   * omni license.
    * @throw std::runtime_error if the initialization sequence failed.
    * @throw std::logic_error if the connected robot does not have a valid license; or this
    * Teleop library version is incompatible with the connected robot; or model of the connected
@@ -40,7 +44,8 @@ public:
   virtual ~Robot2RobotTeleop();
 
   /**
-   * @brief [Blocking] Initialize teleoperation robots states
+   * @brief [Blocking] Initialize Omni-Teleop robots states, this will zeroing force/torque sensors,
+   * make sure nothing is in contact with the local and remote robots.
    * @throw std::logic_error if robots are not connected.
    * @throw std::runtime_error if failed to execute the request.
    * @note This function blocks until the request is successfully executed.
@@ -48,7 +53,7 @@ public:
   void init(void);
 
   /**
-   * @brief [Blocking] Enable the teleoperation, if all E-stop are released and there's no
+   * @brief [Blocking] Enable the Omni-Teleop, if all E-stop are released and there's no
    * fault, both local and remote robots will release brakes, and becomes operational a few seconds
    * later.
    * @throw std::logic_error if the robot is not connected.
@@ -58,29 +63,29 @@ public:
   void enable(void);
 
   /**
-   * @brief [Blocking] Stop teleoperation.
-   * @throw std::runtime_error if failed to stop teleoperation.
-   * @note This function blocks until teleoperation comes to a complete stop.
+   * @brief [Blocking] Stop Omni-Teleop.
+   * @throw std::runtime_error if failed to stop Omni-Teleop.
+   * @note This function blocks until Omni-Teleop comes to a complete stop.
    */
   void stop(void);
 
   /**
-   * @brief [Non-blocking] Check if teleoperaion in fault state.
-   * @return True: teleoperation has fault, false: everything normal.
+   * @brief [Non-blocking] Check if robots in fault state.
+   * @return True: Omni-Teleop has fault, false: everything normal.
    */
   bool isFault(void);
 
   /**
-   * @brief [Non-blocking] Whether the teleop robots are normally operational, which requires the
-   * following conditions to be met: enabled, brakes fully released, in auto-remote mode, no fault,
-   * and not in reduced state.
+   * @brief [Non-blocking] Whether the local and remote robots are normally operational, which
+   * requires the following conditions to be met: enabled, brakes fully released, in auto-remote
+   * mode, no fault, and not in reduced state.
    * @return True: operational, false: not operational.
    * @warning The robot won't execute any command until it becomes normally operational.
    */
   bool isOperational(void);
 
   /**
-   * @brief [Blocking] Clear minor fault of the teleop robots.
+   * @brief [Blocking] Clear minor fault of the local and remote robots.
    * @return True: successfully cleared fault, false: cannot clear fault.
    * @throw std::runtime_error if failed to deliver the request.
    * @note This function blocks until fault on local and remote is successfully cleared or
@@ -89,7 +94,7 @@ public:
   bool clearFault(void);
 
   /**
-   * @brief [Non-blocking] Run teleoperation. The remote will always imitate the movements of the
+   * @brief [Non-blocking] Run Omni-Teleop. The remote will always imitate the movements of the
    * local and feedback the external wrench to the local.
    * @note The remote pose will not exactly the same as that of the local. User can keep the remote
    * still by releasing the pedal, while the local can drag freely. When the local reaches an
@@ -108,7 +113,7 @@ public:
    * TeleopRobotInfo::qMax]. Unit: \f$ [rad] \f$.
    * @throw std::invalid_argument if [preferredPositions] contains any value outside the valid
    * range.
-   * @throw std::logic_error if robot is not in the correct control mode.
+   * @throw std::logic_error if Omni-Teleop was not successfully initialized.
    * @note This setting will persist across the applicable control modes until changed again.
    * @par Null-space posture control
    * Similar to human arm, a robotic arm with redundant joint-space degree(s) of freedom (DOF > 6)
@@ -128,7 +133,7 @@ public:
    * TeleopRobotInfo::qMax]. Unit: \f$ [rad] \f$.
    * @throw std::invalid_argument if [preferredPositions] contains any value outside the valid
    * range.
-   * @throw std::logic_error if robot is not in the correct control mode.
+   * @throw std::logic_error if Omni-Teleop was not successfully initialized.
    * @note This setting will persist across the applicable control modes until changed again.
    * @par Null-space posture control
    * Similar to human arm, a robotic arm with redundant joint-space degree(s) of freedom (DOF > 6)

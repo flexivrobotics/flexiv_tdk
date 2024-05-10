@@ -12,13 +12,20 @@ The Flexiv Omni Teleop SDK provides C++ APIs for developing complex and customiz
 
 ## Compatibility
 
-| **Supported OS**           | **Supported processor** | **Supported language** | **Required compiler kit** |
-| -------------------------- | ----------------------- | ---------------------- | ------------------------- |
-| Linux (Ubuntu 20.04/22.04) | x86_64                  | C++                    | build-essential           |
+| **Supported OS**     | **Supported processor** | **Supported language** | **Required compiler kit** |
+| -------------------- | ----------------------- | ---------------------- | ------------------------- |
+| Linux (Ubuntu 22.04) | x86_64                  | C++                    | build-essential           |
 
-### Applying for a license
-1. Run the generator to generate your feature ID and provide the feature id to apply for the license.
-Note: The feature id is a unique identifier for your application and is bound to your local computer. Please generate feature ID and use license on the same computer.
+### Applying for Omni license
+1. The Omni license is forcibly bound to the user's Ubuntu computer hardware, so before proceeding with the following steps, make sure you have prepared a physical computer with Ubuntu 22.04 and CPU platform x86_64. If you need compatible with other operating systems or CPU architectures, please contact Flexiv.
+2. Clone the code and run the generator under ``flexiv_omni_teleop/omni_license_generator`` on your computer.
+   ```bash
+   ./generator
+   ```
+   This will generate a feature_id.txt. Send this file to Flexiv to apply for the Omni license.
+
+   Note: The feature id is a unique identifier for your application and is bound to your computer. Please generate feature_id and use Omni license on the same computer.
+3. After received the Omni license, extract the zip package to a safe directory. For example, a new folder named ``omni_license`` under the home directory.
 
 ### Compile and install for Linux
 
@@ -59,8 +66,7 @@ Note: The feature id is a unique identifier for your application and is bound to
    cmake --build . --config Release -j 4
    ```
    NOTE: ``-D`` followed by ``CMAKE_INSTALL_PREFIX`` tells user project's CMake where to find the installed `flexiv_omni_teleop` library.
-2. Set all the robots were in `Auto/Remote Mode` via flexiv Elements, then to run an compiled example program:
+2. Set all the robots to `Auto/Remote Mode` via flexiv Elements, then to run the compiled example program. to run an compiled example program:
 
-   ```bash
-   sudo ./<program_name> -l [local_robot_serial_number] -r [remote_robot_serial_number] -c [path-to-licenseCfg.json]
-   ```
+   ./<program_name> [remote_robot_SN] [local_robot_SN] [path_to_omni_licenseCfg.json]
+
