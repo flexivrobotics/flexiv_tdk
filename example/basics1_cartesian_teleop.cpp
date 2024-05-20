@@ -39,13 +39,13 @@ void periodicTeleopTask(flexiv::omni::teleop::Robot2RobotTeleop& teleop)
 {
 
     try {
-        // Monitor fault on the teleop robots
+        // Monitor status of the teleop robots
         if (!teleop.isOperational()) {
             throw std::runtime_error(
                 "periodicTeleopTask: Fault occurred during teleoperation, exiting ...");
         }
-        // Run teleop
-        teleop.run();
+        // Step teleop
+        teleop.step();
     } catch (const std::exception& e) {
         std::cerr << e.what() << '\n';
         g_stop_sched = true;
@@ -214,7 +214,7 @@ int main(int argc, char* argv[])
         // Set max remote contact wrench
         teleop.setRemoteMaxWrench(k_defaultMaxRemoteWrench);
 
-        // Create real-time scheduler to run periodic tasks
+        // Create real-time scheduler to step periodic tasks
         flexiv::omni::teleop::Scheduler scheduler;
 
         // Wait for elbow posture ready

@@ -94,8 +94,9 @@ public:
   bool clearFault(void);
 
   /**
-   * @brief [Non-blocking] Run Omni-Teleop. The remote will always imitate the movements of the
-   * local and feedback the external wrench to the local.
+   * @brief [Non-blocking] Periodically step Omni-Teleop and the called frequency should be 1KHz.
+   * The remote will always imitate the movements of the local and feedback the external wrench to
+   * the local.
    * @note The remote pose will not exactly the same as that of the local. User can keep the remote
    * still by releasing the pedal, while the local can drag freely. When the local reaches an
    * appropriate pose, press down the pedal and the remote will follow the local again.
@@ -103,7 +104,7 @@ public:
    * ensure that the circuit only connects when the pedal is pressed down.
    * @throw std::runtime_error if failed to execute the request.
    */
-  void run(void);
+  void step(void);
 
   /**
    * @brief [Non-blocking] Set preferred joint positions for the null-space posture control of local
@@ -185,7 +186,6 @@ public:
 
   /**
    * @brief [Non-blocking] Set the local robot axis locking command.
-   *
    * @param[in] cmd User input command to lock the motion of the specified axis in the reference
    * coordinate.
    */
@@ -193,7 +193,6 @@ public:
 
   /**
    * @brief [Non-blocking] Get the local robot axis locking status
-   *
    * @param[out] data Current axis locking state of local robot.
    */
   void getLocalAxisLockState(AxisLockDefs& data);
@@ -208,7 +207,7 @@ public:
 
 private:
   class Impl;
-  std::unique_ptr<Impl> p_impl_;
+  std::unique_ptr<Impl> pimpl_;
 };
 
 } // namespace teleop
