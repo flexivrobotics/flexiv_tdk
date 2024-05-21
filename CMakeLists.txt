@@ -1,9 +1,9 @@
-cmake_minimum_required(VERSION 3.18.6)
+cmake_minimum_required(VERSION 3.22.1)
 
 # ===================================================================
 #      PROJECT SETUP
 # ===================================================================
-project(flexiv_omni_teleop VERSION 0.7.0)
+project(flexiv_omni_teleop VERSION 1.0.0)
 
 # Configure build type
 if(NOT CMAKE_BUILD_TYPE)
@@ -67,6 +67,11 @@ if(Boost_FOUND)
   message(STATUS "Found Boost: ${Boost_DIR}")
 endif()
 
+# OpenSSL
+find_package(OpenSSL REQUIRED)
+if(OpenSSL_FOUND)
+  message(STATUS "Found OpenSSL, version: ${OPENSSL_VERSION}, libraries: ${OPENSSL_LIBRARIES}")
+endif()
 
 
 # ===================================================================
@@ -86,6 +91,7 @@ target_include_directories(${PROJECT_NAME} INTERFACE
 
 target_link_libraries(${PROJECT_NAME} INTERFACE
   ${TELEOP_STATIC_LIBRARY}
+  ${OPENSSL_LIBRARIES}
   Threads::Threads
   Eigen3::Eigen
   fastrtps
