@@ -9,9 +9,9 @@
 #include <atomic>
 #include <chrono>
 #include <spdlog/spdlog.h>
-#include <flexiv/omni/teleop/robot_robot_teleop.hpp>
-#include <flexiv/omni/teleop/scheduler.hpp>
-#include <flexiv/omni/teleop/teleop_defs.hpp>
+#include <flexiv/teleop/robot_robot_teleop.hpp>
+#include <flexiv/teleop/scheduler.hpp>
+#include <flexiv/teleop/teleop_defs.hpp>
 #include <getopt.h>
 #include <iostream>
 #include <thread>
@@ -19,7 +19,7 @@ namespace {
 std::vector<double> k_preferredJntPos
     = {44 * M_PI / 180.0, -61 * M_PI / 180.0, -71 * M_PI / 180.0, 84 * M_PI / 180.0,
         59 * M_PI / 180.0, 12 * M_PI / 180.0, -31 * M_PI / 180.0}; ///< Preferred joint position
-const std::array<double, flexiv::omni::teleop::kCartDOF> k_defaultMaxRemoteWrench
+const std::array<double, flexiv::teleop::kCartDOF> k_defaultMaxRemoteWrench
     = {40.0, 40.0, 40.0, 24.0, 24.0, 24.0}; ///< Maximum contact wrench
 std::atomic<bool> g_stop_sched = {false};   ///< Atomic signal to stop scheduler tasks
 } // namespace
@@ -38,7 +38,7 @@ void printHelp()
 /**
  * @brief  Callback function for Omni Teleop task
  */
-void PeriodicTeleopTask(flexiv::omni::teleop::Robot2RobotTeleop& teleop)
+void PeriodicTeleopTask(flexiv::teleop::Robot2RobotTeleop& teleop)
 {
 
     try {
@@ -59,9 +59,9 @@ void PeriodicTeleopTask(flexiv::omni::teleop::Robot2RobotTeleop& teleop)
 /**
  * @brief Callback function for axis lock/unlock test
  */
-void PeriodicConsoleTask(flexiv::omni::teleop::Robot2RobotTeleop& teleop)
+void PeriodicConsoleTask(flexiv::teleop::Robot2RobotTeleop& teleop)
 {
-    flexiv::omni::teleop::AxisLockDefs cmd;
+    flexiv::teleop::AxisLockDefs cmd;
     teleop.GetLocalAxisLockState(cmd);
 
     while (!g_stop_sched) {
@@ -94,53 +94,53 @@ void PeriodicConsoleTask(flexiv::omni::teleop::Robot2RobotTeleop& teleop)
                 break;
             case 'x':
                 cmd.trans_axis_lock_list_[0] = !cmd.trans_axis_lock_list_[0];
-                cmd.coord = flexiv::omni::teleop::CoordType::CD_WORLD;
+                cmd.coord = flexiv::teleop::CoordType::CD_WORLD;
 
                 break;
             case 'y':
                 cmd.trans_axis_lock_list_[1] = !cmd.trans_axis_lock_list_[1];
-                cmd.coord = flexiv::omni::teleop::CoordType::CD_WORLD;
+                cmd.coord = flexiv::teleop::CoordType::CD_WORLD;
                 break;
             case 'z':
                 cmd.trans_axis_lock_list_[2] = !cmd.trans_axis_lock_list_[2];
-                cmd.coord = flexiv::omni::teleop::CoordType::CD_WORLD;
+                cmd.coord = flexiv::teleop::CoordType::CD_WORLD;
                 break;
             case 'q':
                 cmd.ori_axis_lock_list_[0] = !cmd.ori_axis_lock_list_[0];
-                cmd.coord = flexiv::omni::teleop::CoordType::CD_WORLD;
+                cmd.coord = flexiv::teleop::CoordType::CD_WORLD;
                 break;
             case 'w':
                 cmd.ori_axis_lock_list_[1] = !cmd.ori_axis_lock_list_[1];
-                cmd.coord = flexiv::omni::teleop::CoordType::CD_WORLD;
+                cmd.coord = flexiv::teleop::CoordType::CD_WORLD;
                 break;
             case 'e':
                 cmd.ori_axis_lock_list_[2] = !cmd.ori_axis_lock_list_[2];
-                cmd.coord = flexiv::omni::teleop::CoordType::CD_WORLD;
+                cmd.coord = flexiv::teleop::CoordType::CD_WORLD;
                 break;
 
             case 'X':
                 cmd.trans_axis_lock_list_[0] = !cmd.trans_axis_lock_list_[0];
-                cmd.coord = flexiv::omni::teleop::CoordType::CD_TCP;
+                cmd.coord = flexiv::teleop::CoordType::CD_TCP;
                 break;
             case 'Y':
                 cmd.trans_axis_lock_list_[1] = !cmd.trans_axis_lock_list_[1];
-                cmd.coord = flexiv::omni::teleop::CoordType::CD_TCP;
+                cmd.coord = flexiv::teleop::CoordType::CD_TCP;
                 break;
             case 'Z':
                 cmd.trans_axis_lock_list_[2] = !cmd.trans_axis_lock_list_[2];
-                cmd.coord = flexiv::omni::teleop::CoordType::CD_TCP;
+                cmd.coord = flexiv::teleop::CoordType::CD_TCP;
                 break;
             case 'Q':
                 cmd.ori_axis_lock_list_[0] = !cmd.ori_axis_lock_list_[0];
-                cmd.coord = flexiv::omni::teleop::CoordType::CD_TCP;
+                cmd.coord = flexiv::teleop::CoordType::CD_TCP;
                 break;
             case 'W':
                 cmd.ori_axis_lock_list_[1] = !cmd.ori_axis_lock_list_[1];
-                cmd.coord = flexiv::omni::teleop::CoordType::CD_TCP;
+                cmd.coord = flexiv::teleop::CoordType::CD_TCP;
                 break;
             case 'E':
                 cmd.ori_axis_lock_list_[2] = !cmd.ori_axis_lock_list_[2];
-                cmd.coord = flexiv::omni::teleop::CoordType::CD_TCP;
+                cmd.coord = flexiv::teleop::CoordType::CD_TCP;
                 break;
             case 'r':
                 teleop.Engage(true);
@@ -154,17 +154,17 @@ void PeriodicConsoleTask(flexiv::omni::teleop::Robot2RobotTeleop& teleop)
         }
         teleop.SetLocalAxisLockCmd(cmd);
         spdlog::info(" Axis [X] in [{}] frame locking status : [{}]",
-            flexiv::omni::teleop::CoordTypeStr[cmd.coord], cmd.trans_axis_lock_list_[0]);
+            flexiv::teleop::CoordTypeStr[cmd.coord], cmd.trans_axis_lock_list_[0]);
         spdlog::info(" Axis [Y] in [{}] frame locking status : [{}]",
-            flexiv::omni::teleop::CoordTypeStr[cmd.coord], cmd.trans_axis_lock_list_[1]);
+            flexiv::teleop::CoordTypeStr[cmd.coord], cmd.trans_axis_lock_list_[1]);
         spdlog::info(" Axis [Z] in [{}] frame locking status : [{}]",
-            flexiv::omni::teleop::CoordTypeStr[cmd.coord], cmd.trans_axis_lock_list_[2]);
+            flexiv::teleop::CoordTypeStr[cmd.coord], cmd.trans_axis_lock_list_[2]);
         spdlog::info(" Axis [Rx] in [{}] frame locking status : [{}]",
-            flexiv::omni::teleop::CoordTypeStr[cmd.coord], cmd.ori_axis_lock_list_[0]);
+            flexiv::teleop::CoordTypeStr[cmd.coord], cmd.ori_axis_lock_list_[0]);
         spdlog::info(" Axis [Ry] in [{}] frame locking status : [{}]",
-            flexiv::omni::teleop::CoordTypeStr[cmd.coord], cmd.ori_axis_lock_list_[1]);
+            flexiv::teleop::CoordTypeStr[cmd.coord], cmd.ori_axis_lock_list_[1]);
         spdlog::info(" Axis [Rz] in [{}] frame locking status : [{}]",
-            flexiv::omni::teleop::CoordTypeStr[cmd.coord], cmd.ori_axis_lock_list_[2]);
+            flexiv::teleop::CoordTypeStr[cmd.coord], cmd.ori_axis_lock_list_[2]);
     }
     return;
 }
@@ -198,7 +198,7 @@ int main(int argc, char* argv[])
 
     try {
 
-        flexiv::omni::teleop::Robot2RobotTeleop teleop(localSN, remoteSN, licCfgPath);
+        flexiv::teleop::Robot2RobotTeleop teleop(localSN, remoteSN, licCfgPath);
 
         // Enable cart teleop
         teleop.Enable();
@@ -214,7 +214,7 @@ int main(int argc, char* argv[])
         teleop.SetMaxContactWrench(k_defaultMaxRemoteWrench);
 
         // Create real-time scheduler to step periodic tasks
-        flexiv::omni::teleop::Scheduler scheduler;
+        flexiv::teleop::Scheduler scheduler;
 
         // Wait for elbow posture ready
         std::this_thread::sleep_for(std::chrono::seconds(3));

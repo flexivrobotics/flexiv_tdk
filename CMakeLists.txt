@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.22.1)
 # ===================================================================
 #      PROJECT SETUP
 # ===================================================================
-project(flexiv_omni_teleop VERSION 1.0.0)
+project(flexiv_teleop_sdk VERSION 1.1.0)
 
 # Configure build type
 if(NOT CMAKE_BUILD_TYPE)
@@ -17,7 +17,7 @@ message("Processor: ${CMAKE_SYSTEM_PROCESSOR}")
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64")
-    set(TELEOP_STATIC_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/lib/libflexiv_omni_teleop.x86_64-linux-gnu.a")
+    set(TELEOP_STATIC_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/lib/libflexiv_teleop_sdk.x86_64-linux-gnu.a")
   else()
     message(FATAL_ERROR "Linux with ${CMAKE_SYSTEM_PROCESSOR} processor is currently not supported.")
   endif()

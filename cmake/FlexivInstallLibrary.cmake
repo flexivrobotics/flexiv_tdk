@@ -71,7 +71,7 @@ macro(FlexivInstallLibrary)
     # copy the *-targets.cmake file to the CMAKE_INSTALL_PREFIX directory
     install(EXPORT "${PROJECT_NAME}-targets"
             FILE "${PROJECT_NAME}-targets.cmake"
-            NAMESPACE "flexiv::omni::"
+            NAMESPACE "flexiv::"
             DESTINATION "lib/cmake/${PROJECT_NAME}"
             )
 
@@ -85,7 +85,7 @@ macro(FlexivInstallLibrary)
     # Use the CPack Package Generator
     set(CPACK_PACKAGE_VENDOR "flexiv")
     set(CPACK_PACKAGE_CONTACT "support@flexiv.com")
-    set(CPACK_PACKAGE_DESCRIPTION "flexiv omni teleop ")
+    set(CPACK_PACKAGE_DESCRIPTION "flexiv teleop SDK")
     set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
     set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
     set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})

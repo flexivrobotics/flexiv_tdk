@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22.1)
 
-project(flexiv_omni_teleop_example)
+project(flexiv_teleop_sdk_example)
 
 SET(CMAKE_VERBOSE_MAKEFILE ON)
 
@@ -21,15 +21,15 @@ set(EXAMPLE_LIST
    basics1_cartesian_teleop
 )
 
-find_package(flexiv_omni_teleop REQUIRED)
-if(flexiv_omni_teleop_FOUND)
-   message(STATUS "Found flexiv_omni_teleop:${flexiv_omni_teleop_DIR}") 
+find_package(flexiv_teleop_sdk REQUIRED)
+if(flexiv_teleop_sdk_FOUND)
+   message(STATUS "Found flexiv_teleop_sdk:${flexiv_teleop_sdk_DIR}") 
 endif()
 
 
 foreach(example ${EXAMPLE_LIST})
    add_executable(${example} ${example}.cpp) 
-   target_link_libraries(${example} flexiv::omni::flexiv_omni_teleop)
+   target_link_libraries(${example} flexiv::flexiv_teleop_sdk)
    set_target_properties(${example} PROPERTIES
    CXX_STANDARD 17
    CXX_STANDARD_REQUIRED ON)
