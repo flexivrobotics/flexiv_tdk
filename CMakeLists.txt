@@ -61,16 +61,16 @@ if(fastrtps_FOUND)
   message(STATUS "Found fastrtps: ${fastrtps_DIR}")
 endif()
 
-# Boost-filesystem
-find_package(Boost 1.72.0 COMPONENTS filesystem REQUIRED)
-if(Boost_FOUND)
-  message(STATUS "Found Boost: ${Boost_DIR}")
-endif()
-
 # OpenSSL
 find_package(OpenSSL REQUIRED)
 if(OpenSSL_FOUND)
   message(STATUS "Found OpenSSL, version: ${OPENSSL_VERSION}, libraries: ${OPENSSL_LIBRARIES}")
+endif()
+
+# Spdlog
+find_package(spdlog REQUIRED)
+if(spdlog_FOUND)
+  message(STATUS "Found spdlog: ${spdlog_DIR}")
 endif()
 
 
@@ -96,7 +96,7 @@ target_link_libraries(${PROJECT_NAME} INTERFACE
   Eigen3::Eigen
   fastrtps
   fastcdr
-  Boost::filesystem
+  spdlog::spdlog
 )
 
 # Use moderate compiler warning option 
