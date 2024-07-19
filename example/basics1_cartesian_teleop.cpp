@@ -213,6 +213,7 @@ int main(int argc, char* argv[])
         // Set max remote contact wrench
         teleop.SetMaxContactWrench(k_defaultMaxRemoteWrench);
 
+        teleop.Engage(true);
         // Create real-time scheduler to step periodic tasks
         flexiv::teleop::Scheduler scheduler;
 

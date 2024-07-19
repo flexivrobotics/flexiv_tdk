@@ -11,8 +11,8 @@ namespace flexiv {
 namespace teleop {
 
 /**
- * @brief Main interface for robot-robot teleop in Cartesian space, containing several function
- * categories and background services.
+ * @brief Main interface for Rizon series robot-robot teleop in Cartesian space, containing several
+ * function categories and background services.
  */
 class Robot2RobotTeleop
 {
@@ -22,8 +22,8 @@ public:
   Robot2RobotTeleop(Robot2RobotTeleop&&) = delete;
   Robot2RobotTeleop& operator=(const Robot2RobotTeleop&) = delete;
   /**
-   * @brief [Blocking] Create a flexiv::teleop instance as the main Omni-Teleop interface.
-   * Omni-Teleop services will initialize and connection with the local and remote robot will be
+   * @brief [Blocking] Create a flexiv::teleop instance as the main  interface.
+   *  Teleop services will initialize and connection with the local and remote robot will be
    * established.
    * @param[in] localSN Serial number of the local robot, e.g. Rizon4s-062001. Only Rizon4s is
    * supported.
@@ -33,7 +33,7 @@ public:
    * license.
    * @throw std::runtime_error if the initialization sequence failed.
    * @throw std::logic_error if the connected robot does not have a valid license; or this
-   * Teleop library version is incompatible with the connected robot; or model of the connected
+   * teleop library version is incompatible with the connected robot; or model of the connected
    * robot is not supported.
    * @warning This constructor blocks until the initialization sequence is successfully finished
    * and connection with the robot is established.
@@ -43,7 +43,7 @@ public:
   virtual ~Robot2RobotTeleop();
 
   /**
-   * @brief [Blocking] Initialize Omni-Teleop robots states, this will zeroing force/torque sensors,
+   * @brief [Blocking] Initialize teleop robots states, this will zeroing force/torque sensors,
    * make sure nothing is in contact with the local and remote robots.
    * @throw std::logic_error if robots are not connected.
    * @throw std::runtime_error if failed to execute the request.
@@ -52,7 +52,7 @@ public:
   void Init(void);
 
   /**
-   * @brief [Blocking] Enable the Omni-Teleop, if all E-stop are released and there's no
+   * @brief [Blocking] Enable the teleop, if all E-stop are released and there's no
    * fault, both local and remote robots will release brakes, and becomes operational a few seconds
    * later.
    * @throw std::logic_error if the robot is not connected.
@@ -70,13 +70,13 @@ public:
   void Engage(bool flag);
 
   /**
-   * @brief [Non-blocking] Stop Omni-Teleop. Both local and remote will stop moving.
+   * @brief [Non-blocking] Stop teleop. Both local and remote will stop moving.
    */
   void Stop(void);
 
   /**
    * @brief [Non-blocking] Check if robots in fault state.
-   * @return True: Omni-Teleop has fault, false: everything normal.
+   * @return True: Teleop has fault, false: everything normal.
    */
   bool IsFault(void);
 
@@ -99,7 +99,7 @@ public:
   bool ClearFault(void);
 
   /**
-   * @brief [Non-blocking] Periodically step Omni-Teleop and the called frequency should be 1KHz.
+   * @brief [Non-blocking] Periodically step teleop and the called frequency should be 1KHz.
    * The remote will always imitate the movements of the local and feedback the external wrench to
    * the local.
    * @note The remote pose will not exactly the same as that of the local. User can keep the remote
@@ -117,7 +117,7 @@ public:
    * TeleopRobotInfo::qMax]. Unit: \f$ [rad] \f$.
    * @throw std::invalid_argument if [preferredPositions] contains any value outside the valid
    * range.
-   * @throw std::logic_error if Omni-Teleop was not successfully initialized.
+   * @throw std::logic_error if teleop was not successfully initialized.
    * @note This setting will persist across the applicable control modes until changed again.
    * @par Null-space posture control
    * Similar to human arm, a robotic arm with redundant joint-space degree(s) of freedom (DOF > 6)
@@ -137,7 +137,7 @@ public:
    * TeleopRobotInfo::qMax]. Unit: \f$ [rad] \f$.
    * @throw std::invalid_argument if [preferredPositions] contains any value outside the valid
    * range.
-   * @throw std::logic_error if Omni-Teleop was not successfully initialized.
+   * @throw std::logic_error if teleop was not successfully initialized.
    * @note This setting will persist across the applicable control modes until changed again.
    * @par Null-space posture control
    * Similar to human arm, a robotic arm with redundant joint-space degree(s) of freedom (DOF > 6)
