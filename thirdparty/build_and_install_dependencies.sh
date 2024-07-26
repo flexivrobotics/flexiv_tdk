@@ -32,11 +32,11 @@ echo "Number of parallel build jobs: $NUM_JOBS"
 mkdir -p cloned && cd cloned
 
 # Build and install all dependencies to INSTALL_DIR
-bash $SCRIPTPATH/scripts/install_eigen.sh $INSTALL_DIR 
-bash $SCRIPTPATH/scripts/install_tinyxml2.sh $INSTALL_DIR 
-bash $SCRIPTPATH/scripts/install_foonathan_memory.sh $INSTALL_DIR
-bash $SCRIPTPATH/scripts/install_Fast-CDR.sh $INSTALL_DIR
-bash $SCRIPTPATH/scripts/install_Fast-DDS.sh $INSTALL_DIR
-# bash $SCRIPTPATH/scripts/install_boost.sh $INSTALL_DIR
-bash $SCRIPTPATH/scripts/install_spdlog.sh $INSTALL_DIR
+# bash $SCRIPTPATH/scripts/install_eigen.sh $INSTALL_DIR 
+# bash $SCRIPTPATH/scripts/install_tinyxml2.sh $INSTALL_DIR 
+# bash $SCRIPTPATH/scripts/install_foonathan_memory.sh $INSTALL_DIR
+# bash $SCRIPTPATH/scripts/install_Fast-CDR.sh $INSTALL_DIR
+# bash $SCRIPTPATH/scripts/install_Fast-DDS.sh $INSTALL_DIR
+# bash $SCRIPTPATH/scripts/install_spdlog.sh $INSTALL_DIR
+bash $SCRIPTPATH/scripts/install_rdk.sh $INSTALL_DIR
 echo ">>>>>>>>>> Finished <<<<<<<<<<"
