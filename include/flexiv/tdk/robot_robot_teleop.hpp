@@ -23,17 +23,16 @@ public:
   Robot2RobotTeleop(Robot2RobotTeleop&&) = delete;
   Robot2RobotTeleop& operator=(const Robot2RobotTeleop&) = delete;
   /**
-   * @brief [Blocking] Create a flexiv::teleop instance as the main interface.
-   * Teleop services will initialize and connection with the local and remote robot will be
-   * established.
+   * @brief [Blocking] Create a flexiv::tdk::teleop instance as the main interface. Teleop services
+   * will initialize and connection with the local and remote robot will be established.
    * @param[in] local_sn Serial number of the local robot, e.g. Rizon4s-062001.
    * @param[in] remote_sn Serial number of the remote robot, e.g. Rizon4s-062002.
    * @param [in] path_to_license_jsn Path to the omni license config json file. See README.md to
    * apply for license.
    * @throw std::runtime_error if the initialization sequence failed.
-   * @throw std::logic_error if the connected robot does not have a valid license; or this
-   * teleop library version is incompatible with the connected robot; or model of the connected
-   * robot is not supported.
+   * @throw std::logic_error if the connected robot does not have a valid license; or this teleop
+   * library version is incompatible with the connected robot; or model of the connected robot is
+   * not supported.
    * @warning This constructor blocks until the initialization sequence is successfully finished
    * and connection with the robot is established.
    */
@@ -42,18 +41,18 @@ public:
   virtual ~Robot2RobotTeleop();
 
   /**
-   * @brief [Blocking] Initialize teleop robots states, this will zeroing force/torque sensors,
-   * make sure nothing is in contact with the local and remote robots.
+   * @brief [Blocking] Initialize teleop robots states and commands.
    * @throw std::logic_error if robots are not connected.
    * @throw std::runtime_error if failed to execute the request.
    * @note This function blocks until the request is successfully executed.
+   * @warning This will zeroing force/torque sensors, make sure nothing is in contact with the local
+   * and remote robot.
    */
   void Init(void);
 
   /**
-   * @brief [Blocking] Enable the teleop, if all E-stop are released and there's no
-   * fault, both local and remote robots will release brakes, and becomes operational a few seconds
-   * later.
+   * @brief [Blocking] Enable the teleop, if all E-stop are released and there's no fault, both
+   * local and remote robots will release brakes, and becomes operational a few seconds later.
    * @throw std::logic_error if the robot is not connected.
    * @throw std::runtime_error if failed to execute the request.
    * @note This function blocks until the request is successfully executed.
@@ -61,7 +60,7 @@ public:
   void Enable(void);
 
   /**
-   * @brief [Non-blocking] Engage/disengage the local and remote robot.
+   * @brief [Non-blocking] engage/disengage the local and remote robot.
    * @param[in] flag True to engage the teleoperation, this means that user can control remote robot
    * by dragging local robot. False the remote will hold still.
    * @note The teleop will keep disengaged by default.
@@ -69,7 +68,7 @@ public:
   void Engage(bool flag);
 
   /**
-   * @brief [Non-blocking] Stop teleop. Both local and remote will stop moving.
+   * @brief [Non-blocking] Stop teleop by lock all the axes. Both local and remote will stop moving.
    */
   void Stop(void);
 
@@ -89,7 +88,7 @@ public:
   bool operational(void);
 
   /**
-   * @brief [Blocking] Clear minor fault of the local and remote robots.
+   * @brief [Blocking] Clear fault of the local and remote robots.
    * @return True: successfully cleared fault, false: cannot clear fault.
    * @throw std::runtime_error if failed to deliver the request.
    * @note This function blocks until fault on local and remote is successfully cleared or
@@ -98,19 +97,20 @@ public:
   bool ClearFault(void);
 
   /**
-   * @brief [Non-blocking] Periodically step teleop and the called frequency should be 1KHz.
+   * @brief [Non-blocking] Periodically step teleop and the called frequency should be 1000Hz.
    * The remote will always imitate the movements of the local and feedback the external wrench to
    * the local.
    * @note The remote pose will not exactly the same as that of the local. User can keep the remote
-   * still by disengage the teleop, see Engage.  while the local can drag freely. When the local
-   * reaches an appropriate pose, engage the teleop and the remote will follow the local again.
-   * @throw std::runtime_error if failed to execute the request.
+   * still by disengage the teleop, while the local can drag freely. When the local reaches an
+   * appropriate pose, engage the teleop and the remote will follow the local again.
+   * @throw std::runtime_error if robot becomes inoperable during teleoperation.
+   * @warning This is the main function doing the real-time teleop task computing, the called
+   * frequency should be strictly 1000Hz.
    */
   void Step(void);
 
   /**
-   * @brief [Non-blocking] Set preferred joint positions for the null-space posture control of local
-   * robot.
+   * @brief [Non-blocking] Set preferred joint positions for the null-space posture of local robot.
    * @param[in] preferred_joint_pos Preferred joint positions for the null-space posture control:
    * \f$ q_{ns} \in \mathbb{R}^{n \times 1} \f$. Valid range: [flexiv::rdk::RobotInfo::q_min,
    * flexiv::rdk::RobotInfo::q_max]. Unit: \f$ [rad] \f$.
@@ -129,8 +129,7 @@ public:
   void SetLocalNullSpacePosture(const std::vector<double>& preferred_joint_pos);
 
   /**
-   * @brief [Non-blocking] Set preferred joint positions for the null-space posture control of
-   * remote robot.
+   * @brief [Non-blocking] Set preferred joint positions for the null-space posture of remote robot.
    * @param[in] preferred_joint_pos Preferred joint positions for the null-space posture control:
    * \f$ q_{ns} \in \mathbb{R}^{n \times 1} \f$. Valid range: [flexiv::rdk::RobotInfo::q_min,
    * flexiv::rdk::RobotInfo::q_max]. Unit: \f$ [rad] \f$.
@@ -149,8 +148,9 @@ public:
   void SetRemoteNullSpacePosture(const std::vector<double>& preferred_joint_pos);
 
   /**
-   * @brief [Non-blocking] Set maximum wrench for the remote robot. The controller will regulate its
-   * output to maintain contact wrench (force and moment) with the environment under the set values.
+   * @brief [Non-blocking] Set maximum contact wrench for the teleop robot. The controller will
+   * regulate its output to maintain contact wrench (force and moment) with the environment under
+   * the set values.
    * @param[in] max_wrench Maximum contact wrench (force and moment): \f$ F_max \in \mathbb{R}^{6
    * \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ maximum force and \f$
    * \mathbb{R}^{3 \times 1} \f$ maximum moment: \f$ [f_x, f_y, f_z, m_x, m_y, m_z]^T \f$. Unit:
@@ -160,13 +160,13 @@ public:
   void SetMaxContactWrench(const std::array<double, flexiv::rdk::kCartDoF>& max_wrench);
 
   /**
-   * @brief [Non-blocking] Set the repulsive wrench in world/TCP frame for the remote robot.
+   * @brief [Non-blocking] Set the repulsive wrench in World/Tcp frame for the remote robot.
    * @param[in] repulsive_wrench The virtual repulsive wrench that will applied on the remote
    * robot.(force and moment): \f$ repulsiveW \in \mathbb{R}^{6 \times 1} \f$. Consists of \f$
    * \mathbb{R}^{3 \times 1} \f$ repulsive force and \f$ \mathbb{R}^{3 \times 1} \f$ repulsive
    * moment: \f$ [f_x, f_y, f_z, m_x, m_y, m_z]^T \f$. Unit: \f$ [N]~[Nm] \f$.
-   *  @param[in] in_world Flag to indicate that the repulsive wrench is in World frame or TCP frame.
-   * true in World frame, false in TCP frame.
+   *  @param[in] in_world Flag to indicate that the repulsive wrench is in World frame or Tcp frame.
+   * true in World frame, false in Tcp frame.
    * @note This virtual repulsive wrench will only work on those unlocked axis.
    * @see SetLocalAxisLockCmd
    * @see GetLocalAxisLockState

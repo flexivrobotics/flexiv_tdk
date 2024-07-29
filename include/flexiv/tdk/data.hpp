@@ -21,7 +21,7 @@ enum CoordType
   COORD_WORLD        ///> WORLD coordinate of local robot
 };
 
-static const std::string CoordTypeStr[] = {"UNKNOWN", "TCP", "BASE"};
+static const std::string CoordTypeStr[] = {"UNKNOWN", "TCP", "WORLD"};
 
 /**
  * @brief Get the coordinate type of axis locking status

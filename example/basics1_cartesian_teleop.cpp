@@ -13,6 +13,7 @@
 #include <flexiv/rdk/scheduler.hpp>
 #include <flexiv/rdk/data.hpp>
 #include <thread>
+#include <iostream>
 namespace {
 std::vector<double> kPreferredJntPos
     = {60 * M_PI / 180.0, -60 * M_PI / 180.0, -85 * M_PI / 180.0, 115 * M_PI / 180.0,
