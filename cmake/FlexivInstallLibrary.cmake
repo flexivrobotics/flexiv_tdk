@@ -64,7 +64,7 @@ macro(FlexivInstallLibrary)
     include(CMakePackageConfigHelpers)
     write_basic_package_version_file(
         "${PROJECT_NAME}-config-version.cmake"
-        VERSION ${PACKAGE_VERSION}
+        VERSION ${PROJECT_VERSION}
         COMPATIBILITY AnyNewerVersion
         )
 
@@ -83,13 +83,13 @@ macro(FlexivInstallLibrary)
             )
 
     # Use the CPack Package Generator
-    set(CPACK_PACKAGE_VENDOR "flexiv")
+    set(CPACK_PACKAGE_VENDOR "Flexiv")
     set(CPACK_PACKAGE_CONTACT "support@flexiv.com")
-    set(CPACK_PACKAGE_DESCRIPTION "flexiv teleop SDK")
+    set(CPACK_PACKAGE_DESCRIPTION "Flexiv Teleop Development Kit (TDK)")
     set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
     set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
     set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
     set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
-    set(CPACK_RESOURCE_FILE_README   "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+    set(CPACK_RESOURCE_FILE_README  "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
     include(CPack)
 endmacro()
