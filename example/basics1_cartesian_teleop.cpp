@@ -1,8 +1,8 @@
 /**
- * @file cart_teleop.cpp
+ * @example basics1_cartesian_teleop.cpp
  * @copyright Copyright (C) 2016-2024 Flexiv Ltd. All Rights Reserved.
  * @brief This is an example program for cartesian space teleoperation
- * @date 2024-07-18
+ * @author Flexiv
  */
 
 #include <atomic>
@@ -60,11 +60,11 @@ void PeriodicTeleopTask(flexiv::tdk::Robot2RobotTeleop& teleop)
 }
 
 /**
- * @brief 1Hz callback function for several API test
+ * @brief 1Hz callback function for several APIs call
  */
 void PeriodicConsoleTask(flexiv::tdk::Robot2RobotTeleop& teleop)
 {
-    flexiv::tdk::AxisLockStatus cmd;
+    flexiv::tdk::AxisLock cmd;
     teleop.GetLocalAxisLockState(cmd);
 
     while (!g_stop_sched) {
@@ -139,7 +139,10 @@ void PeriodicConsoleTask(flexiv::tdk::Robot2RobotTeleop& teleop)
                 cmd.coord = flexiv::tdk::CoordType::COORD_TCP;
                 break;
             case 't':
-                teleop.SetRepulsiveWrench({0, 0, 0, 0, 0, 0});
+                teleop.SetRepulsiveForce({0, 0, -5});
+                break;
+            case 'T':
+                teleop.SetWrenchFeedbackScalingFactor(0.5);
                 break;
             default:
                 spdlog::warn("Invalid command!");
@@ -152,25 +155,30 @@ void PeriodicConsoleTask(flexiv::tdk::Robot2RobotTeleop& teleop)
 
 int main(int argc, char* argv[])
 {
-    std::string remote_sn;
-    std::string local_sn;
-    std::string path_to_lic_jsn;
-
+    // Program Setup
+    // =============================================================================================
     if (argc != 4) {
         printHelp();
         return 1;
     }
-    local_sn = argv[1];
-    remote_sn = argv[2];
-    path_to_lic_jsn = argv[3];
+    // Serial number of the local robot to connect to. Remove any space, for example: Rizon4s-062001
+    std::string local_sn = argv[1];
+    // Serial number of the remote robot to connect to. Remove any space, for example:
+    // Rizon4s-Rizon4s-062002
+    std::string remote_sn = argv[2];
+    // Path to license config json file. for example: ~/my_license/omni_licenseCfg.json
+    std::string path_to_lic_jsn = argv[3];
 
+    // Parse parameters
     if (local_sn.empty() || remote_sn.empty() || path_to_lic_jsn.empty()) {
         printHelp();
         return 1;
     }
 
     try {
-
+        // TDK Initialization
+        // =========================================================================================
+        // Instantiate main teleop interface
         flexiv::tdk::Robot2RobotTeleop teleop(local_sn, remote_sn, path_to_lic_jsn);
 
         // Enable cart teleop
@@ -179,23 +187,24 @@ int main(int argc, char* argv[])
         // Init cart teleop
         teleop.Init();
 
-        // Set preferred joint position to a better configuration
+        // Set preferred joint position
         teleop.SetLocalNullSpacePosture(kPreferredJntPos);
         teleop.SetRemoteNullSpacePosture(kPreferredJntPos);
 
-        // Set max remote contact wrench
+        // Set max contact wrench
         teleop.SetMaxContactWrench(kDefaultMaxContactWrench);
 
         // Create real-time scheduler to step periodic tasks
         flexiv::rdk::Scheduler scheduler;
 
-        // Wait for elbow posture ready
+        // Wait for null-space posture ready
         std::this_thread::sleep_for(std::chrono::seconds(3));
 
-        // Add periodic task with 1ms interval and highest applicable priority
+        // Add periodic teleop task with 1ms interval and highest applicable priority
         scheduler.AddTask(std::bind(&PeriodicTeleopTask, std::ref(teleop)), "HP periodic teleop", 1,
             scheduler.max_priority());
 
+        // Add periodic console task with 1s interval and lowest applicable priority
         scheduler.AddTask(std::bind(&PeriodicConsoleTask, std::ref(teleop)), "LP Periodic console",
             1000, scheduler.min_priority());
 
@@ -204,10 +213,12 @@ int main(int argc, char* argv[])
 
         spdlog::info("Flexiv TDK example started ... ");
 
-        // Block until signal received
+        // Block and wait for signal to stop scheduler tasks
         while (!g_stop_sched) {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
+        // Received signal to stop scheduler tasks
+        scheduler.Stop();
 
     } catch (const std::exception& e) {
         spdlog::error(e.what());
