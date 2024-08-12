@@ -14,6 +14,6 @@
    This will generate a feature_id.txt. Send this file to Flexiv to apply for the license.
 
 > [!NOTE]
-> The feature id is a unique identifier and is bound to your computer hardware. You CANNOT use your license and run tdk on other devices. Please generate feature_id and use license on the same computer.
+> The feature id is a unique identifier and is bound to your computer hardware. You CANNOT use your license and run flexiv_tdk on other devices. Please generate feature_id and use license on the same computer.
 3. After received the license package, extract the zip package and put the .lic, .signature and .json file to a safe directory. For example, a new folder named ``omni_license`` under your home directory.
 4. Parse the path of omni_licenseCfg.json file when construct tdk class in your code.
