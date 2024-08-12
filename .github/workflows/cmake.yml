@@ -23,14 +23,14 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Build and install dependencies
-        # Build and install all dependencies to flexiv_omni_teleop installation directory.
+        # Build and install all dependencies to flexiv_tdk installation directory.
         run: |
           cd ${{github.workspace}}
           cd thirdparty
           bash build_and_install_dependencies.sh ~/teleop_install
 
       - name: Build and install library
-        # Configure CMake, then build and install the flexiv_omni_teleop INTERFACE library to flexiv_omni_teleop installation directory.
+        # Configure CMake, then build and install the flexiv_tdk INTERFACE library to TDK installation directory.
         run: |
           cd ${{github.workspace}}
           mkdir -p build && cd build
@@ -38,7 +38,7 @@ jobs:
           make install
 
       - name: Build examples
-        # Find and link to the flexiv_omni_teleop INTERFACE library, then build all examples.
+        # Find and link to the flexiv_tdk INTERFACE library, then build all examples.
         run: |
           cd ${{github.workspace}}/example
           mkdir -p build && cd build
@@ -46,9 +46,39 @@ jobs:
           make -j$(nproc)
 
       # - name: Build tests
-      #   # Find and link to the flexiv_omni_teleop INTERFACE library, then build all tests.
+      #   # Find and link to the flexiv_tdk INTERFACE library, then build all tests.
       #   run: |
       #     cd ${{github.workspace}}/test
       #     mkdir -p build && cd build
       #     cmake .. -DCMAKE_INSTALL_PREFIX=~/teleop_install
       #     make -j$(nproc)
+
+  build-ubuntu-20:
+    # Use GitHub-hosted Ubuntu 20.04 runner
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build and install dependencies
+        # Build and install all dependencies to TDK installation directory.
+        run: |
+          cd ${{github.workspace}}
+          cd thirdparty
+          bash build_and_install_dependencies.sh ~/tdk_install $(nproc)
+
+      - name: Build and install library
+        # Configure CMake, then build and install the flexiv_tdk INTERFACE library to TDK installation directory.
+        run: |
+          cd ${{github.workspace}}
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_INSTALL_PREFIX=~/tdk_install
+          make install
+
+      - name: Build examples
+        # Find and link to the flexiv_tdk INTERFACE library, then build all examples.
+        run: |
+          cd ${{github.workspace}}/example
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_INSTALL_PREFIX=~/tdk_install
+          make -j$(nproc)
