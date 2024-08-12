@@ -15,7 +15,7 @@ namespace tdk {
  * @brief Main interface for Rizon series robot-robot teleop in Cartesian space, containing several
  * function categories and background services. Robot2RobotTeleop consists of a collection of
  * local-remote adaptive robot arms. It performs synchronized, force guided real-time motions and
- * provide the operator with high-fidelity perceptual feedback.
+ * provides the operator with high-fidelity perceptual feedback.
  */
 class Robot2RobotTeleop
 {
@@ -184,7 +184,7 @@ public:
      * @brief[Non-blocking] Set the wrench feedback scaling factor.
      * @param[in] factor This coefficient will scale the feedback wrench of the remote robot. Scale
      * factor greater than 1 means that the external force received by the remote robot is
-     * amplified, otherwise it will be reduce. Setting scale to zero means no wrench feedback and 1
+     * amplified, otherwise it will be reduced. Setting scale to zero means no wrench feedback and 1
      * means 100% transparency. Valid range: [0, kMaxWrenchFeedbackScale]
      * @throw std::invalid_argument if input scale is outside the valid range.
      * @warning Only when the user ensures that the interaction force between the remote robot and
