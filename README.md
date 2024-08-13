@@ -61,7 +61,7 @@ Flexiv TDK (Teleoperation Development Kit) is an SDK provides C++ APIs for devel
 
 2. Set all the robots to `Auto/Remote Mode` via Flexiv Elements, then to run the compiled example program:
 
-       ./<program_name> [local_robot_serial_number] [remote_robot_serial_number] [path_to_omni_licenseCfg.json]
+       ./<program_name> [local_robot_serial_number] [remote_robot_serial_number] [path_to_licenseCfg.json]
 
 
 ## API Documentation
