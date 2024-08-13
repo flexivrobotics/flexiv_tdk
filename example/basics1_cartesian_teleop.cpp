@@ -166,7 +166,7 @@ int main(int argc, char* argv[])
     // Serial number of the remote robot to connect to. Remove any space, for example:
     // Rizon4s-Rizon4s-062002
     std::string remote_sn = argv[2];
-    // Path to license config json file. for example: ~/my_license/omni_licenseCfg.json
+    // Path to license config json file. for example: ~/my_license/xxx_licenseCfg.json
     std::string path_to_lic_jsn = argv[3];
 
     // Parse parameters

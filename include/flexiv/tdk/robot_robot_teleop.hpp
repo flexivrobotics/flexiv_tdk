@@ -30,8 +30,8 @@ public:
      * established.
      * @param[in] local_sn Serial number of the local robot, e.g. Rizon4s-062001.
      * @param[in] remote_sn Serial number of the remote robot, e.g. Rizon4s-062002.
-     * @param [in] path_to_license_jsn Path to the omni license config json file. See README.md to
-     * apply for license.
+     * @param [in] path_to_license_jsn Path to the license config json file. See README.md to apply
+     * for license.
      * @throw std::runtime_error if the initialization sequence failed.
      * @throw std::logic_error if the connected robot does not have a valid license; or this teleop
      * library version is incompatible with the connected robot; or model of the connected robot is
