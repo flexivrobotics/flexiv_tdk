@@ -15,8 +15,8 @@ endif()
 # Example list
 set(EXAMPLE_LIST
   test_cart_teleop_under_lan
-  # test_joint_teleop_over_wan
-  # test_joint_teleop_under_lan
+  test_joint_teleop_over_wan
+  test_joint_teleop_under_lan
 )
 
 # Find flexiv_tdk INTERFACE library
