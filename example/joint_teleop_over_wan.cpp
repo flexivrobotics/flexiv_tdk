@@ -1,6 +1,8 @@
 /**
- * @file test_joint_teleop_over_wan.cpp
- * @date 2024-10-15
+ * @example joint_teleop_over_wan.cpp
+ * Run joint-space robot-robot teleoperation over WAN (Wide Area Network, i.e. Internet) connection.
+ * @copyright Copyright (C) 2016-2024 Flexiv Ltd. All Rights Reserved.
+ * @author Flexiv
  */
 
 #include <flexiv/tdk/joint_teleop_wan.hpp>
@@ -18,7 +20,7 @@ const struct option kLongOptions[] = {{"serial-number", required_argument, 0, 's
 void PrintHelp()
 {
     // clang-format off
-    std::cout << "Usage: ./test_joint_teleop_over_wan [-s serial_num] [-r server/client] [-i ip] [-p port]" << std::endl;
+    std::cout << "Usage: ./joint_teleop_over_wan [-s serial_num] [-r server/client] [-i ip] [-p port]" << std::endl;
     std::cout << "  -s  --serial-number    Serial number of the local robot." << std::endl;
     std::cout << "  -r  --tcp-role         Role in the TCP connection, [server] or [client]." << std::endl;
     std::cout << "  -i  --ip               Public IPv4 address of the TCP server machine." << std::endl;
@@ -28,6 +30,7 @@ void PrintHelp()
 
 int main(int argc, char* argv[])
 {
+    // Parse program arguments
     std::string local_sn, tcp_role, server_ip;
     unsigned int server_port = 0;
     int opt = 0;
@@ -67,20 +70,21 @@ int main(int argc, char* argv[])
     }
 
     try {
-        // Instantiate robot node
+        // Create teleop control interface
         flexiv::tdk::JointTeleopWAN joint_teleop(local_sn, is_tcp_server, server_ip, server_port);
 
         // Run initialization sequence
         joint_teleop.Init();
 
         if (is_tcp_server) {
-            // Set 20 degrees soft limit for only one side of teleoperation
+            // Set 20 degrees soft limit for only one side of teleoperation, can be either the TCP
+            // server or the TCP client side
             joint_teleop.SetSoftLimit(20.0);
 
-            // Server stays at current pose
+            // Server side stays at current pose
             joint_teleop.SyncPose(false, {});
         } else {
-            // Client syncs pose with server
+            // Client syncs pose with server side
             joint_teleop.SyncPose(true);
         }
 
@@ -90,7 +94,7 @@ int main(int argc, char* argv[])
         // Block until faulted
         bool last_pedal_input = false;
         while (!joint_teleop.fault()) {
-            // Server is activated by pedal, client will auto sync the activation
+            // Server side is activated by pedal, client will auto sync the activation signal
             if (is_tcp_server) {
                 bool pedal_input = joint_teleop.digital_inputs()[0];
                 if (pedal_input != last_pedal_input) {
