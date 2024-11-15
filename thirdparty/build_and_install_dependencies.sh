@@ -11,7 +11,7 @@ if [ "$#" -lt 1 ]; then
     echo "Required argument: [install_directory_path]"
     echo "    install_directory_path: directory to install all dependencies, should be the same as the install directory of flexiv_tdk"
     echo "Optional argument: [num_parallel_jobs]"
-    echo "    num_parallel_jobs: number of parallel jobs used to build, if not specified, the number of CPU cores will be used"
+    echo "    num_parallel_jobs: number of parallel jobs used to build, use 4 if not specified"
     exit
 fi
 
@@ -21,9 +21,9 @@ echo "Dependencies will be installed to: $INSTALL_DIR"
 
 # Use specified number for parallel build jobs, otherwise use number of cores 
 if [ -n "$2" ] ;then
-    export NUM_JOBS=$2
+    NUM_JOBS=$2
 else
-    export NUM_JOBS=$(nproc)
+    NUM_JOBS=4
 fi
 echo "Number of parallel build jobs: $NUM_JOBS"
 
@@ -32,5 +32,10 @@ echo "Number of parallel build jobs: $NUM_JOBS"
 mkdir -p cloned && cd cloned
 
 # Build and install all dependencies to INSTALL_DIR
-bash $SCRIPTPATH/scripts/install_rdk.sh $INSTALL_DIR
+bash $SCRIPTPATH/scripts/install_spdlog.sh $INSTALL_DIR $NUM_JOBS
+bash $SCRIPTPATH/scripts/install_tinyxml2.sh $INSTALL_DIR $NUM_JOBS
+bash $SCRIPTPATH/scripts/install_foonathan_memory.sh $INSTALL_DIR $NUM_JOBS
+bash $SCRIPTPATH/scripts/install_Fast-CDR.sh $INSTALL_DIR $NUM_JOBS
+bash $SCRIPTPATH/scripts/install_Fast-DDS.sh $INSTALL_DIR $NUM_JOBS
+
 echo ">>>>>>>>>> Finished <<<<<<<<<<"

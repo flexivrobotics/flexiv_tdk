@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16.3)
 # ===================================================================
 #      PROJECT SETUP
 # ===================================================================
-project(flexiv_tdk VERSION 1.1.0)
+project(flexiv_tdk VERSION 1.2.0)
 
 # Configure build type
 if(NOT CMAKE_BUILD_TYPE)
@@ -14,39 +14,36 @@ set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Debug" "RelWithD
 # Set static library
 message("OS: ${CMAKE_SYSTEM_NAME}")
 message("Processor: ${CMAKE_SYSTEM_PROCESSOR}")
-
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64")
-    set(TELEOP_STATIC_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/lib/libflexiv_tdk.x86_64-linux-gnu.a")
+    set(TDK_STATIC_LIB "libflexiv_tdk.x86_64-linux-gnu.a")
+  elseif(${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64")
+    set(TDK_STATIC_LIB "libflexiv_tdk.aarch64-linux-gnu.a")
   else()
     message(FATAL_ERROR "Linux with ${CMAKE_SYSTEM_PROCESSOR} processor is currently not supported.")
   endif()
-else()
-  message(FATAL_ERROR "OS:${CMAKE_SYSTEM_NAME} with processor:${CMAKE_SYSTEM_PROCESSOR} is currently not supported.")
 endif()
-
-# Set install prefix to non default
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    message(FATAL_ERROR "CMAKE_INSTALL_PREFIX must be set to a non-default value.
-    Please set it explicitly using -DCMAKE_INSTALL_PREFIX=<path-to-your-install-directory> or using cmake-gui")
-endif()
-# Add to CMAKE_PREFIX_PATH so the sub-dependencies can also be found
-list(APPEND CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX})
 
 # ===================================================================
 #      PROJECT DEPENDENCIES
 # ===================================================================
-
-# OpenSSL
-find_package(OpenSSL REQUIRED)
-if(OpenSSL_FOUND)
-  message(STATUS "Found OpenSSL, version: ${OPENSSL_VERSION}, libraries: ${OPENSSL_LIBRARIES}")
+# Threads
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+if(Threads_FOUND)
+  message(STATUS "Found Threads: HAVE_PTHREAD = ${THREADS_HAVE_PTHREAD_ARG}")
 endif()
 
-# flexiv_rdk
-find_package(flexiv_rdk REQUIRED)
-if(flexiv_rdk_FOUND)
-  message(STATUS "Found flexiv_rdk: ${flexiv_rdk_DIR}")
+# spdlog
+find_package(spdlog REQUIRED)
+if(spdlog_FOUND)
+  message(STATUS "Found spdlog: ${spdlog_DIR}")
+endif()
+
+# Fast-DDS (Fast-RTPS)
+find_package(fastrtps 2.6.7 REQUIRED)
+if(fastrtps_FOUND)
+  message(STATUS "Found fastrtps: ${fastrtps_DIR}")
 endif()
 
 # ===================================================================
@@ -65,9 +62,10 @@ target_include_directories(${PROJECT_NAME} INTERFACE
 )
 
 target_link_libraries(${PROJECT_NAME} INTERFACE
-  ${TELEOP_STATIC_LIBRARY}
-  ${OPENSSL_LIBRARIES}
-  flexiv::flexiv_rdk
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/${TDK_STATIC_LIB}
+  Threads::Threads
+  spdlog::spdlog
+  fastrtps
 )
 
 # Use moderate compiler warning option 
