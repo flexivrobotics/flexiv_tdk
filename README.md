@@ -2,13 +2,7 @@
 
 ![CMake Badge](https://github.com/flexivrobotics/flexiv_tdk/actions/workflows/cmake.yml/badge.svg) ![Version](https://img.shields.io/badge/version-1.1-blue.svg) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
-Flexiv TDK (Teleoperation Development Kit) is an SDK provides C++ APIs for developing complex and customized applications involving robot-robot or device-robot teleoperation. The supported devices are listed below.
-
-## Supported devices
-
-| **Supported teleop type** | **Supported local devices** | **Supported remote devices** |
-| ------------------------- | --------------------------- | ---------------------------- |
-| robot-robot               | Rizon4s                     | Rizon4s                      |
+Flexiv TDK (Teleoperation Development Kit) is an SDK for developing customized robot-robot or device-robot teleoperation applications with Flexiv's adaptive robots. It features synchronized motions that are force-guided using high-fidelity perceptual feedback and supports both LAN (Local Area Network) and WAN (Wide Area Network, i.e. Internet) connections.
 
 ## Compatibility
 
@@ -16,60 +10,66 @@ Flexiv TDK (Teleoperation Development Kit) is an SDK provides C++ APIs for devel
 | -------------------------- | ----------------------- | ---------------------- | ------------------------- |
 | Linux (Ubuntu 20.04/22.04) | x86_64                  | C++                    | build-essential           |
 
+## Quick Start
+
+The TDK library is packed into a unified modern CMake project named ``flexiv_tdk``, which can be configured and installed using CMake on all supported OS.
+
 ### Install on Linux
 
-1. In a new Terminal, install C++ compiler, libssl-dev, net-tools, Git, and CMake (with GUI) using the package manager:
+1. In a new Terminal, install compiler kit, CMake (with GUI), Python interpreter, and Python package manager:
 
-       sudo apt install build-essential libssl-dev net-tools git cmake cmake-qt-gui -y
+       sudo apt install build-essential cmake cmake-qt-gui -y
 
 2. Choose a directory for installing ``flexiv_tdk`` library and all its dependencies. For example, a new folder named ``tdk_install`` under the home directory.
 
-3. Please ensure that your network connection is unobstructed. Then, in a new Terminal, run the provided script to compile and install all dependencies to the installation directory chosen in step 2:
+3. In a new Terminal, run the provided script to compile and install all dependencies to the installation directory chosen in step 2:
 
        cd flexiv_tdk/thirdparty
        bash build_and_install_dependencies.sh ~/tdk_install
 
-4. In a new Terminal, use CMake to configure `flexiv_tdk`:
+   NOTE: Internet connection is required for this step.
+
+4. In a new Terminal, configure ``flexiv_tdk`` library as a CMake project:
 
        cd flexiv_tdk
        mkdir build && cd build
        cmake .. -DCMAKE_INSTALL_PREFIX=~/tdk_install
 
-   NOTE: ``-D`` followed by ``CMAKE_INSTALL_PREFIX`` is a CMake parameter specifying the path of the chosen installation directory. Alternatively, this configuration step can also be done through CMake GUI.
+   NOTE: ``-D`` followed by ``CMAKE_INSTALL_PREFIX`` is a CMake parameter specifying the path of the chosen installation directory. Alternatively, this configuration step can be done using CMake GUI.
 
-5. Install `flexiv_tdk` library:
+5. Install ``flexiv_tdk`` library:
 
        cd flexiv_tdk/build
        cmake --build . --target install --config Release
 
-   NOTE: the installation of `flexiv_tdk` library is complete now. The following steps show how to link to the installed library from a user project.
+   The library will be installed to ``CMAKE_INSTALL_PREFIX`` path, which may or may not be globally discoverable by CMake.
 
-### Link to the installed library to a user project
+### Link to installed library from a user program
 
-1. To find and link to the installed `flexiv_tdk` library to a user project, using the provided example project for instance:
+After the TDK library is installed, it can be found as a CMake target and linked to from other CMake projects. Using the provided examples project for instance::
 
-       cd flexiv_tdk/example
-       mkdir build && cd build
-       cmake .. -DCMAKE_INSTALL_PREFIX=~/tdk_install
-       cmake --build . --config Release -j 4
+    cd flexiv_tdk/example
+    mkdir build && cd build
+    cmake .. -DCMAKE_INSTALL_PREFIX=~/tdk_install
+    cmake --build . --config Release -j 4
 
-   NOTE: ``-D`` followed by ``CMAKE_INSTALL_PREFIX`` tells user project's CMake where to find the installed `flexiv_tdk` library.
+NOTE: ``-D`` followed by ``CMAKE_INSTALL_PREFIX`` tells the user project's CMake where to find the installed TDK library. The instruction above applies to all supported OS.
 
-### Run tdk example
+### Run example programs
 
-1. Apply for license to run tdk. See [apply_for_license.md](./license_generator/apply_for_license.md)
+To run a compiled example program:
 
-2. Set all the robots to `Auto/Remote Mode` via Flexiv Elements, then to run the compiled example program:
+    cd flexiv_tdk/example/build
+    sudo ./<program_name> [arguments]
 
-       ./<program_name> [local_robot_serial_number] [remote_robot_serial_number] [path_to_licenseCfg.json]
-
+The exact arguments required by an example program are documented in the program's code. Also, ``sudo`` is required to grant root permissions.
 
 ## API Documentation
 
-API doc can be generated using doxygen
+The API documentation can be generated using doxygen:
 
       sudo apt install doxygen-latex graphviz
       cd flexiv_tdk
       doxygen doc/Doxyfile.in
 
-The generated API doc is under ```flexiv_tdk/doc/html ```. You can open any of the html file with your web browser to view it.
+The generated API documentation is under ``flexiv_tdk/doc/html/`` directory. Open any html file with your browser to view it.
