@@ -25,6 +25,10 @@ public:
      * in the vector represents a pair of bilaterally teleoperated robots. For example, provide 2
      * pairs of robot serial numbers to start a dual-arm teleoperation that involves 2 pairs of
      * robots. The accepted formats are: "Rizon 4s-123456" and "Rizon4s-123456".
+     * @param[in] network_interface_whitelist Limit the network interface(s) that can be used to try
+     * to establish connection with the specified robot. The whitelisted network interface is
+     * defined by its associated IPv4 address. For example, {"10.42.0.1", "192.168.2.102"}. If left
+     * empty, all available network interfaces will be tried when searching for the specified robot.
      * @throw std::invalid_argument if the format of any element in [robot_pairs_sn] is invalid.
      * @throw std::runtime_error if error occurred during construction.
      * @throw std::logic_error if one of the connected robots does not have a valid TDK license; or
@@ -33,7 +37,8 @@ public:
      * @warning This constructor blocks until the initialization sequence is successfully finished
      * and connection with all robots is established.
      */
-    CartesianTeleopLAN(const std::vector<std::pair<std::string, std::string>>& robot_pairs_sn);
+    CartesianTeleopLAN(const std::vector<std::pair<std::string, std::string>>& robot_pairs_sn,
+        const std::vector<std::string>& network_interface_whitelist = {});
     virtual ~CartesianTeleopLAN();
 
     /**

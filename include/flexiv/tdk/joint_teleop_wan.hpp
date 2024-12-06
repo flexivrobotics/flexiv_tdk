@@ -54,6 +54,14 @@ public:
      * teleoperation need to set the same address.
      * @param[in] listening_port Number of the port configured with TCP port forwarding. Both sides
      * of the teleoperation need to set the same listening port.
+     * @param[in] lan_interface_whitelist Limit the network interface(s) that can be used to try
+     * to establish connection with the local robot. The whitelisted network interface is
+     * defined by its associated IPv4 address. For example, {"10.42.0.1", "192.168.2.102"}. If left
+     * empty, all available network interfaces will be tried when searching for the local robot.
+     * @param[in] wan_interface_whitelist Limit the network interface(s) that can be used to try
+     * to establish connection with the remote robot. The whitelisted network interface is
+     * defined by its associated IPv4 address. For example, {"10.42.0.1", "192.168.2.102"}. If left
+     * empty, all available network interfaces will be tried when searching for the remote robot.
      * @throw std::invalid_argument if the format of [robot_sn] is invalid.
      * @throw std::runtime_error if error occurred during construction.
      * @throw std::logic_error if the local robot does not have a valid TDK license; or this TDK
@@ -64,7 +72,9 @@ public:
      * to be established.
      */
     JointTeleopWAN(const std::string& robot_sn, bool is_tcp_server,
-        const std::string& public_ipv4_address, unsigned int listening_port);
+        const std::string& public_ipv4_address, unsigned int listening_port,
+        const std::vector<std::string>& lan_interface_whitelist = {},
+        const std::vector<std::string>& wan_interface_whitelist = {});
     virtual ~JointTeleopWAN();
 
     /**
