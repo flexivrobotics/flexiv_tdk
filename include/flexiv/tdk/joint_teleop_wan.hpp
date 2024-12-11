@@ -177,6 +177,10 @@ public:
      */
     void SetInertiaShaping(const std::vector<std::pair<bool, double>>& shaped_joint_inertia);
 
+    /**
+     * @brief Joint-space degrees of freedom of the local robot.
+     */
+    size_t DoF() const;
 
     /**
      * @brief [Non-blocking] Whether the local robot is in fault state.

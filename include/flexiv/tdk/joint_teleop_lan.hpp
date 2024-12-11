@@ -145,6 +145,12 @@ public:
     void SetInertiaShaping(
         unsigned int idx, const std::vector<std::pair<bool, double>>& shaped_joint_inertia);
 
+    /**
+     * @brief Joint-space degrees of freedom of both robots in the specified robot pair.
+     * @param[in] idx Index of the robot pair to get DoF for. This index is the same as
+     * the index of the constructor parameter [robot_pairs_sn].
+     */
+    size_t DoF(unsigned int idx) const;
 
     /**
      * @brief [Non-blocking] Individual fault state of each connected robots.
