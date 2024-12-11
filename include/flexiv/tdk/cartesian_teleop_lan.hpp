@@ -11,6 +11,9 @@
 namespace flexiv {
 namespace tdk {
 
+/** Cartesian-space degrees of freedom */
+constexpr size_t kCartDoF = 6;
+
 /**
  * @brief Teleoperation control interface to run Cartesian-space robot-robot teleoperation for one
  * or more pairs of robots connected to the same LAN.
@@ -145,7 +148,27 @@ public:
         unsigned int idx) const;
 
     /**
-     * @brief [Non-blocking] Set reference joint positions used in the robot's null-space posture
+     * @brief [Blocking] Set Cartesian impedance properties for the specified robot pair.
+     * @param[in] idx Index of the robot pair to set properties for. This index is the same as the
+     * index of the constructor parameter [robot_pairs_sn].
+     * @param[in] K_x_ratio Cartesian stiffness ratio. Actual K_x = K_x_ratio * K_x_nom.
+     * Valid range: [0.0, 1.0].
+     * @param[in] Z_x Cartesian damping ratio. Valid range: [0.3, 0.8]. The nominal (safe) value is
+     * provided as default.
+     * @throw std::invalid_argument if [K_x_ratio] or [Z_x] contains any value outside the valid
+     * range.
+     * @throw std::logic_error if teleoperation control loop is not started yet.
+     * @throw std::runtime_error if failed to deliver the request to the connected robots.
+     * @note This function blocks until the request is successfully delivered.
+     * @note This function cannot be called before Start().
+     * @warning Changing damping ratio [Z_x] to a non-nominal value may lead to performance and
+     * stability issues, please use with caution.
+     */
+    void SetCartesianImpedance(unsigned int idx, const std::array<double, kCartDoF>& K_x_ratio,
+        const std::array<double, kCartDoF>& Z_x = {0.7, 0.7, 0.7, 0.7, 0.7, 0.7});
+
+    /**
+     * @brief [Blocking] Set reference joint positions used in the robot's null-space posture
      * control module for the specified robot pair. Call this only after Start() is triggered.
      * @param[in] idx Index of the robot pair to set null-space posture for. This index is the same
      * as the index of the constructor parameter [robot_pairs_sn].
