@@ -177,6 +177,8 @@ public:
      * @throw std::invalid_argument if [ref_positions] contains any value outside joint limits or
      * size of any input vector does not match robot DoF.
      * @throw std::logic_error if the teleoperation control loop is not started.
+     * @throw std::runtime_error if failed to deliver the request to the connected robots.
+     * @note This function blocks until the request is successfully delivered.
      * @par Null-space posture control
      * Similar to human arm, a robotic arm with redundant joint-space degree(s) of freedom (DoF > 6)
      * can change its overall posture without affecting the ongoing primary task. This is achieved
@@ -187,6 +189,26 @@ public:
      */
     void SetNullSpacePostures(
         unsigned int idx, const std::pair<std::vector<double>, std::vector<double>>& ref_positions);
+
+    /**
+     * @brief [Non-blocking] Set Cartesian inertia shaping for the specified robot pair.
+     * @param[in] idx Index of the robot pair to set inertia shaping for. This index is the same as
+     * the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] shaped_cart_inertia Flag to enable/disable inertia shaping and the corresponding
+     * shaped inertia value for each Cartesian axis in the specified robot pair, see below for more
+     * details. Valid range: > 0. Unit: \f$ [kg]:[kg·m^2] \f$.
+     * @throw std::invalid_argument if [shaped_cart_inertia] contains any value outside the valid
+     * range.
+     * @warning Robot stability is not guaranteed if inertia shaping is enabled and the values are
+     * not fine tuned, please use with caution.
+     * @par Inertia Shaping
+     * Cartesian-space inertia shaping algorithm utilizes sensor data to boost physical input from
+     * the operator, such that the robot TCP behave as if its inertia (linear and angular) becomes
+     * smaller/larger than the actual value. A small shaped inertia makes the robot TCP feel light,
+     * whereas a large shaped inertia makes the robot TCP feel heavy.
+     */
+    void SetInertiaShaping(
+        unsigned int idx, const std::array<std::pair<bool, double>, kCartDoF>& shaped_cart_inertia);
 
 private:
     class Impl;
