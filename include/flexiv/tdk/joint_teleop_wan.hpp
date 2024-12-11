@@ -143,6 +143,25 @@ public:
     void SetSoftLimit(double zone_degrees);
 
     /**
+     * @brief [Blocking] Set joint impedance properties for the local robot.
+     * @param[in] K_q_ratio Joint stiffness ratio. Actual K_q = K_q_ratio * K_q_nom.
+     * Valid range: [0.0, 1.0].
+     * @param[in] Z_q Joint damping ratio. Valid range: [0.3, 0.8]. The nominal (safe) value is
+     * provided as default.
+     * @throw std::invalid_argument if [K_q_ratio] or [Z_q] contains any value outside the valid
+     * range or size of any input vector does not match robot DoF.
+     * @throw std::logic_error if teleoperation control loop is not started yet.
+     * @throw std::runtime_error if failed to deliver the request to the connected robot.
+     * @note This function blocks until the request is successfully delivered.
+     * @note This function cannot be called before Start().
+     * @warning Changing damping ratio [Z_q] to a non-nominal value may lead to performance and
+     * stability issues, please use with caution.
+     */
+    void SetJointImpedance(const std::vector<double>& K_q_ratio,
+        const std::vector<double>& Z_q = {0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7});
+
+
+    /**
      * @brief [Non-blocking] Whether the local robot is in fault state.
      * @return True: robot has fault; false: robot normal.
      */
