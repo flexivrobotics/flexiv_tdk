@@ -125,6 +125,26 @@ public:
     void SetJointImpedance(unsigned int idx, const std::vector<double>& K_q_ratio,
         const std::vector<double>& Z_q = {0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7});
 
+    /**
+     * @brief [Non-blocking] Set joint inertia shaping for the specified robot pair.
+     * @param[in] idx Index of the robot pair to set inertia shaping for. This index is the same as
+     * the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] shaped_joint_inertia Flag to enable/disable inertia shaping and the corresponding
+     * shaped inertia value for each joint in the specified robot pair, see below for more details.
+     * Valid range: > 0. Unit: \f$ [kg·m^2] \f$.
+     * @throw std::invalid_argument if [shaped_joint_inertia] contains any value outside the valid
+     * range or its vector size does not match robot DoF.
+     * @warning Robot stability is not guaranteed if inertia shaping is enabled and the values are
+     * not fine tuned, please use with caution.
+     * @par Inertia Shaping
+     * Joint-space inertia shaping algorithm utilizes sensor data to boost physical input from the
+     * operator, such that the joints behave as if their inertia becomes smaller/larger than the
+     * actual value. A small shaped inertia makes the joint feel light, whereas a large shaped
+     * inertia makes the joint feel heavy.
+     */
+    void SetInertiaShaping(
+        unsigned int idx, const std::vector<std::pair<bool, double>>& shaped_joint_inertia);
+
 
     /**
      * @brief [Non-blocking] Individual fault state of each connected robots.
