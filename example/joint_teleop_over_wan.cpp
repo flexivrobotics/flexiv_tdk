@@ -15,6 +15,8 @@
 namespace {
 const struct option kLongOptions[] = {{"serial-number", required_argument, 0, 's'},
     {"ip", required_argument, 0, 'i'}, {"port", required_argument, 0, 'p'}, {0, 0, 0, 0}};
+const std::vector<double> kJointStiffnessRatio = {0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02};
+constexpr double kLastJointShapedInertia = 0.05;
 }
 
 void PrintHelp()
@@ -88,8 +90,17 @@ int main(int argc, char* argv[])
             joint_teleop.SyncPose(true);
         }
 
+        // Enable inertia shaping for the last joint
+        std::vector<std::pair<bool, double>> shaped_joint_inertia;
+        shaped_joint_inertia.resize(joint_teleop.DoF(), {false, 1.0});
+        shaped_joint_inertia.back() = {true, kLastJointShapedInertia};
+        joint_teleop.SetInertiaShaping(shaped_joint_inertia);
+
         // Start control loop
         joint_teleop.Start();
+
+        // Set impedance properties
+        joint_teleop.SetJointImpedance(kJointStiffnessRatio);
 
         // Block until faulted
         bool last_pedal_input = false;
