@@ -184,14 +184,16 @@ public:
     std::vector<std::pair<bool, bool>> ClearFault(unsigned int timeout_sec = 30);
 
     /**
-     * @brief [Non-blocking] Current reading from all digital input ports on the control boxes of
-     * the specified robot pair.
+     * @brief [Non-blocking] Current reading from all digital input ports (16 on the control box + 2
+     * inside the wrist connector) of the specified robot pair.
      * @param[in] idx Index of the robot pair to read from. This index is the same as the index
      * of the constructor parameter [robot_pairs_sn].
-     * @return A pair of boolean vectors whose index corresponds to that of the digital input ports
+     * @return A pair of boolean arrays whose index corresponds to that of the digital input ports
      * of the corresponding robot in the pair. True: port high; false: port low.
+     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
      */
-    const std::pair<std::vector<bool>, std::vector<bool>> digital_inputs(unsigned int idx) const;
+    const std::pair<std::array<bool, kIOPorts>, std::array<bool, kIOPorts>> digital_inputs(
+        unsigned int idx) const;
 
 private:
     class Impl;

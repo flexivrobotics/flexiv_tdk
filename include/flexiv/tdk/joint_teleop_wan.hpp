@@ -203,12 +203,12 @@ public:
     bool ClearFault(unsigned int timeout_sec = 30);
 
     /**
-     * @brief [Non-blocking] Current reading from all digital input ports on the control box of the
-     * local robot.
+     * @brief [Non-blocking] Current reading from all digital input ports (16 on the control box + 2
+     * inside the wrist connector) of the local robot.
      * @return A boolean array whose index corresponds to that of the digital input ports.
      * True: port high; false: port low.
      */
-    const std::vector<bool> digital_inputs() const;
+    const std::array<bool, kIOPorts> digital_inputs() const;
 
 private:
     class Impl;
