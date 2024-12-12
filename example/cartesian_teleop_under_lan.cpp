@@ -90,9 +90,9 @@ int main(int argc, char* argv[])
                 last_pedal_input = pedal_input;
             }
             // Sync null-space posture of the second robot to that of the first
-            auto first_robot_q = cart_teleop.joint_positions(robot_pair_idx).first;
+            auto first_robot_q = cart_teleop.robot_states(robot_pair_idx).first.q;
             cart_teleop.SetNullSpacePostures(
-                robot_pair_idx, std::pair {first_robot_q, first_robot_q});
+                robot_pair_idx, std::pair(first_robot_q, first_robot_q));
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 
