@@ -4,8 +4,8 @@
  */
 #pragma once
 
+#include "data.hpp"
 #include <string>
-#include <vector>
 #include <memory>
 
 namespace flexiv {
@@ -176,6 +176,12 @@ public:
      * inertia makes the joint feel heavy.
      */
     void SetInertiaShaping(const std::vector<std::pair<bool, double>>& shaped_joint_inertia);
+
+    /**
+     * @brief [Non-blocking] Robot states of the local robot.
+     * @return RobotStates value copy.
+     */
+    const RobotStates robot_states() const;
 
     /**
      * @brief Joint-space degrees of freedom of the local robot.

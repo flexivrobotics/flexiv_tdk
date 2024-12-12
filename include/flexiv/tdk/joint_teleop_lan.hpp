@@ -4,8 +4,8 @@
  */
 #pragma once
 
+#include "data.hpp"
 #include <string>
-#include <vector>
 #include <memory>
 
 namespace flexiv {
@@ -101,6 +101,7 @@ public:
      * @param[in] idx Index of the robot pair to set soft limit for. This index is the same as the
      * index of the constructor parameter [robot_pairs_sn].
      * @param[in] zone_degrees Size of the zone in degrees. Set to 0 to disable soft limit.
+     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
      * @note No soft limit by default.
      */
     void SetSoftLimit(unsigned int idx, double zone_degrees);
@@ -113,6 +114,7 @@ public:
      * Valid range: [0.0, 1.0].
      * @param[in] Z_q Joint damping ratio. Valid range: [0.3, 0.8]. The nominal (safe) value is
      * provided as default.
+     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
      * @throw std::invalid_argument if [K_q_ratio] or [Z_q] contains any value outside the valid
      * range or size of any input vector does not match robot DoF.
      * @throw std::logic_error if teleoperation control loop is not started yet.
@@ -132,6 +134,7 @@ public:
      * @param[in] shaped_joint_inertia Flag to enable/disable inertia shaping and the corresponding
      * shaped inertia value for each joint in the specified robot pair, see below for more details.
      * Valid range: > 0. Unit: \f$ [kg·m^2] \f$.
+     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
      * @throw std::invalid_argument if [shaped_joint_inertia] contains any value outside the valid
      * range or its vector size does not match robot DoF.
      * @warning Robot stability is not guaranteed if inertia shaping is enabled and the values are
@@ -144,6 +147,15 @@ public:
      */
     void SetInertiaShaping(
         unsigned int idx, const std::vector<std::pair<bool, double>>& shaped_joint_inertia);
+
+    /**
+     * @brief [Non-blocking] Robot states of the specified robot pair.
+     * @param[in] idx Index of the robot pair to get states for. This index is the same as the
+     * index of the constructor parameter [robot_pairs_sn].
+     * @return RobotStates value copy of the first and second robot respectively in the robot pair.
+     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
+     */
+    const std::pair<RobotStates, RobotStates> robot_states(unsigned int idx) const;
 
     /**
      * @brief Joint-space degrees of freedom of both robots in the specified robot pair.
