@@ -149,16 +149,19 @@ public:
      * @brief Joint-space degrees of freedom of both robots in the specified robot pair.
      * @param[in] idx Index of the robot pair to get DoF for. This index is the same as
      * the index of the constructor parameter [robot_pairs_sn].
+     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
      */
     size_t DoF(unsigned int idx) const;
 
     /**
-     * @brief [Non-blocking] Individual fault state of each connected robots.
-     * @return For each element in the pair vector, true: this robot has fault, false: this
-     * robot has no fault. The pattern of the pair vector is the same as the constructor
-     * parameter [robot_pairs_sn].
+     * @brief [Non-blocking] Fault state of the specified robot pair.
+     * @param[in] idx Index of the robot pair to get fault state for. This index is the same as the
+     * index of the constructor parameter [robot_pairs_sn].
+     * @return Fault state of the first and second robot respectively in the robot pair. True: has
+     * fault; false: no fault.
+     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
      */
-    std::vector<std::pair<bool, bool>> fault() const;
+    const std::pair<bool, bool> fault(unsigned int idx) const;
 
     /**
      * @brief [Non-blocking] Whether any of the connected robots is in fault state.
