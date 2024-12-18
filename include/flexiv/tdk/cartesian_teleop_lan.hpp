@@ -4,8 +4,8 @@
  */
 #pragma once
 
+#include "data.hpp"
 #include <string>
-#include <vector>
 #include <memory>
 
 namespace flexiv {
@@ -95,12 +95,89 @@ public:
     void Activate(unsigned int idx, bool activated);
 
     /**
-     * @brief [Non-blocking] Individual fault state of each connected robots.
-     * @return For each element in the pair vector, true: this robot has fault, false: this robot
-     * has no fault. The pattern of the pair vector is the same as the constructor parameter
-     * [robot_pairs_sn].
+     * @brief [Blocking] Set Cartesian impedance properties for the specified robot pair.
+     * @param[in] idx Index of the robot pair to set properties for. This index is the same as the
+     * index of the constructor parameter [robot_pairs_sn].
+     * @param[in] K_x_ratio Cartesian stiffness ratio. Actual K_x = K_x_ratio * K_x_nom.
+     * Valid range: [0.0, 1.0].
+     * @param[in] Z_x Cartesian damping ratio. Valid range: [0.3, 0.8]. The nominal (safe) value is
+     * provided as default.
+     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
+     * @throw std::invalid_argument if [K_x_ratio] or [Z_x] contains any value outside the valid
+     * range.
+     * @throw std::logic_error if teleoperation control loop is not started yet.
+     * @throw std::runtime_error if failed to deliver the request to the connected robots.
+     * @note This function blocks until the request is successfully delivered.
+     * @note This function cannot be called before Start().
+     * @warning Changing damping ratio [Z_x] to a non-nominal value may lead to performance and
+     * stability issues, please use with caution.
      */
-    std::vector<std::pair<bool, bool>> fault() const;
+    void SetCartesianImpedance(unsigned int idx, const std::array<double, kCartDoF>& K_x_ratio,
+        const std::array<double, kCartDoF>& Z_x = {0.7, 0.7, 0.7, 0.7, 0.7, 0.7});
+
+    /**
+     * @brief [Blocking] Set reference joint positions used in the robot's null-space posture
+     * control module for the specified robot pair. Call this only after Start() is triggered.
+     * @param[in] idx Index of the robot pair to set null-space posture for. This index is the same
+     * as the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] ref_positions Reference joint positions for the null-space posture control of both
+     * robots in the pair: \f$ q_{ns} \in \mathbb{R}^{n \times 1} \f$. Unit: \f$ [rad] \f$.
+     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
+     * @throw std::invalid_argument if [ref_positions] contains any value outside joint limits or
+     * size of input vector does not match robot DoF.
+     * @throw std::logic_error if the teleoperation control loop is not started.
+     * @throw std::runtime_error if failed to deliver the request to the connected robots.
+     * @note This function blocks until the request is successfully delivered.
+     * @par Null-space posture control
+     * Similar to human arm, a robotic arm with redundant joint-space degree(s) of freedom (DoF > 6)
+     * can change its overall posture without affecting the ongoing primary task. This is achieved
+     * through a technique called "null-space control". After the reference joint positions of a
+     * desired robot posture are set using this function, the robot's null-space control module will
+     * try to pull the arm as close to this posture as possible without affecting the primary
+     * Cartesian motion-force control task.
+     */
+    void SetNullSpacePostures(
+        unsigned int idx, const std::pair<std::vector<double>, std::vector<double>>& ref_positions);
+
+    /**
+     * @brief [Non-blocking] Set Cartesian inertia shaping for the specified robot pair.
+     * @param[in] idx Index of the robot pair to set inertia shaping for. This index is the same as
+     * the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] shaped_cart_inertia Flag to enable/disable inertia shaping and the corresponding
+     * shaped inertia value for each Cartesian axis in the specified robot pair, see below for more
+     * details. Valid range: > 0. Unit: \f$ [kg]:[kg·m^2] \f$.
+     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
+     * @throw std::invalid_argument if [shaped_cart_inertia] contains any value outside the valid
+     * range.
+     * @warning Robot stability is not guaranteed if inertia shaping is enabled and the values are
+     * not fine tuned, please use with caution.
+     * @par Inertia Shaping
+     * Cartesian-space inertia shaping algorithm utilizes sensor data to boost physical input from
+     * the operator, such that the robot TCP behave as if its inertia (linear and angular) becomes
+     * smaller/larger than the actual value. A small shaped inertia makes the robot TCP feel light,
+     * whereas a large shaped inertia makes the robot TCP feel heavy.
+     */
+    void SetInertiaShaping(
+        unsigned int idx, const std::array<std::pair<bool, double>, kCartDoF>& shaped_cart_inertia);
+
+    /**
+     * @brief [Non-blocking] Robot states of the specified robot pair.
+     * @param[in] idx Index of the robot pair to get states for. This index is the same as the
+     * index of the constructor parameter [robot_pairs_sn].
+     * @return RobotStates value copy of the first and second robot respectively in the robot pair.
+     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
+     */
+    const std::pair<RobotStates, RobotStates> robot_states(unsigned int idx) const;
+
+    /**
+     * @brief [Non-blocking] Fault state of the specified robot pair.
+     * @param[in] idx Index of the robot pair to get fault state for. This index is the same as the
+     * index of the constructor parameter [robot_pairs_sn].
+     * @return Fault state of the first and second robot respectively in the robot pair. True: has
+     * fault; false: no fault.
+     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
+     */
+    const std::pair<bool, bool> fault(unsigned int idx) const;
 
     /**
      * @brief [Non-blocking] Whether any of the connected robots is in fault state.
@@ -126,44 +203,16 @@ public:
     std::vector<std::pair<bool, bool>> ClearFault(unsigned int timeout_sec = 30);
 
     /**
-     * @brief [Non-blocking] Current reading from all digital input ports on the control boxes of
-     * the specified robot pair.
+     * @brief [Non-blocking] Current reading from all digital input ports (16 on the control box + 2
+     * inside the wrist connector) of the specified robot pair.
      * @param[in] idx Index of the robot pair to read from. This index is the same as the index
      * of the constructor parameter [robot_pairs_sn].
-     * @return A pair of boolean vectors whose index corresponds to that of the digital input ports
+     * @return A pair of boolean arrays whose index corresponds to that of the digital input ports
      * of the corresponding robot in the pair. True: port high; false: port low.
+     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
      */
-    const std::pair<std::vector<bool>, std::vector<bool>> digital_inputs(unsigned int idx) const;
-
-    /**
-     * @brief [Non-blocking] Current joint positions of the specified robot pair.
-     * @param[in] idx Index of the robot pair to get joint positions for. This index is the same as
-     * the index of the constructor parameter [robot_pairs_sn].
-     * @return Joint positions of the first and second robot respectively in the robot pair.
-     */
-    const std::pair<std::vector<double>, std::vector<double>> joint_positions(
+    const std::pair<std::array<bool, kIOPorts>, std::array<bool, kIOPorts>> digital_inputs(
         unsigned int idx) const;
-
-    /**
-     * @brief [Non-blocking] Set reference joint positions used in the robot's null-space posture
-     * control module for the specified robot pair. Call this only after Start() is triggered.
-     * @param[in] idx Index of the robot pair to set null-space posture for. This index is the same
-     * as the index of the constructor parameter [robot_pairs_sn].
-     * @param[in] ref_positions Reference joint positions for the null-space posture control of both
-     * robots in the pair: \f$ q_{ns} \in \mathbb{R}^{n \times 1} \f$. Unit: \f$ [rad] \f$.
-     * @throw std::invalid_argument if [ref_positions] contains any value outside joint limits or
-     * size of any input vector does not match robot DoF.
-     * @throw std::logic_error if the teleoperation control loop is not started.
-     * @par Null-space posture control
-     * Similar to human arm, a robotic arm with redundant joint-space degree(s) of freedom (DoF > 6)
-     * can change its overall posture without affecting the ongoing primary task. This is achieved
-     * through a technique called "null-space control". After the reference joint positions of a
-     * desired robot posture are set using this function, the robot's null-space control module will
-     * try to pull the arm as close to this posture as possible without affecting the primary
-     * Cartesian motion-force control task.
-     */
-    void SetNullSpacePostures(
-        unsigned int idx, const std::pair<std::vector<double>, std::vector<double>>& ref_positions);
 
 private:
     class Impl;

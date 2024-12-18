@@ -15,6 +15,8 @@
 namespace {
 const struct option kLongOptions[] = {{"first-sn", required_argument, 0, '1'},
     {"second-sn", required_argument, 0, '2'}, {0, 0, 0, 0}};
+const std::vector<double> kJointStiffnessRatio = {0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02};
+constexpr double kLastJointShapedInertia = 0.05;
 }
 
 void PrintHelp()
@@ -53,25 +55,37 @@ int main(int argc, char* argv[])
         // Create teleop control interface
         flexiv::tdk::JointTeleopLAN joint_teleop({{first_sn, second_sn}});
 
+        // Only control 1 pair of robots
+        unsigned int robot_pair_idx = 0;
+
         // Run initialization sequence
         joint_teleop.Init();
 
         // Set 20 degrees soft limit
-        joint_teleop.SetSoftLimit(0, 20.0);
+        joint_teleop.SetSoftLimit(robot_pair_idx, 20.0);
 
         // Sync pose, first robot stays still, second robot moves to its pose
-        joint_teleop.SyncPose(0, {});
+        joint_teleop.SyncPose(robot_pair_idx, {});
+
+        // Enable inertia shaping for the last joint
+        std::vector<std::pair<bool, double>> shaped_joint_inertia;
+        shaped_joint_inertia.resize(joint_teleop.DoF(robot_pair_idx), {false, 1.0});
+        shaped_joint_inertia.back() = {true, kLastJointShapedInertia};
+        joint_teleop.SetInertiaShaping(robot_pair_idx, shaped_joint_inertia);
 
         // Start control loop
         joint_teleop.Start();
+
+        // Set impedance properties
+        joint_teleop.SetJointImpedance(robot_pair_idx, kJointStiffnessRatio);
 
         // Block until faulted
         bool last_pedal_input = false;
         while (!joint_teleop.any_fault()) {
             // Activate by pedal
-            bool pedal_input = joint_teleop.digital_inputs(0).first[0];
+            bool pedal_input = joint_teleop.digital_inputs(robot_pair_idx).first[0];
             if (pedal_input != last_pedal_input) {
-                joint_teleop.Activate(0, pedal_input);
+                joint_teleop.Activate(robot_pair_idx, pedal_input);
                 last_pedal_input = pedal_input;
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
