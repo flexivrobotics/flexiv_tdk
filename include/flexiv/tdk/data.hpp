@@ -1,7 +1,7 @@
 /**
  * @file data.hpp
  * @brief Header file containing various constant expressions, data structs, and enums.
- * @copyright Copyright (C) 2016-2024 Flexiv Ltd. All Rights Reserved.
+ * @copyright Copyright (C) 2016-2025 Flexiv Ltd. All Rights Reserved.
  */
 
 #pragma once
@@ -9,6 +9,7 @@
 #include <array>
 #include <vector>
 #include <cstddef>
+#include <string>
 
 namespace flexiv {
 namespace tdk {
@@ -20,6 +21,60 @@ constexpr size_t kPoseSize = 7;
 
 /** Number of digital IO ports (16 on control box + 2 inside the wrist connector) */
 constexpr size_t kIOPorts = 18;
+
+/** Max wrench feedback scaling factor for high transparency teleop*/
+constexpr double kMaxWrenchFeedbackScale = 3;
+
+/**
+ * @brief Reference coordinate that the axis to be locked
+ */
+enum CoordType
+{
+    COORD_UNKNOWN = 0, ///> Unknown coordinate
+    COORD_TCP,         ///> TCP coordinate of local robot
+    COORD_WORLD        ///> WORLD coordinate of local robot
+};
+
+static const std::string CoordTypeStr[] = {"UNKNOWN", "TCP", "WORLD"};
+
+/**
+ * @brief Get the coordinate type of axis locking status
+ * @param[in] str string name of the coordinate
+ * @return CoordType
+ */
+static inline CoordType GetCoordType(const std::string& str)
+{
+    for (size_t i = 0; i < COORD_WORLD - COORD_UNKNOWN + 1; i++) {
+        if (str == CoordTypeStr[i]) {
+            return static_cast<CoordType>(i);
+        }
+    }
+    return COORD_UNKNOWN;
+}
+
+/**
+ * @brief Data for locking axis, including reference frame and axis to be locked.
+ * Coordinate type options are: "COORD_TCP" for TCP frame and "COORD_WORLD" for WORLD frame.
+ */
+struct AxisLock
+{
+    /**
+     * @brief Reference coordinate that the axis to be locked
+     */
+    CoordType coord = CoordType::COORD_UNKNOWN;
+
+    /**
+     * @brief Translation axis lock, the corresponding axis order is \f$ [X, Y, Z] \f$. True
+     * for locking, false for floating.
+     */
+    std::array<bool, 3> lock_trans_axis = {false, false, false};
+
+    /**
+     * @brief Orientation axis lock, the corresponding axis order is \f$ [Rx, Ry, Rz] \f$.
+     * True for locking, false for floating.
+     */
+    std::array<bool, 3> lock_ori_axis = {false, false, false};
+};
 
 /**
  * @struct RobotStates
@@ -108,13 +163,6 @@ struct RobotStates
     std::array<double, kPoseSize> tcp_pose = {};
 
     /**
-     * Desired TCP pose expressed in world frame: \f$ {^{O}T_{TCP}}_{d} \in \mathbb{R}^{7 \times 1}
-     * \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ position and \f$ \mathbb{R}^{4 \times 1} \f$
-     * quaternion: \f$ [x, y, z, q_w, q_x, q_y, q_z]^T \f$. Unit: \f$ [m]:[] \f$.
-     */
-    std::array<double, kPoseSize> tcp_pose_des = {};
-
-    /**
      * Measured TCP velocity expressed in world frame: \f$ ^{O}\dot{X} \in \mathbb{R}^{6 \times 1}
      * \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ linear velocity and \f$ \mathbb{R}^{3 \times
      * 1} \f$ angular velocity: \f$ [v_x, v_y, v_z, \omega_x, \omega_y, \omega_z]^T \f$.
@@ -164,5 +212,5 @@ struct RobotStates
     std::array<double, kCartDoF> ext_wrench_in_world_raw = {};
 };
 
-} /* namespace tdk */
-} /* namespace flexiv */
+} // namespace tdk
+} // namespace flexiv
