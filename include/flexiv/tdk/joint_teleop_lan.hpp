@@ -1,6 +1,6 @@
 /**
  * @file joint_teleop_lan.hpp
- * @copyright Copyright (C) 2016-2024 Flexiv Ltd. All Rights Reserved.
+ * @copyright Copyright (C) 2016-2025 Flexiv Ltd. All Rights Reserved.
  */
 #pragma once
 
