@@ -8,8 +8,11 @@
 #include <string>
 #include <memory>
 
+#include <flexiv/rdk/robot.hpp>
 namespace flexiv {
 namespace tdk {
+
+using namespace rdk;
 
 /**
  * @brief Teleoperation control interface that represents one participant in the joint-space
@@ -215,6 +218,12 @@ public:
      * True: port high; false: port low.
      */
     const std::array<bool, kIOPorts> digital_inputs() const;
+
+    /**
+     * @brief [Non-blocking] Pointer to the underlying rdk::Robot instance of the robot.
+     * @return Pointer to rdk::Robot instance.
+     */
+    std::shared_ptr<Robot> instance() const;
 
 private:
     class Impl;

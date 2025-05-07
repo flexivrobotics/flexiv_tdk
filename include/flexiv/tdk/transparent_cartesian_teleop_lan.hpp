@@ -8,8 +8,11 @@
 #include <string>
 #include <memory>
 
+#include <flexiv/rdk/robot.hpp>
 namespace flexiv {
 namespace tdk {
+
+using namespace rdk;
 
 /**
  * @brief Teleoperation control interface to run Cartesian-space Rizon4s-Rizon4s teleoperation for
@@ -277,6 +280,14 @@ public:
      * @return AxisLock
      */
     AxisLock GetAxisLockState(unsigned int idx);
+
+    /**
+     * @brief [Non-blocking] Pointers to the underlying rdk::Robot instances of the robot pair.
+     * @param[in] idx Index of the robot pair to get states for. This index is the same as the
+     * index of the constructor parameter [robot_pairs_sn].
+     * @return Respective pointers to rdk::Robot instances.
+     */
+    std::pair<std::shared_ptr<Robot>, std::shared_ptr<Robot>> instances(unsigned int idx) const;
 
 private:
     class Impl;

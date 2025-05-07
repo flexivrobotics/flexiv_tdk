@@ -8,8 +8,11 @@
 #include <string>
 #include <memory>
 
+#include <flexiv/rdk/robot.hpp>
 namespace flexiv {
 namespace tdk {
+
+using namespace rdk;
 
 /**
  * @brief Teleoperation control interface to use device to teleop one or more robots connected to
@@ -160,6 +163,14 @@ public:
      * @throw std::invalid_argument if [idx] exceeds total number of robots.
      */
     const std::array<bool, kIOPorts> digital_inputs(unsigned int idx) const;
+
+    /**
+     * @brief [Non-blocking] Pointer to the underlying rdk::Robot instances of the robot.
+     * @param[in] idx Index of the robot pair to get states for. This index is the same as the
+     * index of the constructor parameter [robot_sn_vec].
+     * @return Pointer to rdk::Robot instances.
+     */
+    std::shared_ptr<Robot> instance(unsigned int idx) const;
 
 private:
     class Impl;
