@@ -18,7 +18,6 @@ set(EXAMPLE_LIST
   cartesian_teleop_under_lan
   joint_teleop_over_wan
   joint_teleop_under_lan
-  gripper_ctrl_lan
 )
 
 # Find flexiv_tdk INTERFACE library
