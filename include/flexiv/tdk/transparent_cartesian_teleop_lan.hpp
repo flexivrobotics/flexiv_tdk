@@ -43,6 +43,8 @@ public:
      * any connected robot is not supported.
      * @warning This constructor blocks until the initialization sequence is successfully finished
      * and connection with all robots is established.
+     * @warning A FT sensor is required to installed on the robot, please NOT use this class if FT
+     * sensor is configured.
      */
     TransparentCartesianTeleopLAN(
         const std::vector<std::pair<std::string, std::string>>& robot_pairs_sn,
@@ -52,12 +54,14 @@ public:
     /**
      * @brief [Blocking] Get all robots ready for teleoperation. The following actions will
      * happen in sequence: a) enable robot, b) zero force/torque sensors.
+     * @param[in] limit_wrist_singular Whether to limit wrist singularity. If twisted in the wrist
+     * singularity zone, it may cause the robot to report error.
      * @throw std::runtime_error if the initialization sequence failed.
      * @note This function blocks until the initialization sequence is finished.
      * @warning This process involves sensor zeroing, please make sure the robot is not in contact
      * with anything during the process.
      */
-    void Init();
+    void Init(bool limit_wrist_singular = true);
 
     /**
      * @brief [Blocking] Start the teleoperation control loop.
