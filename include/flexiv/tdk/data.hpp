@@ -26,6 +26,57 @@ constexpr size_t kIOPorts = 18;
 /** Max wrench feedback scaling factor for high transparency teleop*/
 constexpr double kMaxWrenchFeedbackScale = 3;
 
+struct NetworkCfg
+{
+    /**
+     * @param is_tcp_server True : the machine running this instance functions as the TCP
+     * server; false: functions as the TCP client. If true, then the machine on the other side of
+     * teleoperation needs to function as the TCP client. It does not matter which side functions as
+     * the TCP server, however, the server side must configure its network router with NAT and TCP
+     * port forwarding.
+     */
+    bool is_tcp_server;
+
+    /**
+     * @param public_ipv4_address Public IPv4 address of whichever machine that functions as the
+     * TCP server. Can be obtained from https://whatismyipaddress.com/. Both sides of the
+     * teleoperation need to set the same address.
+     */
+    std::string public_ipv4_address;
+
+    /**
+     * @param listening_port Number of the port configured with TCP port forwarding. Both sides
+     * of the teleoperation need to set the same listening port.
+     */
+    unsigned int listening_port;
+
+    /**
+     * @param lan_interface_whitelist Limit the network interface(s) that can be used to try
+     * to establish connection with the robot via ethernet cable. The whitelisted network interface
+     * is defined by its associated IPv4 address. For example, {"10.42.0.1", "192.168.2.102"}. If
+     * left empty, all available network interfaces will be tried when searching for connection.
+     */
+    std::vector<std::string> lan_interface_whitelist = {};
+
+    /**
+     * @param wan_interface_whitelist Limit the network interface(s) that can be used to try
+     * to establish connection with another participant. The whitelisted network interface is
+     * defined by its associated IPv4 address. For example, {"10.42.0.1", "192.168.2.102"}. If left
+     * empty, all available network interfaces will be tried when searching for connection.
+     */
+    std::vector<std::string> wan_interface_whitelist = {};
+};
+
+/** Role for transparent cartesian teleop */
+enum Role
+{
+    UNKNOWN = 0,         ///> Unknown role.
+    LAN_TELEOP,          ///> Teleoperation in LAN.
+    WAN_TELEOP_LEADER,   ///> The leader robot operated by a human during teleoperation over WAN.
+    WAN_TELEOP_FOLLOWER, ///> The follower robot that interacts with the remote environment during
+                         /// teleoperation over WAN.
+};
+
 /**
  * @brief Motion control command struct for general device-robot teleop.
  */
@@ -40,19 +91,19 @@ private:
     std::array<double, kPoseSize> pose {};
     /**
      * @param velocity Target TCP velocity (linear and angular) in world frame: \f$
-     * ^{0}\dot{x}_d \in \mathbb{R}^{6 \times 1} \f$. Providing properly calculated target velocity
-     * can improve the robot's overall tracking performance at the cost of reduced robustness.
-     * Leaving this input 0 can maximize robustness at the cost of reduced tracking performance.
-     * Consists of \f$ \mathbb{R}^{3 \times 1} \f$ linear and \f$ \mathbb{R}^{3 \times 1} \f$
-     * angular velocity. Unit: \f$ [m/s]:[rad/s] \f$.
+     * ^{0}\dot{x}_d \in \mathbb{R}^{6 \times 1} \f$. Providing properly calculated target
+     * velocity can improve the robot's overall tracking performance at the cost of reduced
+     * robustness. Leaving this input 0 can maximize robustness at the cost of reduced tracking
+     * performance. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ linear and \f$ \mathbb{R}^{3
+     * \times 1} \f$ angular velocity. Unit: \f$ [m/s]:[rad/s] \f$.
      */
     std::array<double, kCartDoF> velocity {};
 
     /**
      * @param acceleration Target TCP acceleration (linear and angular) in world frame: \f$
      * ^{0}\ddot{x}_d \in \mathbb{R}^{6 \times 1} \f$. Feeding forward target acceleration can
-     * improve the robot's tracking performance for highly dynamic motions, but it's also okay to
-     * leave this input 0. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ linear and \f$
+     * improve the robot's tracking performance for highly dynamic motions, but it's also okay
+     * to leave this input 0. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ linear and \f$
      * \mathbb{R}^{3 \times 1} \f$ angular acceleration. Unit: \f$ [m/s^2]:[rad/s^2] \f$.
      */
     std::array<double, kCartDoF> acceleration {};
@@ -137,8 +188,8 @@ static inline CoordType GetCoordType(const std::string& str)
 
 /**
  * @brief Data for locking axis, including reference frame and axis to be locked for high
- * transparency teleop. Coordinate type options are: "COORD_TCP" for TCP frame and "COORD_WORLD" for
- * WORLD frame.
+ * transparency teleop. Coordinate type options are: "COORD_TCP" for TCP frame and "COORD_WORLD"
+ * for WORLD frame.
  */
 struct AxisLock
 {
