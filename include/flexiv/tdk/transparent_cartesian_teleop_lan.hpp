@@ -15,9 +15,11 @@ namespace tdk {
 using namespace rdk;
 
 /**
- * @brief Teleoperation control interface to run Cartesian-space Rizon4s-Rizon4s teleoperation for
- * one or more pairs of robots connected to the same LAN.  It performs synchronized, force guided
- * real-time motions and provide the operator with high-fidelity haptic feedback.
+ * @brief Teleoperation control interface to run Cartesian-space teleoperation for one or more pairs
+ * of robots connected to the same LAN.  It performs synchronized, force guided real-time motions
+ * and provide the operator with high-fidelity haptic feedback.
+ * @warning This is highly transparent Cartesian teleoperation and therefore requires the
+ * robot to be configured with a flange-end FT sensor before using this class.
  */
 class TransparentCartesianTeleopLAN
 {
@@ -205,8 +207,8 @@ public:
      * @brief [Non-blocking] Set maximum contact wrench for the remote robot of specified robot
      * pair. The controller will regulate its output to maintain contact wrench (force and moment)
      * with the environment under the set values.
-     * @param[in] idx Index of the robot pair to read from. This index is the same as the index
-     * of the constructor parameter [robot_pairs_sn].
+     * @param[in] idx Index of the robot pair to set max contact wrench for. This index is the same
+     * as the index of the constructor parameter [robot_pairs_sn].
      * @param[in] max_wrench Maximum contact wrench (force and moment): \f$ F_max \in \mathbb{R}^{6
      * \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ maximum force and \f$
      * \mathbb{R}^{3 \times 1} \f$ maximum moment: \f$ [f_x, f_y, f_z, m_x, m_y, m_z]^T \f$. Unit:
@@ -216,6 +218,39 @@ public:
      */
     void SetRemoteMaxContactWrench(
         unsigned int idx, const std::array<double, kCartDoF>& max_wrench);
+
+    /**
+     * @brief [Blocking] Set stiffness of the Cartesian motion controller of the remote robot in
+     * specified robot pair.
+     * @param[in] idx Index of the robot pair to set Cartesian stiffness for. This index is the same
+     * as the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] stiff_scale A scale ratio to default Cartesian motion stiffness: \f$ K_x \in
+     * \mathbb{R}^{6 \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ linear stiffness and
+     * \f$ \mathbb{R}^{3 \times 1} \f$ angular stiffness: \f$ [k_x, k_y, k_z, k_{Rx}, k_{Ry},
+     * k_{Rz}]^T \f$. Valid range: [0, 1]. Unit: \f$ [N/m]:[Nm/rad] \f$.
+     * @throw std::invalid_argument if outside the valid range.
+     * @throw std::logic_error if teleop is not initialized.
+     * @note Generally, the user does not need to adjust the stiffness of the remote robot. In
+     * particular, when the remote robot is in contact with a workpiece with high stiffness, the
+     * stiffness needs to be adjusted to a relatively low level. This depends on the specific
+     * application.
+     * @note This function blocks until the request is successfully delivered.
+     */
+    void SetRemoteCartStiff(unsigned int idx, double stiff_scale);
+
+    /**
+     * @brief [Blocking] Set stiffness of the remote robot's Cartesian motion controller.
+     * @param[in] idx Index of the robot pair to set Cartesian stiffness for. This index is the same
+     * as the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] K_x Cartesian motion stiffness: \f$ K_x \in \mathbb{R}^{6 \times 1} \f$.
+     * Consists of \f$ \mathbb{R}^{3 \times 1} \f$ linear stiffness and \f$
+     * \mathbb{R}^{3 \times 1} \f$ angular stiffness: \f$ [k_x, k_y, k_z, k_{Rx}, k_{Ry}, k_{Rz}]^T
+     * \f$. Valid range: [0, RobotInfo::K_x_nom]. Unit: \f$ [N/m]:[Nm/rad] \f$.
+     * @throw std::invalid_argument if any value outside the valid range.
+     * @throw std::logic_error if teleop is not initialized.
+     * @note This function blocks until the request is successfully delivered.
+     */
+    void SetRemoteCartStiff(unsigned int idx, const std::array<double, kCartDoF>& K_x);
 
     /**
      * @brief [Non-blocking] Set the repulsive force in World or Tcp frame of the remote robot.
