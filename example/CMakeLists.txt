@@ -14,7 +14,8 @@ endif()
 
 # Example list
 set(EXAMPLE_LIST
-  high_transparency_teleop
+  transparent_cartesian_teleop_lan
+  transparent_cartesian_teleop_wan
   cartesian_teleop_under_lan
   joint_teleop_over_wan
   joint_teleop_under_lan
