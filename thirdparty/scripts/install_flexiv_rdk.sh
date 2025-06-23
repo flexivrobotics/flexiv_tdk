@@ -28,6 +28,7 @@ bash build_and_install_dependencies.sh $INSTALL_DIR $NUM_JOBS
 cd $ROOT_DIR
 mkdir -p build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release \
+         -DCMAKE_PREFIX_PATH=$INSTALL_DIR \
          -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR
 
 # Build and install
