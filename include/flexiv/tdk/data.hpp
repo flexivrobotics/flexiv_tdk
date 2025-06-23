@@ -26,6 +26,26 @@ constexpr size_t kIOPorts = 18;
 /** Max wrench feedback scaling factor for high transparency teleop*/
 constexpr double kMaxWrenchFeedbackScale = 3;
 
+/**
+ * @struct NetworkCfg
+ * @brief TCP Server and Client Configuration
+ * In a teleoperation-over-WAN setup, there are one robot + one edge device on each side of the
+ * teleoperation. One edge device needs to function as a TCP server while the other device functions
+ * as a TCP client. It does not matter which side is configured as TCP server or client. However,
+ * while the edge device for TCP client doesn't need any additional configuration other than
+ * connecting to the Internet, the TCP server needs to complete the following additional steps:
+ *
+ * 1. In the settings of the network router that the edge device for TCP server is connected to,
+ * enable NAT (network address translation). This is usually enabled by default on modern routers.
+ * 2. Note down the private (WAN) IPv4 address assigned to the edge device for TCP server.
+ * 3. In the router settings, add TCP port forwarding rule for the IPv4 address noted in step 2. The
+ * port number can be set to any unoccupied one. Use this port number as the [listening_port]
+ * constructor parameter for BOTH sides of teleoperation.
+ * 4. On the edge device for TCP server, open https://whatismyipaddress.com/ and note down its
+ * public IPv4 address. Use this address as the [public_ipv4_address] constructor parameter for BOTH
+ * sides of teleoperation.
+ *
+ */
 struct NetworkCfg
 {
     /**
@@ -67,7 +87,10 @@ struct NetworkCfg
     std::vector<std::string> wan_interface_whitelist = {};
 };
 
-/** Role for transparent cartesian teleop */
+/**
+ * @enum Role
+ * @brief Roles of participants in transparent cartesian teleop
+ */
 enum Role
 {
     UNKNOWN = 0,         ///> Unknown role.
@@ -78,6 +101,7 @@ enum Role
 };
 
 /**
+ * @struct MotionControlCmds
  * @brief Motion control command struct for general device-robot teleop.
  */
 struct MotionControlCmds
@@ -160,6 +184,7 @@ public:
 };
 
 /**
+ * @enum CoordType
  * @brief Reference coordinate that the axis to be locked for high transparency teleop
  */
 enum CoordType
@@ -187,6 +212,7 @@ static inline CoordType GetCoordType(const std::string& str)
 }
 
 /**
+ * @struct AxisLock
  * @brief Data for locking axis, including reference frame and axis to be locked for high
  * transparency teleop. Coordinate type options are: "COORD_TCP" for TCP frame and "COORD_WORLD"
  * for WORLD frame.
