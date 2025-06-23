@@ -1,6 +1,6 @@
 /**
  * @example joint_teleop_under_lan.cpp
- * Run joint-space robot-robot teleoperation under LAN (Local Area Network) connection.
+ * @brief joint-space robot-robot teleoperation under LAN (Local Area Network) connection.
  * @copyright Copyright (C) 2016-2025 Flexiv Ltd. All Rights Reserved.
  * @author Flexiv
  */
@@ -8,6 +8,7 @@
 #include <flexiv/tdk/joint_teleop_lan.hpp>
 
 #include <spdlog/spdlog.h>
+
 #include <getopt.h>
 #include <iostream>
 #include <thread>

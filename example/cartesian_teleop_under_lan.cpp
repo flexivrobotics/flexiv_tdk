@@ -1,6 +1,6 @@
 /**
  * @example cartesian_teleop_under_lan.cpp
- * Run Cartesian-space robot-robot teleoperation under LAN (Local Area Network) connection.
+ * @brief Cartesian-space robot-robot teleoperation under LAN (Local Area Network) connection.
  * @copyright Copyright (C) 2016-2024 Flexiv Ltd. All Rights Reserved.
  * @author Flexiv
  */
@@ -8,6 +8,7 @@
 #include <flexiv/tdk/cartesian_teleop_lan.hpp>
 
 #include <spdlog/spdlog.h>
+
 #include <getopt.h>
 #include <iostream>
 #include <thread>

@@ -1,6 +1,7 @@
 /**
  * @example joint_teleop_over_wan.cpp
- * Run joint-space robot-robot teleoperation over WAN (Wide Area Network, i.e. Internet) connection.
+ * @brief joint-space robot-robot teleoperation over WAN (Wide Area Network, i.e. Internet)
+ * connection.
  * @copyright Copyright (C) 2016-2025 Flexiv Ltd. All Rights Reserved.
  * @author Flexiv
  */
@@ -8,6 +9,7 @@
 #include <flexiv/tdk/joint_teleop_wan.hpp>
 
 #include <spdlog/spdlog.h>
+
 #include <getopt.h>
 #include <iostream>
 
