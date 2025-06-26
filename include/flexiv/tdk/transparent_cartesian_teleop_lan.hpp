@@ -122,7 +122,8 @@ public:
      * try to pull the arm as close to this posture as possible without affecting the primary
      * Cartesian motion-force control task.
      */
-    void SetLocalNullSpacePosture(unsigned int idx, const std::vector<double>& ref_joint_positions);
+    void SetLeaderNullSpacePosture(
+        unsigned int idx, const std::vector<double>& ref_joint_positions);
 
     /**
      * @brief [Blocking] Set reference joint positions used in the robot's null-space posture
@@ -147,7 +148,7 @@ public:
      * try to pull the arm as close to this posture as possible without affecting the primary
      * Cartesian motion-force control task.
      */
-    void SetRemoteNullSpacePosture(
+    void SetFollowerNullSpacePosture(
         unsigned int idx, const std::vector<double>& ref_joint_positions);
 
     /**
@@ -217,7 +218,23 @@ public:
      * @throw std::invalid_argument if [max_wrench] contains any negative value.
      * @throw std::logic_error if teleop is not initialized.
      */
-    void SetRemoteMaxContactWrench(
+    void SetFollowerMaxContactWrench(
+        unsigned int idx, const std::array<double, kCartDoF>& max_wrench);
+
+    /**
+     * @brief [Non-blocking] Set maximum contact wrench for the leader robot of specified robot
+     * pair. The controller will regulate its output to maintain contact wrench (force and moment)
+     * with the environment under the set values.
+     * @param[in] idx Index of the robot pair to set max contact wrench for. This index is the same
+     * as the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] max_wrench Maximum contact wrench (force and moment): \f$ F_max \in \mathbb{R}^{6
+     * \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ maximum force and \f$
+     * \mathbb{R}^{3 \times 1} \f$ maximum moment: \f$ [f_x, f_y, f_z, m_x, m_y, m_z]^T \f$. Unit:
+     * \f$ [N]~[Nm] \f$.
+     * @throw std::invalid_argument if [max_wrench] contains any negative value.
+     * @throw std::logic_error if teleop is not initialized.
+     */
+    void SetLeaderMaxContactWrench(
         unsigned int idx, const std::array<double, kCartDoF>& max_wrench);
 
     /**
@@ -237,7 +254,7 @@ public:
      * application.
      * @note This function blocks until the request is successfully delivered.
      */
-    void SetRemoteCartStiff(unsigned int idx, double stiff_scale);
+    void SetFollowerCartStiff(unsigned int idx, double stiff_scale);
 
     /**
      * @brief [Blocking] Set stiffness of the follower robot's Cartesian motion controller.
@@ -251,7 +268,7 @@ public:
      * @throw std::logic_error if teleop is not initialized.
      * @note This function blocks until the request is successfully delivered.
      */
-    void SetRemoteCartStiff(unsigned int idx, const std::array<double, kCartDoF>& K_x);
+    void SetFollowerCartStiff(unsigned int idx, const std::array<double, kCartDoF>& K_x);
 
     /**
      * @brief [Non-blocking] Set the repulsive force in World or Tcp frame of the follower robot.
@@ -285,11 +302,11 @@ public:
      * @throw std::invalid_argument if input scale is outside the valid range.
      * @warning Only when the user ensures that the interaction force between the follower robot
      * and workpiece is very small, such as when operating a very soft object, do they need to
-     * set the factor to be greater than 1. Or to use [SetRemoteMaxContactWrench] to limit the
+     * set the factor to be greater than 1. Or to use [SetFollowerMaxContactWrench] to limit the
      * maximum contact wrench. If the object in contact with the follower robot has high stiffness,
      * please set the factor very carefully. The higher the scale, the greater the force feedback to
      * the leader robot will be. Using a scaling factor of 1 is recommended.
-     * @see SetRemoteMaxContactWrench
+     * @see SetFollowerMaxContactWrench
      * @see kMaxWrenchFeedbackScale
      */
     void SetWrenchFeedbackScalingFactor(unsigned int idx, double factor = 1.0);
