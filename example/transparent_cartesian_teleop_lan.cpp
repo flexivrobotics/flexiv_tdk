@@ -201,19 +201,19 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
                     teleop.SetAxisLockCmd(index, cmd);
                     break;
                 case 'i':
-                    teleop.SetLocalNullSpacePosture(index, kPreferredJntPos);
+                    teleop.SetLeaderNullSpacePosture(index, kPreferredJntPos);
                     break;
                 case 'I':
-                    teleop.SetLocalNullSpacePosture(index, kHomeJntPos);
+                    teleop.SetLeaderNullSpacePosture(index, kHomeJntPos);
                     break;
                 case 'o':
-                    teleop.SetRemoteNullSpacePosture(index, kPreferredJntPos);
+                    teleop.SetFollowerNullSpacePosture(index, kPreferredJntPos);
                     break;
                 case 'O':
-                    teleop.SetRemoteNullSpacePosture(index, kHomeJntPos);
+                    teleop.SetFollowerNullSpacePosture(index, kHomeJntPos);
                     break;
                 case 'p':
-                    teleop.SetRemoteMaxContactWrench(index, kDefaultMaxContactWrench);
+                    teleop.SetFollowerMaxContactWrench(index, kDefaultMaxContactWrench);
                     break;
 
                 case 'a':
