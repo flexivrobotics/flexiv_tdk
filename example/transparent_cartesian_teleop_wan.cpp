@@ -15,31 +15,39 @@
 #include <chrono>
 #include <iostream>
 #include <thread>
+#include <optional>
 
 namespace {
-std::vector<double> kPreferredJntPos
-    = {60 * M_PI / 180.0, -60 * M_PI / 180.0, -85 * M_PI / 180.0, 115 * M_PI / 180.0,
-        70 * M_PI / 180.0, 0 * M_PI / 180.0, 0 * M_PI / 180.0}; ///< Preferred joint position
-std::vector<double> kHomeJntPos
-    = {0 * M_PI / 180.0, -40 * M_PI / 180.0, 0 * M_PI / 180.0, 90 * M_PI / 180.0, 0 * M_PI / 180.0,
-        40 * M_PI / 180.0, 0 * M_PI / 180.0}; ///< Preferred joint position
 
+/** Nullspace to a preferred posture */
+std::vector<double> kPreferredJntPos = {60 * M_PI / 180.0, -60 * M_PI / 180.0, -85 * M_PI / 180.0,
+    115 * M_PI / 180.0, 70 * M_PI / 180.0, 0 * M_PI / 180.0, 0 * M_PI / 180.0};
+
+/** Nullspace to Home posture */
+std::vector<double> kHomeJntPos = {0 * M_PI / 180.0, -40 * M_PI / 180.0, 0 * M_PI / 180.0,
+    90 * M_PI / 180.0, 0 * M_PI / 180.0, 40 * M_PI / 180.0, 0 * M_PI / 180.0};
+
+/** Maximum contact wrench for soft contact*/
 const std::array<double, flexiv::tdk::kCartDoF> kDefaultMaxContactWrench
-    = {5.0, 5.0, 5.0, 40.0, 40.0, 40.0}; ///< Maximum contact wrench
-} // namespace
+    = {5.0, 5.0, 5.0, 40.0, 40.0, 40.0};
+
+/** Atomic signal to stop console and DI reading tasks */
+std::atomic<bool> g_running {true};
+
+}
 
 void PrintHelp()
 {
     // clang-format off
-    std::cout<<"Invalid program arguments";
-    std::cout<<"     -s     [necessary] Serial number of the robot to connect with ethernet cable.";
-    std::cout<<"     -r     [necessary] Role of participants in teleop. can be [follower] or [leader]";
-    std::cout<<"     -t     [necessary] Role in the TCP connection, can be [server] or [client].";
-    std::cout<<"     -i     [necessary] Public IPV4 address of the machine that functions as TCP server.";
-    std::cout<<"     -p     [necessary] Listening port of the TCP server machine.";
-    std::cout<<"     -l     [optional] LAN interface whitelist";
-    std::cout<<"     -w     [optional] WAN interface whitelist";
-    std::cout<<"Usage: sudo ./test_transparent_teleop_wan [-s robot_serial_number] [-r leader/follower] [-t server/client] [-i server_public_ip] [-p server_port] [-l white_list_ip_of_lan_interface] [-w white_list_ip_of_wan_interface]\n";
+    std::cout<<"Invalid program arguments!"<<std::endl;
+    std::cout<<"     -s     [necessary] Serial number of the robot to connect with ethernet cable."<<std::endl;
+    std::cout<<"     -r     [necessary] Role of participants in teleop. can be [follower] or [leader]"<<std::endl;
+    std::cout<<"     -t     [necessary] Role in the TCP connection, can be [server] or [client]."<<std::endl;
+    std::cout<<"     -i     [necessary] Public IPV4 address of the machine that functions as TCP server."<<std::endl;
+    std::cout<<"     -p     [necessary] Listening port of the TCP server machine."<<std::endl;
+    std::cout<<"     -l     [optional] LAN interface whitelist"<<std::endl;
+    std::cout<<"     -w     [optional] WAN interface whitelist"<<std::endl;
+    std::cout<<"Usage: sudo ./test_transparent_teleop_wan [-s robot_serial_number] [-r leader/follower] [-t server/client] [-i server_public_ip] [-p server_port] [-l white_list_ip_of_lan_interface] [-w white_list_ip_of_wan_interface]"<<std::endl;
     // clang-format on
 }
 
@@ -61,9 +69,17 @@ const struct option kLongOptions[] = {
  */
 void ReadDigitalInputTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
 {
-    while (!teleop.fault()) {
-        teleop.Engage(teleop.digital_inputs()[0]);
+    while (g_running.load() && !teleop.fault()) {
+        try {
+            teleop.Engage(teleop.digital_inputs()[0]);
+        } catch (const std::exception& e) {
+            spdlog::error("Exception in ReadDigitalInputTask: {}", e.what());
+            g_running.store(false);
+            return;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
+    spdlog::info("ReadDigitalInputTask exiting.");
     return;
 }
 
@@ -89,16 +105,20 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
         )" << std::endl;
     };
 
-    while (!teleop.fault()) {
+    while (g_running.load() && !teleop.fault()) {
 
-        std::string userInput;
+        std::string user_input {};
 
-        // Print command menu
-        PrintCommandMenu();
+        std::getline(std::cin, user_input);
 
-        std::getline(std::cin, userInput);
+        if (user_input.empty()) {
+            spdlog::warn("Empty command!");
+            PrintCommandMenu();
+            continue;
+        }
+
         try {
-            switch (userInput[0]) {
+            switch (user_input[0]) {
                 case 'r':
                     teleop.Engage(true);
                     break;
@@ -121,10 +141,12 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
                     break;
             }
         } catch (const std::exception& e) {
-            spdlog::error(e.what());
+            spdlog::error("Exception in ConsoleTask: {}", e.what());
+            g_running.store(false);
             return;
         }
     }
+    spdlog::info("Console thread exiting.");
     return;
 }
 
@@ -224,15 +246,23 @@ int main(int argc, char* argv[])
         // Start high transparency teleop
         tctw.Start();
 
-        // Helper thread
+        // Start console_thread
         std::thread console_thread(std::bind(ConsoleTask, std::ref(tctw)));
 
+        // Start pedal_thread according to teleop_role
+        std::optional<std::thread> pedal_thread;
         if (teleop_role == "leader") {
-            std::thread pedal_thread(std::bind(ReadDigitalInputTask, std::ref(tctw)));
-            pedal_thread.join();
+            pedal_thread.emplace(ReadDigitalInputTask, std::ref(tctw));
         }
-
+        // Wait for console_thread to finish
         console_thread.join();
+
+        // Stop all threads
+        g_running = false;
+
+        if (pedal_thread && pedal_thread->joinable()) {
+            pedal_thread->join();
+        }
 
         // Exit high transparency teleop
         tctw.Stop();

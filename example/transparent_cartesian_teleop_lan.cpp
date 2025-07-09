@@ -17,25 +17,31 @@
 #include <thread>
 
 namespace {
-std::vector<double> kPreferredJntPos
-    = {60 * M_PI / 180.0, -60 * M_PI / 180.0, -85 * M_PI / 180.0, 115 * M_PI / 180.0,
-        70 * M_PI / 180.0, 0 * M_PI / 180.0, 0 * M_PI / 180.0}; ///< Preferred joint position
-std::vector<double> kHomeJntPos
-    = {0 * M_PI / 180.0, -40 * M_PI / 180.0, 0 * M_PI / 180.0, 90 * M_PI / 180.0, 0 * M_PI / 180.0,
-        40 * M_PI / 180.0, 0 * M_PI / 180.0}; ///< Preferred joint position
+/** Nullspace to a preferred posture */
+std::vector<double> kPreferredJntPos = {60 * M_PI / 180.0, -60 * M_PI / 180.0, -85 * M_PI / 180.0,
+    115 * M_PI / 180.0, 70 * M_PI / 180.0, 0 * M_PI / 180.0, 0 * M_PI / 180.0};
 
+/** Nullspace to Home posture */
+std::vector<double> kHomeJntPos = {0 * M_PI / 180.0, -40 * M_PI / 180.0, 0 * M_PI / 180.0,
+    90 * M_PI / 180.0, 0 * M_PI / 180.0, 40 * M_PI / 180.0, 0 * M_PI / 180.0};
+
+/** Maximum contact wrench for soft contact*/
 const std::array<double, flexiv::tdk::kCartDoF> kDefaultMaxContactWrench
-    = {5.0, 5.0, 5.0, 40.0, 40.0, 40.0}; ///< Maximum contact wrench
+    = {5.0, 5.0, 5.0, 40.0, 40.0, 40.0};
+
+/** Atomic signal to stop console and DI reading tasks */
+std::atomic<bool> g_running {true};
+
 } // namespace
 
 void PrintHelp()
 {
     // clang-format off
-    std::cout<<"Invalid program arguments";
-    std::cout<<"     -l     [necessary] serial number of leader robot.";
-    std::cout<<"     -f     [necessary] serial number of follower robot.";
-    std::cout<<"     -i     [optional] whitelist ip of network interface.";
-    std::cout<<"Usage: sudo ./test_transparent_teleop_lan [-l leader_robot_sn] [-f follower_robot_sn] [-i white_list_ip_of_network_interface]\n";
+    std::cout<<"Invalid program arguments!"<<std::endl;
+    std::cout<<"     -l     [necessary] serial number of leader robot."<<std::endl;
+    std::cout<<"     -f     [necessary] serial number of follower robot."<<std::endl;
+    std::cout<<"     -i     [optional] whitelist ip of network interface."<<std::endl;
+    std::cout<<"Usage: sudo ./test_transparent_teleop_lan [-l leader_robot_sn] [-f follower_robot_sn] [-i white_list_ip_of_network_interface]"<<std::endl;
     // clang-format on
 }
 
@@ -47,12 +53,20 @@ const struct option kLongOptions[] = {
     {0,                                                                 0,  0,  0 }
     // clang-format on
 };
+
 void ReadDigitalInputTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
 {
-
-    while (!teleop.any_fault()) {
-        teleop.Engage(0, teleop.digital_inputs(0).first[0]);
+    while (g_running.load() && !teleop.any_fault()) {
+        try {
+            teleop.Engage(0, teleop.digital_inputs(0).first[0]);
+        } catch (const std::exception& e) {
+            spdlog::error("Exception in ReadDigitalInputTask: {}", e.what());
+            g_running.store(false);
+            return;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
+    spdlog::info("ReadDigitalInputTask exiting.");
     return;
 }
 /**
@@ -100,15 +114,18 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
     flexiv::tdk::AxisLock cmd;
     teleop.GetAxisLockState(index, cmd);
 
-    // Print command menu
-    PrintCommandMenu();
+    while (g_running.load() && !teleop.any_fault()) {
 
-    while (!teleop.any_fault()) {
-
-        std::string userInput;
+        std::string userInput {};
 
         // Get user input
         std::getline(std::cin, userInput);
+
+        if (userInput.empty()) {
+            spdlog::warn("Empty command!");
+            PrintCommandMenu();
+            continue;
+        }
 
         try {
             switch (userInput[0]) {
@@ -229,10 +246,12 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
                     break;
             }
         } catch (const std::exception& e) {
-            spdlog::error(e.what());
+            spdlog::error("Exception in ConsoleTask: {}", e.what());
+            g_running.store(false);
             return;
         }
     }
+    spdlog::info("Console thread exiting.");
     return;
 }
 
@@ -240,11 +259,11 @@ int main(int argc, char* argv[])
 {
     std::string follower_sn {};
     std::string leader_sn {};
-    std::string white_list_ip {};
+    std::string whitelist_ip {};
     std::vector<std::string> network_interface_whitelist {};
     int opt = 0;
     int longIndex = 0;
-    while ((opt = getopt_long_only(argc, argv, "", kLongOptions, &longIndex)) != -1) {
+    while ((opt = getopt_long_only(argc, argv, "f:l:i:", kLongOptions, &longIndex)) != -1) {
         switch (opt) {
             case 'f':
                 follower_sn = std::string(optarg);
@@ -253,8 +272,8 @@ int main(int argc, char* argv[])
                 leader_sn = std::string(optarg);
                 break;
             case 'i':
-                white_list_ip = std::string(optarg);
-                network_interface_whitelist.emplace_back(white_list_ip);
+                whitelist_ip = std::string(optarg);
+                network_interface_whitelist.emplace_back(whitelist_ip);
                 break;
             default:
                 PrintHelp();
