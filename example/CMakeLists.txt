@@ -22,7 +22,10 @@ set(EXAMPLE_LIST
 )
 
 # Find flexiv_tdk INTERFACE library
-find_package(flexiv_tdk REQUIRED)
+find_package(flexiv_tdk 1.4.0 EXACT REQUIRED)
+if(flexiv_tdk_FOUND)
+  message(STATUS "Found flexiv_tdk: ${flexiv_tdk_DIR}, version: ${flexiv_tdk_VERSION}")
+endif()
 
 # Build all selected examples
 foreach(example ${EXAMPLE_LIST})

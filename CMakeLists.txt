@@ -35,9 +35,9 @@ if(Threads_FOUND)
 endif()
 
 # Flexiv RDK
-find_package(flexiv_rdk REQUIRED)
+find_package(flexiv_rdk 1.7.0 EXACT REQUIRED)
 if(flexiv_rdk_FOUND)
-  message(STATUS "Found flexiv_rdk: ${flexiv_rdk_DIR}")
+  message(STATUS "Found flexiv_rdk: ${flexiv_rdk_DIR}, version: ${flexiv_rdk_VERSION}")
 endif()
 
 # ===================================================================
