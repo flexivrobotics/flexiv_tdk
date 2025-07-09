@@ -3,7 +3,7 @@ set -e
 echo "Installing flexiv_rdk"
 
 # Use a specific version
-GIT_TAG=release/v1.7
+GIT_TAG=v1.7
 
 # Get install directory and number of parallel build jobs as script arguments
 INSTALL_DIR=$1
