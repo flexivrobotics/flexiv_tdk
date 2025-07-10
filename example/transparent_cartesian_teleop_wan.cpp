@@ -45,9 +45,9 @@ void PrintHelp()
     std::cout<<"     -t     [necessary] Role in the TCP connection, can be [server] or [client]."<<std::endl;
     std::cout<<"     -i     [necessary] Public IPV4 address of the machine that functions as TCP server."<<std::endl;
     std::cout<<"     -p     [necessary] Listening port of the TCP server machine."<<std::endl;
-    std::cout<<"     -l     [optional] LAN interface whitelist"<<std::endl;
-    std::cout<<"     -w     [optional] WAN interface whitelist"<<std::endl;
-    std::cout<<"Usage: sudo ./test_transparent_teleop_wan [-s robot_serial_number] [-r leader/follower] [-t server/client] [-i server_public_ip] [-p server_port] [-l white_list_ip_of_lan_interface] [-w white_list_ip_of_wan_interface]"<<std::endl;
+    std::cout<<"     -l     [optional] The ip address of the network card connected to the robot." << std::endl;
+    std::cout<<"     -w     [optional] The ip address of the network card connected to the Internet." << std::endl;
+    std::cout<<"Usage: sudo ./transparent_cartesian_teleop_wan [-s robot_serial_number] [-r leader/follower] [-t server/client] [-i server_public_ip] [-p server_port] [-l white_list_ip_of_lan_interface] [-w white_list_ip_of_wan_interface]"<<std::endl;
     // clang-format on
 }
 

@@ -40,8 +40,8 @@ void PrintHelp()
     std::cout<<"Invalid program arguments!"<<std::endl;
     std::cout<<"     -l     [necessary] serial number of leader robot."<<std::endl;
     std::cout<<"     -f     [necessary] serial number of follower robot."<<std::endl;
-    std::cout<<"     -i     [optional] whitelist ip of network interface."<<std::endl;
-    std::cout<<"Usage: sudo ./test_transparent_teleop_lan [-l leader_robot_sn] [-f follower_robot_sn] [-i white_list_ip_of_network_interface]"<<std::endl;
+    std::cout<<"     -i     [optional] The ip address of the network card connected to the robot." << std::endl;
+    std::cout<<"Usage: sudo ./transparent_cartesian_teleop_lan [-l leader_robot_sn] [-f follower_robot_sn] [-i white_list_ip_of_network_interface]"<<std::endl;
     // clang-format on
 }
 
@@ -54,6 +54,9 @@ const struct option kLongOptions[] = {
     // clang-format on
 };
 
+/**
+ * @brief Task for monitoring DI signals and engaging teleop.
+ */
 void ReadDigitalInputTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
 {
     while (g_running.load() && !teleop.any_fault()) {
@@ -291,21 +294,21 @@ int main(int argc, char* argv[])
 
     try {
 
-        // Allocate tdk object
+        // Create teleop control interface
         flexiv::tdk::TransparentCartesianTeleopLAN tctl(
             {{leader_sn, follower_sn}}, network_interface_whitelist);
 
-        // Init high transparency teleop
+        // Run initialization sequence
         tctl.Init();
 
-        // Start high transparency teleop
+        // Start control loop
         tctl.Start();
 
-        // Helper thread
+        // Start console and pedal input threads
         std::thread console_thread(std::bind(ConsoleTask, std::ref(tctl)));
         std::thread pedal_thread(std::bind(ReadDigitalInputTask, std::ref(tctl)));
 
-        // Block main with helper thead
+        // Wait for threads to finish
         console_thread.join();
         pedal_thread.join();
 

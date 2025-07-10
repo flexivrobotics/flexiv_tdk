@@ -21,11 +21,13 @@ constexpr double kLastJointShapedInertia = 0.05;
 void PrintHelp()
 {
     // clang-format off
-    std::cout << "Usage: sudo ./test_joint_teleop_over_wan [-s serial_num] [-r server/client] [-i ip] [-p port]" << std::endl;
-    std::cout << "  -s  --serial-number    Serial number of the local robot." << std::endl;
-    std::cout << "  -r  --tcp-role         Role in the TCP connection, [server] or [client]." << std::endl;
-    std::cout << "  -i  --ip               Public IPv4 address of the TCP server machine." << std::endl;
-    std::cout << "  -p  --port             Listening port of the TCP server machine." << std::endl;
+    std::cout << "Usage: sudo ./joint_teleop_over_wan [-s serial_num] [-r server/client] [-i ip] [-p port]" << std::endl;
+    std::cout << "  -s  --serial-number    <required> Serial number of the local robot." << std::endl;
+    std::cout << "  -r  --tcp-role         <required> Role in the TCP connection, [server] or [client]." << std::endl;
+    std::cout << "  -i  --ip               <required> Public IPv4 address of the TCP server machine." << std::endl;
+    std::cout << "  -p  --port             <required> Listening port of the TCP server machine." << std::endl;
+    std::cout << "  -l  --lan-whitelist-ip <optional> The ip address of the network card connected to the robot." << std::endl;
+    std::cout << "  -w  --wan-whitelist-ip <optional> The ip address of the network card connected to the Internet." << std::endl;
     // clang-format on
 }
 
@@ -112,7 +114,7 @@ int main(int argc, char* argv[])
     spdlog::info("Start as {} on {}:{}", tcp_role, public_server_ip, server_port);
 
     try {
-        // Instantiate robot node
+        // Create teleop control interface instance
         flexiv::tdk::JointTeleopWAN joint_teleop(local_sn, network_cfg);
 
         // Run initialization sequence

@@ -24,7 +24,7 @@ constexpr std::array<double, 6> kCartDampingRatio = {0.6, 0.6, 0.6, 0.6, 0.6, 0.
 void PrintHelp()
 {
     // clang-format off
-    std::cout << "Usage: ./cartesian_teleop_under_lan [-1 serial_num] [-2 serial_num]" << std::endl;
+    std::cout << "Usage: sudo ./cartesian_teleop_under_lan [-1 serial_num] [-2 serial_num]" << std::endl;
     std::cout << "  -1  --first-sn    Serial number of the first robot." << std::endl;
     std::cout << "  -2  --second-sn   Serial number of the second robot." << std::endl;
     // clang-format on
