@@ -1,20 +1,19 @@
 /**
  * @example joint_teleop_under_lan.cpp
- * Run joint-space robot-robot teleoperation under LAN (Local Area Network) connection.
- * @copyright Copyright (C) 2016-2024 Flexiv Ltd. All Rights Reserved.
+ * @brief joint-space robot-robot teleoperation under LAN (Local Area Network) connection.
+ * @copyright Copyright (C) 2016-2025 Flexiv Ltd. All Rights Reserved.
  * @author Flexiv
  */
 
 #include <flexiv/tdk/joint_teleop_lan.hpp>
 
 #include <spdlog/spdlog.h>
+
 #include <getopt.h>
 #include <iostream>
 #include <thread>
 
 namespace {
-const struct option kLongOptions[] = {{"first-sn", required_argument, 0, '1'},
-    {"second-sn", required_argument, 0, '2'}, {0, 0, 0, 0}};
 const std::vector<double> kJointStiffnessRatio = {0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02};
 constexpr double kLastJointShapedInertia = 0.05;
 }
@@ -22,11 +21,19 @@ constexpr double kLastJointShapedInertia = 0.05;
 void PrintHelp()
 {
     // clang-format off
-    std::cout << "Usage: ./joint_teleop_under_lan [-1 serial_num] [-2 serial_num]" << std::endl;
+    std::cout << "Usage: sudo ./joint_teleop_under_lan [-1 serial_num] [-2 serial_num]" << std::endl;
     std::cout << "  -1  --first-sn    Serial number of the first robot." << std::endl;
     std::cout << "  -2  --second-sn   Serial number of the second robot." << std::endl;
     // clang-format on
 }
+
+const struct option kLongOptions[] = {
+    // clang-format off
+    {"first-sn",    required_argument, 0, '1'},
+    {"second-sn",   required_argument, 0, '2'},
+    {0,                             0, 0,  0}
+    // clang-format on
+};
 
 int main(int argc, char* argv[])
 {
