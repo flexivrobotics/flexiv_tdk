@@ -61,13 +61,12 @@ public:
      * @param[in] sync_pose Synced TCP pose expressed in world frame: \f$ ^{O}T_{TCP} \in
      * \mathbb{R}^{7 \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ position and \f$
      * \mathbb{R}^{4 \times 1} \f$ quaternion: \f$ [x, y, z, q_w, q_x, q_y, q_z]^T \f$. Unit: \f$
-     * [m]:[] \f$. If left empty, the first robot in the pair will stay at its current pose, and the
-     * second robot in the pair will move its TCP to the first robot's pose.
+     * [m]:[] \f$.
      * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
      * @throw std::logic_error if initialization sequence hasn't been triggered yet using Init().
      * @note This function blocks until the sync is finished.
      */
-    void SyncPose(unsigned int idx, const std::array<double, kCartDoF>& sync_pose = {});
+    void SyncPose(unsigned int idx, const std::array<double, kPoseSize>& sync_pose);
 
     /**
      * @brief [Blocking] Start the teleoperation control loop.

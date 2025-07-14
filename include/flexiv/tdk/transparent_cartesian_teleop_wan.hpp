@@ -15,30 +15,15 @@ namespace tdk {
 using namespace rdk;
 
 /**
- * @brief Teleoperation control interface that represents leader or follower robots in teleoperation
- * over WAN (Internet). Teleoperation is established between two robots when each of them is
- * controlled by an instance of this interface, with one set as TCP server and the other set as TCP
- * client via the constructor parameter [is_tcp_server].
- * @warning This is highly transparent Cartesian teleoperation and therefore requires the
- * robot to be configured with a flange-end FT sensor before using this class.
- * @note In the documentation of this class, "leader robot" refers to the robot interacts with human
- * operator; "follower robot" refers to the robot interacts with workpieces.
- * @par TCP Server and Client Configuration
- * In a teleoperation-over-WAN setup, there are one robot + one edge device on each side of the
- * teleoperation. One edge device needs to function as a TCP server while the other device functions
- * as a TCP client. It does not matter which side is configured as TCP server or client. However,
- * while the edge device for TCP client doesn't need any additional configuration other than
- * connecting to the Internet, the TCP server needs to complete the following additional steps:
- *
- * 1. In the settings of the network router that the edge device for TCP server is connected to,
- * enable NAT (network address translation). This is usually enabled by default on modern routers.
- * 2. Note down the private (WAN) IPv4 address assigned to the edge device for TCP server.
- * 3. In the router settings, add TCP port forwarding rule for the IPv4 address noted in step 2. The
- * port number can be set to any unoccupied one. Use this port number as the [listening_port]
- * constructor parameter for BOTH sides of teleoperation.
- * 4. On the edge device for TCP server, open https://whatismyipaddress.com/ and note down its
- * public IPv4 address. Use this address as the [public_ipv4_address] constructor parameter for BOTH
- * sides of teleoperation.
+ * @brief Teleoperation control interface that represents leader or follower robots in transparent
+ * teleoperation over WAN (Internet). Teleoperation is established between two robots when each of
+ * them is controlled by an instance of this interface, with one set as TCP server and the other set
+ * as TCP client via the parameter [is_tcp_server] in NetworkCfg.
+ * @warning This is highly transparent Cartesian teleoperation and therefore requires the robot to
+ * be configured with a flange-end FT sensor before using this class.
+ * @note In the documentation of this class, "leader robot" refers to the robot which operated by a
+ * human operator during teleoperation; "follower robot" refers to the robot interacts with
+ * workpieces.
  */
 class TransparentCartesianTeleopWAN
 {
@@ -46,22 +31,19 @@ public:
     /**
      * @brief [Blocking] Create an instance of the control interface. More than one pair of
      * teleoperated robots can be controlled at the same time, see parameter [robot_pairs_sn].
-     * @param[in] robot_sn Serial number of the local robot. The accepted formats are:
-     * "Rizon 4s-123456" and "Rizon4s-123456". There are two participants in teleoperation , one is
-     * the "leader robot", which operated by a human during teleoperation. The other robot is
-     * referred to as the "follower robot", which interacts with the remote environment during
-     * teleoperation. The role can be configured during initial process using Init().
-     * @param[in] network_cfg Network configuration including server/client, IPv4 address and
-     * listening port.
-     * @throw std::invalid_argument if the format robot_sn or any IPv4 address is invalid.
+     * @param[in] robot_sn Serial number of the robot connected via ethernet cable. The accepted
+     * formats are: "Rizon 4s-123456" and "Rizon4s-123456".
+     * @param[in] network_cfg Network configuration including server/client role configuration, IPv4
+     * address and listening port.
+     * @throw std::invalid_argument if the format robot_sn or any IPv4 address or listening port is
+     * invalid.
      * @throw std::runtime_error if error occurred during construction.
      * @throw std::logic_error if one of the connected robots does not have a valid TDK license; or
      * the version of this TDK library is incompatible with one of the connected robots; or model of
      * any connected robot is not supported.
-     * @warning This constructor blocks until the initialization sequence is successfully finished
-     * and connection with all robots is established.
-     * @warning A FT sensor is required to installed on both robots, please NOT use this class if FT
-     * sensor is not configured.
+     * @warning This constructor blocks until the connection with the robot is established and
+     * initialization sequence is successfully finished. It does not wait for the WAN connection to
+     * be established.
      */
     TransparentCartesianTeleopWAN(const std::string& robot_sn, const NetworkCfg& network_cfg);
     virtual ~TransparentCartesianTeleopWAN();
@@ -69,7 +51,10 @@ public:
     /**
      * @brief [Blocking] Get all robots ready for teleoperation. The following actions will
      * happen in sequence: a) enable robot, b) zero force/torque sensors.
-     * @param [in] role The role in transparent teleoperation over WAN.
+     * @param [in] role The role in transparent teleoperation over WAN. There are two participants
+     * in teleoperation , one is the "leader robot", which operated by a human during teleoperation.
+     * The other robot is referred to as the "follower robot", which interacts with the remote
+     * environment during teleoperation.
      * @param[in] limit_wrist_singular Whether to limit wrist singularity. If twisted in the wrist
      * singularity zone, it may cause the robot to report error.
      * @throw std::runtime_error if the initialization sequence failed.
