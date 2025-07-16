@@ -8,13 +8,18 @@
 #include <string>
 #include <memory>
 
+#include <flexiv/rdk/robot.hpp>
 namespace flexiv {
 namespace tdk {
 
+using namespace rdk;
+
 /**
- * @brief Teleoperation control interface to run Cartesian-space Rizon4s-Rizon4s teleoperation for
- * one or more pairs of robots connected to the same LAN.  It performs synchronized, force guided
- * real-time motions and provide the operator with high-fidelity haptic feedback.
+ * @brief Teleoperation control interface to run Cartesian-space teleoperation for one or more pairs
+ * of robots connected to the same LAN.  It performs synchronized, force guided real-time motions
+ * and provide the operator with high-fidelity haptic feedback.
+ * @warning This is highly transparent Cartesian teleoperation and therefore requires the
+ * robot to be configured with a flange-end FT sensor before using this class.
  */
 class TransparentCartesianTeleopLAN
 {
@@ -26,8 +31,9 @@ public:
      * in the vector represents a pair of bilaterally teleoperated robots. For example, provide 2
      * pairs of robot serial numbers to start a dual-arm teleoperation that involves 2 pairs of
      * robots. The accepted formats are: "Rizon 4s-123456" and "Rizon4s-123456". In each pair, the
-     * first robot is referred to as the "local robot", which interacts with human hands. The second
-     * robot is referred to as the "remote robot", which interacts with the workpiece.
+     * first robot is referred to as the "leader robot", which operated by human operator during
+     * teleoperation. The second robot is referred to as the "follower robot", which interacts with
+     * the workpiece.
      * @param[in] network_interface_whitelist Limit the network interface(s) that can be used to try
      * to establish connection with the specified robot. The whitelisted network interface is
      * defined by its associated IPv4 address. For example, {"10.42.0.1", "192.168.2.102"}. If left
@@ -40,6 +46,8 @@ public:
      * any connected robot is not supported.
      * @warning This constructor blocks until the initialization sequence is successfully finished
      * and connection with all robots is established.
+     * @warning A FT sensor is required to installed on the robot, please NOT use this class if FT
+     * sensor is configured.
      */
     TransparentCartesianTeleopLAN(
         const std::vector<std::pair<std::string, std::string>>& robot_pairs_sn,
@@ -49,12 +57,14 @@ public:
     /**
      * @brief [Blocking] Get all robots ready for teleoperation. The following actions will
      * happen in sequence: a) enable robot, b) zero force/torque sensors.
+     * @param[in] limit_wrist_singular Whether to limit wrist singularity. If twisted in the wrist
+     * singularity zone, it may cause the robot to report error.
      * @throw std::runtime_error if the initialization sequence failed.
      * @note This function blocks until the initialization sequence is finished.
      * @warning This process involves sensor zeroing, please make sure the robot is not in contact
      * with anything during the process.
      */
-    void Init();
+    void Init(bool limit_wrist_singular = true);
 
     /**
      * @brief [Blocking] Start the teleoperation control loop.
@@ -76,12 +86,12 @@ public:
     void Stop();
 
     /**
-     * @brief [Non-blocking] Engage/disengage the local and remote robot.
-     * TransparentCartesianTeleopLAN supports teleop local and remote robots in different
-     * configurations. When disengaged, the operators can move the local robot to the center of the
-     * workspace or re-orientated for better ergonomics. Meanwhile, the remote robot will remain
-     * stationary. When engaged again, the remote robot will only mimics the local's relative motion
-     * instead of simply mirroring the pose.
+     * @brief [Non-blocking] Engage/disengage the leader and follower robot.
+     * TransparentCartesianTeleopLAN supports teleop leader and follower robots in different
+     * configurations. When disengaged, the operators can move the leader robot to the center of the
+     * workspace or re-orientated for better ergonomics. Meanwhile, the follower robot will remain
+     * stationary. When engaged again, the follower robot will only mimics the leader's relative
+     * motion instead of simply mirroring the pose.
      * @param[in] idx Index of the robot pair to set flag for. This index is the same as the index
      * of the constructor parameter [robot_pairs_sn].
      * @param[in] engaged True to engage the teleop, false to disengage.
@@ -91,7 +101,7 @@ public:
 
     /**
      * @brief [Blocking] Set reference joint positions used in the robot's null-space posture
-     * control module for the specified local robot. By "local robot" we mean the first robot in
+     * control module for the specified leader robot. By "leader robot" we mean the first robot in
      * [robot_pairs_sn], which interacts with human hands. Call this only after Start() is
      * triggered.
      * @param[in] idx Index of the robot pair to set null-space posture for. This index is the same
@@ -112,12 +122,13 @@ public:
      * try to pull the arm as close to this posture as possible without affecting the primary
      * Cartesian motion-force control task.
      */
-    void SetLocalNullSpacePosture(unsigned int idx, const std::vector<double>& ref_joint_positions);
+    void SetLeaderNullSpacePosture(
+        unsigned int idx, const std::vector<double>& ref_joint_positions);
 
     /**
      * @brief [Blocking] Set reference joint positions used in the robot's null-space posture
-     * control module for the specified remote robot. By "remote robot" we mean the second robot in
-     * [robot_pairs_sn], which interacts with workpiece. Call this only after Start() is
+     * control module for the specified follower robot. By "follower robot" we mean the second robot
+     * in [robot_pairs_sn], which interacts with workpiece. Call this only after Start() is
      * triggered.
      * @param[in] idx Index of the robot pair to set null-space posture for. This index is the same
      * as the index of the constructor parameter [robot_pairs_sn].
@@ -137,7 +148,7 @@ public:
      * try to pull the arm as close to this posture as possible without affecting the primary
      * Cartesian motion-force control task.
      */
-    void SetRemoteNullSpacePosture(
+    void SetFollowerNullSpacePosture(
         unsigned int idx, const std::vector<double>& ref_joint_positions);
 
     /**
@@ -195,11 +206,11 @@ public:
         unsigned int idx) const;
 
     /**
-     * @brief [Non-blocking] Set maximum contact wrench for the remote robot of specified robot
+     * @brief [Non-blocking] Set maximum contact wrench for the follower robot of specified robot
      * pair. The controller will regulate its output to maintain contact wrench (force and moment)
      * with the environment under the set values.
-     * @param[in] idx Index of the robot pair to read from. This index is the same as the index
-     * of the constructor parameter [robot_pairs_sn].
+     * @param[in] idx Index of the robot pair to set max contact wrench for. This index is the same
+     * as the index of the constructor parameter [robot_pairs_sn].
      * @param[in] max_wrench Maximum contact wrench (force and moment): \f$ F_max \in \mathbb{R}^{6
      * \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ maximum force and \f$
      * \mathbb{R}^{3 \times 1} \f$ maximum moment: \f$ [f_x, f_y, f_z, m_x, m_y, m_z]^T \f$. Unit:
@@ -207,14 +218,63 @@ public:
      * @throw std::invalid_argument if [max_wrench] contains any negative value.
      * @throw std::logic_error if teleop is not initialized.
      */
-    void SetRemoteMaxContactWrench(
+    void SetFollowerMaxContactWrench(
         unsigned int idx, const std::array<double, kCartDoF>& max_wrench);
 
     /**
-     * @brief [Non-blocking] Set the repulsive force in World or Tcp frame of the remote robot.
+     * @brief [Non-blocking] Set maximum contact wrench for the leader robot of specified robot
+     * pair. The controller will regulate its output to maintain contact wrench (force and moment)
+     * with the environment under the set values.
+     * @param[in] idx Index of the robot pair to set max contact wrench for. This index is the same
+     * as the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] max_wrench Maximum contact wrench (force and moment): \f$ F_max \in \mathbb{R}^{6
+     * \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ maximum force and \f$
+     * \mathbb{R}^{3 \times 1} \f$ maximum moment: \f$ [f_x, f_y, f_z, m_x, m_y, m_z]^T \f$. Unit:
+     * \f$ [N]~[Nm] \f$.
+     * @throw std::invalid_argument if [max_wrench] contains any negative value.
+     * @throw std::logic_error if teleop is not initialized.
+     */
+    void SetLeaderMaxContactWrench(
+        unsigned int idx, const std::array<double, kCartDoF>& max_wrench);
+
+    /**
+     * @brief [Blocking] Set stiffness of the Cartesian motion controller of the follower robot in
+     * specified robot pair.
+     * @param[in] idx Index of the robot pair to set Cartesian stiffness for. This index is the same
+     * as the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] stiff_scale A scale ratio to default Cartesian motion stiffness: \f$ K_x \in
+     * \mathbb{R}^{6 \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ linear stiffness and
+     * \f$ \mathbb{R}^{3 \times 1} \f$ angular stiffness: \f$ [k_x, k_y, k_z, k_{Rx}, k_{Ry},
+     * k_{Rz}]^T \f$. Valid range: [0, 1]. Unit: \f$ [N/m]:[Nm/rad] \f$.
+     * @throw std::invalid_argument if outside the valid range.
+     * @throw std::logic_error if teleop is not initialized.
+     * @note Generally, the user does not need to adjust the stiffness of the follower robot. In
+     * particular, when the follower robot is in contact with a workpiece with high stiffness, the
+     * stiffness needs to be adjusted to a relatively low level. This depends on the specific
+     * application.
+     * @note This function blocks until the request is successfully delivered.
+     */
+    void SetFollowerCartStiff(unsigned int idx, double stiff_scale);
+
+    /**
+     * @brief [Blocking] Set stiffness of the follower robot's Cartesian motion controller.
+     * @param[in] idx Index of the robot pair to set Cartesian stiffness for. This index is the same
+     * as the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] K_x Cartesian motion stiffness: \f$ K_x \in \mathbb{R}^{6 \times 1} \f$.
+     * Consists of \f$ \mathbb{R}^{3 \times 1} \f$ linear stiffness and \f$
+     * \mathbb{R}^{3 \times 1} \f$ angular stiffness: \f$ [k_x, k_y, k_z, k_{Rx}, k_{Ry}, k_{Rz}]^T
+     * \f$. Valid range: [0, RobotInfo::K_x_nom]. Unit: \f$ [N/m]:[Nm/rad] \f$.
+     * @throw std::invalid_argument if any value outside the valid range.
+     * @throw std::logic_error if teleop is not initialized.
+     * @note This function blocks until the request is successfully delivered.
+     */
+    void SetFollowerCartStiff(unsigned int idx, const std::array<double, kCartDoF>& K_x);
+
+    /**
+     * @brief [Non-blocking] Set the repulsive force in World or Tcp frame of the follower robot.
      * @param[in] idx Index of the robot pair to set for. This index is the same as the
      * index of the constructor parameter [robot_pairs_sn].
-     * @param[in] repulsive_force The virtual repulsive force that will applied on the remote
+     * @param[in] repulsive_force The virtual repulsive force that will applied on the follower
      * robot in the specified robot pair [idx].: \f$ repulsiveF \in \mathbb{R}^{3 \times 1} \f$.
      * Consists of \f$ \mathbb{R}^{3 \times 1} \f$ repulsive force : \f$ [f_x, f_y, f_z]^T \f$.
      * Unit: \f$ [N] \f$.
@@ -235,24 +295,24 @@ public:
      * @brief[Non-blocking] Set the wrench feedback scaling factor.
      * @param[in] idx Index of the robot pair to set for. This index is the same as the
      * index of the constructor parameter [robot_pairs_sn].
-     * @param[in] factor This coefficient will scale the feedback wrench of the remote robot.
-     * Scale factor greater than 1 means that the external force received by the remote robot is
+     * @param[in] factor This coefficient will scale the feedback wrench of the follower robot.
+     * Scale factor greater than 1 means that the external force received by the follower robot is
      * amplified, otherwise it will be reduce. Setting scale to zero means no wrench feedback
      * and 1 means 100% transparency. Valid range: [0, kMaxWrenchFeedbackScale]
      * @throw std::invalid_argument if input scale is outside the valid range.
-     * @warning Only when the user ensures that the interaction force between the remote robot
+     * @warning Only when the user ensures that the interaction force between the follower robot
      * and workpiece is very small, such as when operating a very soft object, do they need to
-     * set the factor to be greater than 1. Or to use [SetRemoteMaxContactWrench] to limit the
-     * maximum contact wrench. If the object in contact with the remote robot has high stiffness,
+     * set the factor to be greater than 1. Or to use [SetFollowerMaxContactWrench] to limit the
+     * maximum contact wrench. If the object in contact with the follower robot has high stiffness,
      * please set the factor very carefully. The higher the scale, the greater the force feedback to
-     * the local robot will be. Using a scaling factor of 1 is recommended.
-     * @see SetRemoteMaxContactWrench
+     * the leader robot will be. Using a scaling factor of 1 is recommended.
+     * @see SetFollowerMaxContactWrench
      * @see kMaxWrenchFeedbackScale
      */
     void SetWrenchFeedbackScalingFactor(unsigned int idx, double factor = 1.0);
 
     /**
-     * @brief [Non-blocking] Set the local robot axis locking command.
+     * @brief [Non-blocking] Set the leader robot axis locking command.
      * @param[in] idx Index of the robot pair to set commands for. This index is the same as the
      * index of the constructor parameter [robot_pairs_sn].
      * @param[in] cmd User input command to lock the motion of the specified axis in the reference
@@ -261,15 +321,15 @@ public:
     void SetAxisLockCmd(unsigned int idx, const AxisLock& cmd);
 
     /**
-     * @brief [Non-blocking] Get the local robot axis locking status
+     * @brief [Non-blocking] Get the leader robot axis locking status
      * @param[in] idx Index of the robot pair to get state for. This index is the same as the
      * index of the constructor parameter [robot_pairs_sn].
-     * @param[out] data Current axis locking state of local robot.
+     * @param[out] data Current axis locking state of leader robot.
      */
     void GetAxisLockState(unsigned int idx, AxisLock& data);
 
     /**
-     * @brief [Non-blocking] Get the local robot axis locking status
+     * @brief [Non-blocking] Get the leader robot axis locking status
      * @param[in] idx Index of the robot pair to get states for. This index is the same as the
      * index of the constructor parameter [robot_pairs_sn].
      * @warning This fuction is less efficient than the other overloaded one as additional runtime
@@ -277,6 +337,14 @@ public:
      * @return AxisLock
      */
     AxisLock GetAxisLockState(unsigned int idx);
+
+    /**
+     * @brief [Non-blocking] Pointers to the underlying rdk::Robot instances of the robot pair.
+     * @param[in] idx Index of the robot pair to get states for. This index is the same as the
+     * index of the constructor parameter [robot_pairs_sn].
+     * @return Respective pointers to rdk::Robot instances.
+     */
+    std::pair<std::shared_ptr<Robot>, std::shared_ptr<Robot>> instances(unsigned int idx) const;
 
 private:
     class Impl;

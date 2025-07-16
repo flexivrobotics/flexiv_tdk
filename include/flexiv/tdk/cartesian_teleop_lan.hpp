@@ -7,9 +7,12 @@
 #include "data.hpp"
 #include <string>
 #include <memory>
+#include <flexiv/rdk/robot.hpp>
 
 namespace flexiv {
 namespace tdk {
+
+using namespace rdk;
 
 /**
  * @brief Teleoperation control interface to run Cartesian-space robot-robot teleoperation for one
@@ -55,16 +58,15 @@ public:
      * @brief [Blocking] Sync pose of the specified robot pair.
      * @param[in] idx Index of the robot pair to sync pose. This index is the same as the index of
      * the constructor parameter [robot_pairs_sn].
-     * @param[in] sync_positions Joint positions for both robots in pair [idx] to move to: \f$ q_0
-     * \in \mathbb{R}^{n \times 1} \f$. If left empty, the first robot in the pair will stay at its
-     * current pose, and the second robot in the pair will move to the first robot's joint
-     * positions. Unit: \f$ [rad] \f$.
+     * @param[in] sync_pose Synced TCP pose expressed in world frame: \f$ ^{O}T_{TCP} \in
+     * \mathbb{R}^{7 \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ position and \f$
+     * \mathbb{R}^{4 \times 1} \f$ quaternion: \f$ [x, y, z, q_w, q_x, q_y, q_z]^T \f$. Unit: \f$
+     * [m]:[] \f$.
      * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
-     * @throw std::invalid_argument if size of [sync_positions] does not match robot DoF.
      * @throw std::logic_error if initialization sequence hasn't been triggered yet using Init().
      * @note This function blocks until the sync is finished.
      */
-    void SyncPose(unsigned int idx, const std::vector<double>& sync_positions = {});
+    void SyncPose(unsigned int idx, const std::array<double, kPoseSize>& sync_pose);
 
     /**
      * @brief [Blocking] Start the teleoperation control loop.
@@ -213,6 +215,14 @@ public:
      */
     const std::pair<std::array<bool, kIOPorts>, std::array<bool, kIOPorts>> digital_inputs(
         unsigned int idx) const;
+
+    /**
+     * @brief [Non-blocking] Pointers to the underlying rdk::Robot instances of the robot pair.
+     * @param[in] idx Index of the robot pair to get states for. This index is the same as the
+     * index of the constructor parameter [robot_pairs_sn].
+     * @return Respective pointers to rdk::Robot instances.
+     */
+    std::pair<std::shared_ptr<Robot>, std::shared_ptr<Robot>> instances(unsigned int idx) const;
 
 private:
     class Impl;

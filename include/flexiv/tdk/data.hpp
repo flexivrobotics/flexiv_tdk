@@ -10,6 +10,7 @@
 #include <vector>
 #include <cstddef>
 #include <string>
+#include <mutex>
 
 namespace flexiv {
 namespace tdk {
@@ -26,7 +27,165 @@ constexpr size_t kIOPorts = 18;
 constexpr double kMaxWrenchFeedbackScale = 3;
 
 /**
- * @brief Reference coordinate that the axis to be locked
+ * @struct NetworkCfg
+ * @brief TCP Server and Client Configuration
+ * In a teleoperation-over-WAN setup, there are one robot + one edge device on each side of the
+ * teleoperation. One edge device needs to function as a TCP server while the other device functions
+ * as a TCP client. It does not matter which side is configured as TCP server or client. However,
+ * while the edge device for TCP client doesn't need any additional configuration other than
+ * connecting to the Internet, the TCP server needs to complete the following additional steps:
+ *
+ * 1. In the settings of the network router that the edge device for TCP server is connected to,
+ * enable NAT (network address translation). This is usually enabled by default on modern routers.
+ * 2. Note down the private (WAN) IPv4 address assigned to the edge device for TCP server.
+ * 3. In the router settings, add TCP port forwarding rule for the IPv4 address noted in step 2. The
+ * port number can be set to any unoccupied one. Use this port number as the [listening_port]
+ * constructor parameter for BOTH sides of teleoperation.
+ * 4. On the edge device for TCP server, open https://whatismyipaddress.com/ and note down its
+ * public IPv4 address. Use this address as the [public_ipv4_address] constructor parameter for BOTH
+ * sides of teleoperation.
+ *
+ */
+struct NetworkCfg
+{
+    /**
+     * @param is_tcp_server True : the machine running this instance functions as the TCP
+     * server; false: functions as the TCP client. If true, then the machine on the other side of
+     * teleoperation needs to function as the TCP client. It does not matter which side functions as
+     * the TCP server, however, the server side must configure its network router with NAT and TCP
+     * port forwarding.
+     */
+    bool is_tcp_server;
+
+    /**
+     * @param public_ipv4_address Public IPv4 address of whichever machine that functions as the
+     * TCP server. Can be obtained from https://whatismyipaddress.com/. Both sides of the
+     * teleoperation need to set the same address.
+     */
+    std::string public_ipv4_address;
+
+    /**
+     * @param listening_port Number of the port configured with TCP port forwarding. Both sides
+     * of the teleoperation need to set the same listening port.
+     */
+    unsigned int listening_port;
+
+    /**
+     * @param lan_interface_whitelist Limit the network interface(s) that can be used to try
+     * to establish connection with the robot via ethernet cable. The whitelisted network interface
+     * is defined by its associated IPv4 address. For example, {"10.42.0.1", "192.168.2.102"}. If
+     * left empty, all available network interfaces will be tried when searching for connection.
+     */
+    std::vector<std::string> lan_interface_whitelist = {};
+
+    /**
+     * @param wan_interface_whitelist Limit the network interface(s) that can be used to try
+     * to establish connection with another participant. The whitelisted network interface is
+     * defined by its associated IPv4 address. For example, {"10.42.0.1", "192.168.2.102"}. If left
+     * empty, all available network interfaces will be tried when searching for connection.
+     */
+    std::vector<std::string> wan_interface_whitelist = {};
+};
+
+/**
+ * @enum Role
+ * @brief Roles of participants in transparent cartesian teleop
+ */
+enum Role
+{
+    UNKNOWN = 0,         ///> Unknown role.
+    LAN_TELEOP,          ///> Teleoperation in LAN.
+    WAN_TELEOP_LEADER,   ///> The leader robot operated by a human during teleoperation over WAN.
+    WAN_TELEOP_FOLLOWER, ///> The follower robot that interacts with the remote environment during
+                         /// teleoperation over WAN.
+};
+
+/**
+ * @struct MotionControlCmds
+ * @brief Motion control command struct for general device-robot teleop.
+ */
+struct MotionControlCmds
+{
+private:
+    /**
+     * @param pose Target TCP pose in world frame: \f$ {^{O}T_{TCP}}_{d} \in \mathbb{R}^{7
+     * \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ position and \f$ \mathbb{R}^{4
+     * \times 1} \f$ quaternion: \f$ [x, y, z, q_w, q_x, q_y, q_z]^T \f$. Unit: \f$ [m]:[] \f$.
+     */
+    std::array<double, kPoseSize> pose {};
+    /**
+     * @param velocity Target TCP velocity (linear and angular) in world frame: \f$
+     * ^{0}\dot{x}_d \in \mathbb{R}^{6 \times 1} \f$. Providing properly calculated target
+     * velocity can improve the robot's overall tracking performance at the cost of reduced
+     * robustness. Leaving this input 0 can maximize robustness at the cost of reduced tracking
+     * performance. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ linear and \f$ \mathbb{R}^{3
+     * \times 1} \f$ angular velocity. Unit: \f$ [m/s]:[rad/s] \f$.
+     */
+    std::array<double, kCartDoF> velocity {};
+
+    /**
+     * @param acceleration Target TCP acceleration (linear and angular) in world frame: \f$
+     * ^{0}\ddot{x}_d \in \mathbb{R}^{6 \times 1} \f$. Feeding forward target acceleration can
+     * improve the robot's tracking performance for highly dynamic motions, but it's also okay
+     * to leave this input 0. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ linear and \f$
+     * \mathbb{R}^{3 \times 1} \f$ angular acceleration. Unit: \f$ [m/s^2]:[rad/s^2] \f$.
+     */
+    std::array<double, kCartDoF> acceleration {};
+
+    /**
+     * @brief mutex for thread safety.
+     */
+    mutable std::mutex mutex;
+
+public:
+    /**
+     * @brief Tread-safe read function: copy data to output parameters.
+     * @param[out] out_pose Target TCP pose in world frame.
+     * @param[out] out_velocity Target TCP velocity (linear and angular) in world frame.
+     * @param[out] out_acceleration Target TCP acceleration (linear and angular) in world frame.
+     */
+    void read(std::array<double, kPoseSize>& out_pose, std::array<double, kCartDoF>& out_velocity,
+        std::array<double, kCartDoF>& out_acceleration) const
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        out_pose = pose;
+        out_velocity = velocity;
+        out_acceleration = acceleration;
+    }
+
+    /**
+     * @brief Thread-safe write function: copy the input parameters to member variables.
+     * @param in_pose Target TCP pose in world frame.
+     * @param in_velocity Target TCP velocity (linear and angular) in world frame.
+     * @param in_acceleration Target TCP acceleration (linear and angular) in world frame.
+     */
+    void write(const std::array<double, kPoseSize>& in_pose,
+        const std::array<double, kCartDoF>& in_velocity,
+        const std::array<double, kCartDoF>& in_acceleration)
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        pose = in_pose;
+        velocity = in_velocity;
+        acceleration = in_acceleration;
+    }
+
+    /**
+     * @brief Thread-safe zero function: set all data to 0.
+     */
+    void zero()
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        pose.fill(0);
+        // q.w() = 1;
+        pose[3] = 1;
+        velocity.fill(0);
+        acceleration.fill(0);
+    }
+};
+
+/**
+ * @enum CoordType
+ * @brief Reference coordinate that the axis to be locked for high transparency teleop
  */
 enum CoordType
 {
@@ -38,7 +197,7 @@ enum CoordType
 static const std::string CoordTypeStr[] = {"UNKNOWN", "TCP", "WORLD"};
 
 /**
- * @brief Get the coordinate type of axis locking status
+ * @brief Get the coordinate type of axis locking status for high transparency teleop
  * @param[in] str string name of the coordinate
  * @return CoordType
  */
@@ -53,8 +212,10 @@ static inline CoordType GetCoordType(const std::string& str)
 }
 
 /**
- * @brief Data for locking axis, including reference frame and axis to be locked.
- * Coordinate type options are: "COORD_TCP" for TCP frame and "COORD_WORLD" for WORLD frame.
+ * @struct AxisLock
+ * @brief Data for locking axis, including reference frame and axis to be locked for high
+ * transparency teleop. Coordinate type options are: "COORD_TCP" for TCP frame and "COORD_WORLD"
+ * for WORLD frame.
  */
 struct AxisLock
 {
@@ -74,142 +235,6 @@ struct AxisLock
      * True for locking, false for floating.
      */
     std::array<bool, 3> lock_ori_axis = {false, false, false};
-};
-
-/**
- * @struct RobotStates
- * @brief Data structure containing the joint- and Cartesian-space robot states.
- * @see Robot::states().
- */
-struct RobotStates
-{
-    /**
-     * Measured joint positions of the arm using link-side encoder: \f$ q \in \mathbb{R}^{n \times
-     * 1} \f$. This is the direct measurement of joint positions, preferred for most cases. Unit:
-     * \f$ [rad] \f$.
-     */
-    std::vector<double> q = {};
-
-    /**
-     * Measured joint positions of the arm using motor-side encoder: \f$ \theta \in \mathbb{R}^{n
-     * \times 1} \f$. This is the indirect measurement of joint positions. \f$ \theta = q + \Delta
-     * \f$, where \f$ \Delta \f$ is the joint's internal deflection between motor and link. Unit:
-     * \f$ [rad] \f$.
-     */
-    std::vector<double> theta = {};
-
-    /**
-     * Measured joint velocities of the arm using link-side encoder: \f$ \dot{q} \in \mathbb{R}^{n
-     * \times 1} \f$. This is the direct but more noisy measurement of joint velocities. Unit: \f$
-     * [rad/s] \f$.
-     */
-    std::vector<double> dq = {};
-
-    /**
-     * Measured joint velocities of the arm using motor-side encoder: \f$ \dot{\theta} \in
-     * \mathbb{R}^{n \times 1} \f$. This is the indirect but less noisy measurement of joint
-     * velocities, preferred for most cases. Unit: \f$ [rad/s] \f$.
-     */
-    std::vector<double> dtheta = {};
-
-    /**
-     * Measured joint torques of the arm: \f$ \tau \in \mathbb{R}^{n \times 1} \f$. Unit: \f$ [Nm]
-     * \f$.
-     */
-    std::vector<double> tau = {};
-
-    /**
-     * Desired joint torques of the arm: \f$ \tau_{d} \in \mathbb{R}^{n \times 1} \f$. Compensation
-     * of nonlinear dynamics (gravity, centrifugal, and Coriolis) is excluded. Unit: \f$ [Nm] \f$.
-     */
-    std::vector<double> tau_des = {};
-
-    /**
-     * Numerical derivative of measured joint torques of the arm: \f$ \dot{\tau} \in \mathbb{R}^{n
-     * \times 1} \f$. Unit: \f$ [Nm/s] \f$.
-     */
-    std::vector<double> tau_dot = {};
-
-    /**
-     * Estimated external joint torques of the arm: \f$ \hat \tau_{ext} \in \mathbb{R}^{n \times 1}
-     * \f$. Produced by any external contact (with robot body or end-effector) that does not belong
-     * to the known robot model. Unit: \f$ [Nm] \f$.
-     */
-    std::vector<double> tau_ext = {};
-
-    /**
-     * Measured joint positions of the external axes (if any): \f$ q_e \in \mathbb{R}^{n_e \times 1}
-     * \f$. Unit: \f$ [rad] \f$.
-     */
-    std::vector<double> q_e = {};
-
-    /**
-     * Measured joint velocities of the external axes (if any): \f$ \dot{q}_e \in \mathbb{R}^{n_e
-     * \times 1} \f$. Unit: \f$ [rad/s] \f$.
-     */
-    std::vector<double> dq_e = {};
-
-    /**
-     * Measured joint torques of the external axes (if any): \f$ \tau_e \in \mathbb{R}^{n_e \times
-     * 1} \f$. Unit: \f$ [Nm] \f$.
-     */
-    std::vector<double> tau_e = {};
-
-    /**
-     * Measured TCP pose expressed in world frame: \f$ ^{O}T_{TCP} \in \mathbb{R}^{7 \times 1} \f$.
-     * Consists of \f$ \mathbb{R}^{3 \times 1} \f$ position and \f$ \mathbb{R}^{4 \times 1} \f$
-     * quaternion: \f$ [x, y, z, q_w, q_x, q_y, q_z]^T \f$. Unit: \f$ [m]:[] \f$.
-     */
-    std::array<double, kPoseSize> tcp_pose = {};
-
-    /**
-     * Measured TCP velocity expressed in world frame: \f$ ^{O}\dot{X} \in \mathbb{R}^{6 \times 1}
-     * \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ linear velocity and \f$ \mathbb{R}^{3 \times
-     * 1} \f$ angular velocity: \f$ [v_x, v_y, v_z, \omega_x, \omega_y, \omega_z]^T \f$.
-     * Unit: \f$ [m/s]:[rad/s] \f$.
-     */
-    std::array<double, kCartDoF> tcp_vel = {};
-
-    /**
-     * Measured flange pose expressed in world frame: \f$ ^{O}T_{flange} \in \mathbb{R}^{7 \times 1}
-     * \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ position and \f$ \mathbb{R}^{4 \times 1} \f$
-     * quaternion: \f$ [x, y, z, q_w, q_x, q_y, q_z]^T \f$. Unit: \f$ [m]:[] \f$.
-     */
-    std::array<double, kPoseSize> flange_pose = {};
-
-    /**
-     * Force-torque (FT) sensor raw reading in flange frame: \f$ ^{flange}F_{raw} \in \mathbb{R}^{6
-     * \times 1} \f$. The value is 0 if no FT sensor is installed. Consists of \f$ \mathbb{R}^{3
-     * \times 1} \f$ force and \f$ \mathbb{R}^{3 \times 1} \f$ moment: \f$ [f_x, f_y, f_z, m_x, m_y,
-     * m_z]^T \f$. Unit: \f$ [N]:[Nm] \f$.
-     */
-    std::array<double, kCartDoF> ft_sensor_raw = {};
-
-    /**
-     * Estimated external wrench applied on TCP and expressed in TCP frame: \f$ ^{TCP}F_{ext} \in
-     * \mathbb{R}^{6 \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ force and \f$
-     * \mathbb{R}^{3 \times 1} \f$ moment: \f$ [f_x, f_y, f_z, m_x, m_y, m_z]^T \f$.
-     * Unit: \f$ [N]:[Nm] \f$.
-     */
-    std::array<double, kCartDoF> ext_wrench_in_tcp = {};
-
-    /**
-     * Estimated external wrench applied on TCP and expressed in world frame: \f$ ^{0}F_{ext} \in
-     * \mathbb{R}^{6 \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ force and \f$
-     * \mathbb{R}^{3 \times 1} \f$ moment: \f$ [f_x, f_y, f_z, m_x, m_y, m_z]^T \f$.
-     * Unit: \f$ [N]:[Nm] \f$.
-     */
-    std::array<double, kCartDoF> ext_wrench_in_world = {};
-
-    /**
-     * Unfiltered version of ext_wrench_in_tcp. The data is more noisy but has no filter latency.
-     */
-    std::array<double, kCartDoF> ext_wrench_in_tcp_raw = {};
-
-    /**
-     * Unfiltered version of ext_wrench_in_world The data is more noisy but has no filter latency.
-     */
-    std::array<double, kCartDoF> ext_wrench_in_world_raw = {};
 };
 
 } // namespace tdk

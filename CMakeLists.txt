@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16.3)
 # ===================================================================
 #      PROJECT SETUP
 # ===================================================================
-project(flexiv_tdk VERSION 1.3)
+project(flexiv_tdk VERSION 1.4.0)
 
 # Configure build type
 if(NOT CMAKE_BUILD_TYPE)
@@ -34,16 +34,10 @@ if(Threads_FOUND)
   message(STATUS "Found Threads: HAVE_PTHREAD = ${THREADS_HAVE_PTHREAD_ARG}")
 endif()
 
-# spdlog
-find_package(spdlog REQUIRED)
-if(spdlog_FOUND)
-  message(STATUS "Found spdlog: ${spdlog_DIR}")
-endif()
-
-# Fast-DDS (Fast-RTPS)
-find_package(fastrtps 2.6.7 REQUIRED)
-if(fastrtps_FOUND)
-  message(STATUS "Found fastrtps: ${fastrtps_DIR}")
+# Flexiv RDK
+find_package(flexiv_rdk 1.7.0 EXACT REQUIRED)
+if(flexiv_rdk_FOUND)
+  message(STATUS "Found flexiv_rdk: ${flexiv_rdk_DIR}, version: ${flexiv_rdk_VERSION}")
 endif()
 
 # ===================================================================
@@ -64,8 +58,7 @@ target_include_directories(${PROJECT_NAME} INTERFACE
 target_link_libraries(${PROJECT_NAME} INTERFACE
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/${TDK_STATIC_LIB}
   Threads::Threads
-  spdlog::spdlog
-  fastrtps
+  flexiv::flexiv_rdk
 )
 
 # Use moderate compiler warning option 

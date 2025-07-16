@@ -8,33 +8,20 @@
 #include <string>
 #include <memory>
 
+#include <flexiv/rdk/robot.hpp>
 namespace flexiv {
 namespace tdk {
+
+using namespace rdk;
 
 /**
  * @brief Teleoperation control interface that represents one participant in the joint-space
  * robot-robot teleoperation over WAN (Internet). Teleoperation is established between two robots
  * when each of them is controlled by an instance of this interface, with one set as TCP server and
- * the other set as TCP client via the constructor parameter [is_tcp_server].
+ * the other set as TCP client via the parameter [is_tcp_server] in NetworkCfg.
  * @note In the documentation of this class, "local robot" refers to the robot represented by this
  * instance; "remote robot" refers to the robot represented by an instance on the other side of
  * teleoperation. This reference is a relative idea and is interchangeable.
- * @par TCP Server and Client Configuration
- * In a teleoperation-over-WAN setup, there are one robot + one edge device on each side of the
- * teleoperation. One edge device needs to function as a TCP server while the other device functions
- * as a TCP client. It does not matter which side is configured as TCP server or client. However,
- * while the edge device for TCP client doesn't need any additional configuration other than
- * connecting to the Internet, the TCP server needs to complete the following additional steps:
- *
- * 1. In the settings of the network router that the edge device for TCP server is connected to,
- * enable NAT (network address translation). This is usually enabled by default on modern routers.
- * 2. Note down the private (LAN) IPv4 address assigned to the edge device for TCP server.
- * 3. In the router settings, add TCP port forwarding rule for the IPv4 address noted in step 2. The
- * port number can be set to any unoccupied one. Use this port number as the [listening_port]
- * constructor parameter for BOTH sides of teleoperation.
- * 4. On the edge device for TCP server, open https://whatismyipaddress.com/ and note down its
- * public IPv4 address. Use this address as the [public_ipv4_address] constructor parameter for BOTH
- * sides of teleoperation.
  */
 class JointTeleopWAN
 {
@@ -44,25 +31,10 @@ public:
      * robot will be established, and WAN communication services will be started.
      * @param[in] robot_sn Serial number of the local robot. The accepted formats are:
      * "Rizon 4s-123456" and "Rizon4s-123456".
-     * @param[in] is_tcp_server True: the machine running this instance functions as the TCP server;
-     * false: functions as the TCP client. If true, then the machine on the other side of
-     * teleoperation needs to function as the TCP client. It does not matter which side functions as
-     * the TCP server, however, the server side must configure its network router with NAT and TCP
-     * port forwarding.
-     * @param[in] public_ipv4_address Public IPv4 address of whichever machine that functions as the
-     * TCP server. Can be obtained from https://whatismyipaddress.com/. Both sides of the
-     * teleoperation need to set the same address.
-     * @param[in] listening_port Number of the port configured with TCP port forwarding. Both sides
-     * of the teleoperation need to set the same listening port.
-     * @param[in] lan_interface_whitelist Limit the network interface(s) that can be used to try
-     * to establish connection with the local robot. The whitelisted network interface is
-     * defined by its associated IPv4 address. For example, {"10.42.0.1", "192.168.2.102"}. If left
-     * empty, all available network interfaces will be tried when searching for the local robot.
-     * @param[in] wan_interface_whitelist Limit the network interface(s) that can be used to try
-     * to establish connection with the remote robot. The whitelisted network interface is
-     * defined by its associated IPv4 address. For example, {"10.42.0.1", "192.168.2.102"}. If left
-     * empty, all available network interfaces will be tried when searching for the remote robot.
-     * @throw std::invalid_argument if the format of [robot_sn] is invalid.
+     * @param[in] network_cfg Network configuration including server/client role configuration, IPv4
+     * address and listening port.
+     * @throw std::invalid_argument if the format robot_sn or any IPv4 address or listening port is
+     * invalid.
      * @throw std::runtime_error if error occurred during construction.
      * @throw std::logic_error if the local robot does not have a valid TDK license; or this TDK
      * library version is incompatible with the local robot; or model of the local robot is not
@@ -71,10 +43,7 @@ public:
      * and connection with the local robot is established. It does not wait for the WAN connection
      * to be established.
      */
-    JointTeleopWAN(const std::string& robot_sn, bool is_tcp_server,
-        const std::string& public_ipv4_address, unsigned int listening_port,
-        const std::vector<std::string>& lan_interface_whitelist = {},
-        const std::vector<std::string>& wan_interface_whitelist = {});
+    JointTeleopWAN(const std::string& robot_sn, const NetworkCfg& network_cfg);
     virtual ~JointTeleopWAN();
 
     /**
@@ -215,6 +184,12 @@ public:
      * True: port high; false: port low.
      */
     const std::array<bool, kIOPorts> digital_inputs() const;
+
+    /**
+     * @brief [Non-blocking] Pointer to the underlying rdk::Robot instance of the robot.
+     * @return Pointer to rdk::Robot instance.
+     */
+    std::shared_ptr<Robot> instance() const;
 
 private:
     class Impl;

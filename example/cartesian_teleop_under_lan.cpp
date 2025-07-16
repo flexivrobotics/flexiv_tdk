@@ -1,6 +1,6 @@
 /**
  * @example cartesian_teleop_under_lan.cpp
- * Run Cartesian-space robot-robot teleoperation under LAN (Local Area Network) connection.
+ * @brief Cartesian-space robot-robot teleoperation under LAN (Local Area Network) connection.
  * @copyright Copyright (C) 2016-2024 Flexiv Ltd. All Rights Reserved.
  * @author Flexiv
  */
@@ -8,13 +8,12 @@
 #include <flexiv/tdk/cartesian_teleop_lan.hpp>
 
 #include <spdlog/spdlog.h>
+
 #include <getopt.h>
 #include <iostream>
 #include <thread>
 
 namespace {
-const struct option kLongOptions[] = {{"first-sn", required_argument, 0, '1'},
-    {"second-sn", required_argument, 0, '2'}, {0, 0, 0, 0}};
 /** Shaped Cartesian inertia (translation and orientation) */
 constexpr std::array<double, 6> kShapedCartInertia = {60.0, 60.0, 60.0, 20.0, 20.0, 20.0};
 /** Stiffness ratio and damping ratio (translation and orientation) */
@@ -25,11 +24,19 @@ constexpr std::array<double, 6> kCartDampingRatio = {0.6, 0.6, 0.6, 0.6, 0.6, 0.
 void PrintHelp()
 {
     // clang-format off
-    std::cout << "Usage: ./cartesian_teleop_under_lan [-1 serial_num] [-2 serial_num]" << std::endl;
+    std::cout << "Usage: sudo ./cartesian_teleop_under_lan [-1 serial_num] [-2 serial_num]" << std::endl;
     std::cout << "  -1  --first-sn    Serial number of the first robot." << std::endl;
     std::cout << "  -2  --second-sn   Serial number of the second robot." << std::endl;
     // clang-format on
 }
+
+const struct option kLongOptions[] = {
+    // clang-format off
+    {"first-sn",    required_argument, 0,'1'},
+    {"second-sn",   required_argument, 0,'2'},
+    {0,                             0, 0, 0}
+    // clang-format on
+};
 
 int main(int argc, char* argv[])
 {
@@ -64,8 +71,9 @@ int main(int argc, char* argv[])
         // Run initialization sequence
         cart_teleop.Init();
 
-        // Sync pose, first robot stays still, second robot moves to its pose
-        cart_teleop.SyncPose(robot_pair_idx, {});
+        // Sync pose, first robot stays still, second robot moves to its tcp pose
+        cart_teleop.SyncPose(
+            robot_pair_idx, cart_teleop.robot_states(robot_pair_idx).first.tcp_pose);
 
         // Enable inertia shaping for all Cartesian axes
         std::array<std::pair<bool, double>, flexiv::tdk::kCartDoF> shaped_cart_inertia;
