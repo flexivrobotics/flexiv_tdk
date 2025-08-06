@@ -40,7 +40,7 @@ public:
      * @throw std::runtime_error if error occurred during construction.
      * @throw std::logic_error if one of the connected robots does not have a valid TDK license; or
      * the version of this TDK library is incompatible with one of the connected robots; or model of
-     * any connected robot is not supported.
+     * any connected robot is not supported; or there are multiple instantiated TDK objects.
      * @warning This constructor blocks until the connection with the robot is established and
      * initialization sequence is successfully finished. It does not wait for the WAN connection to
      * be established.
@@ -50,7 +50,8 @@ public:
 
     /**
      * @brief [Blocking] Get all robots ready for teleoperation. The following actions will
-     * happen in sequence: a) enable robot, b) zero force/torque sensors.
+     * happen in sequence: a) enable robot if it's servo off, b) zero force/torque sensors, c) stop
+     * the robot and init teleop control params.
      * @param [in] role The role in transparent teleoperation over WAN. There are two participants
      * in teleoperation , one is the "leader robot", which operated by a human during teleoperation.
      * The other robot is referred to as the "follower robot", which interacts with the remote
@@ -66,21 +67,21 @@ public:
     void Init(flexiv::tdk::Role role, bool limit_wrist_singular = true);
 
     /**
-     * @brief [Blocking] Start the teleoperation control loop.
-     * @throw std::runtime_error if failed to start the teleoperation control loop.
+     * @brief [Non-Blocking] Start the teleoperation control loop.
      * @throw std::logic_error if initialization sequence hasn't been triggered yet using Init().
-     * @note This function blocks until the control loop has started running. The user might need to
-     * implement further blocking after this function returns.
      * @note None of the teleoperation participants will move until both sides are started.
      */
     void Start();
 
     /**
      * @brief [Blocking] Stop the teleoperation control loop and make all robots hold their pose.
-     * @throw std::runtime_error if failed to stop the teleoperation control loop.
-     * @note This function blocks until the control loop has stopped running and all robots in hold.
-     * @note If you do NOT want to stop the control loop but temporarily pause the teleop, you can
-     * lock/unlock all the axes, which is non-blocking. See SetAxisLockCmd.
+     * @throw std::runtime_error if failed to stop the robots.
+     * @note If users want to control a robot individually, first need to call Stop() to stop
+     * the teleop process. Whenever users want to restart teleop, the restart process should be call
+     * Init() first and then call Start().
+     * @note This function blocks until all robots stopped in hold. If users do NOT want to stop the
+     * teleop process but temporarily pause teleop, users can lock/unlock all the axes, which is
+     * non-blocking. See SetAxisLockCmd.
      */
     void Stop();
 
