@@ -43,7 +43,7 @@ public:
      * @throw std::runtime_error if error occurred during construction.
      * @throw std::logic_error if one of the connected robots does not have a valid TDK license; or
      * the version of this TDK library is incompatible with one of the connected robots; or model of
-     * any connected robot is not supported.
+     * any connected robot is not supported; or there are multiple instantiated TDK objects.
      * @warning This constructor blocks until the initialization sequence is successfully finished
      * and connection with all robots is established.
      * @warning A FT sensor is required to installed on the robot, please NOT use this class if FT
@@ -55,8 +55,23 @@ public:
     virtual ~TransparentCartesianTeleopLAN();
 
     /**
+     * @brief [Non-blocking] Whether teleop process has stopped. After teleop is started, the teleop
+     * process may stop for certain reasons. If it stops, the user needs to check the reason, then
+     * call Init() again and then call Start(). Possible reasons include: a) the user actively
+     * called Stop(); b) the robot became not operational for certain reasons; c) the control mode
+     * did not match; d) the network connection between the user's computer and the control box was
+     * unstable; e) other possible reasons
+     * @param[in] idx Index of the robot pair to init. This index is the same as the index
+     * of the constructor parameter [robot_pairs_sn].
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @return True: stopped; false: started.
+     */
+    bool stopped(unsigned int idx) const;
+
+    /**
      * @brief [Blocking] Get all robots ready for teleoperation. The following actions will
-     * happen in sequence: a) enable robot, b) zero force/torque sensors.
+     * happen in sequence: a) enable robot if it's servo off, b) zero force/torque sensors, c) stop
+     * the robot and init teleop control params.
      * @param[in] limit_wrist_singular Whether to limit wrist singularity. If twisted in the wrist
      * singularity zone, it may cause the robot to report error.
      * @throw std::runtime_error if the initialization sequence failed.
@@ -67,23 +82,66 @@ public:
     void Init(bool limit_wrist_singular = true);
 
     /**
-     * @brief [Blocking] Start the teleoperation control loop.
-     * @throw std::runtime_error if failed to start the teleoperation control loop.
+     * @brief [Non-Blocking] Start the teleoperation control loop for all robot pairs.
      * @throw std::logic_error if initialization sequence hasn't been triggered yet using Init().
-     * @note This function blocks until the control loop has started running. The user might need to
-     * implement further blocking after this function returns.
      * @note None of the teleoperation participants will move until both sides are started.
      */
     void Start();
 
     /**
      * @brief [Blocking] Stop the teleoperation control loop and make all robots hold their pose.
-     * @throw std::runtime_error if failed to stop the teleoperation control loop.
-     * @note This function blocks until the control loop has stopped running and all robots in hold.
-     * @note If you do NOT want to stop the control loop but temporarily pause the teleop, you can
-     * lock/unlock all the axes, which is non-blocking. See SetAxisLockCmd.
+     * @throw std::runtime_error if failed to stop the robots.
+     * @note If users want to control a robot individually, first need to call Stop() to stop
+     * the teleop process. Whenever users want to restart teleop, the restart process should be call
+     * Init() first and then call Start().
+     * @note This function blocks until all robots stopped in hold. If users do NOT want to stop the
+     * teleop process but temporarily pause teleop, users can lock/unlock all the axes, which is
+     * non-blocking. See SetAxisLockCmd.
      */
     void Stop();
+
+    /**
+     * @brief [Blocking] Get connected robot in specified pair ready for teleoperation. The
+     * following actions will happen in sequence: a) enable robot if it's servo off, b) zero
+     * force/torque sensors, c) stop the robot and init teleop control params.
+     * @param[in] idx Index of the robot pair to init. This index is the same as the index
+     * of the constructor parameter [robot_pairs_sn].
+     * @param[in] limit_wrist_singular Whether to limit wrist singularity. If twisted in the wrist
+     * singularity zone, it may cause the robot to report error.
+     * @throw std::runtime_error if the initialization sequence failed.
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @note This function blocks until the initialization sequence is finished.
+     * @warning This process involves sensor zeroing, please make sure the robot is not in contact
+     * with anything during the process.
+     * @see Role
+     */
+    void InitWithIdx(unsigned int idx, bool limit_wrist_singular = true);
+
+    /**
+     * @brief [Non-Blocking] Start the teleoperation control loop for the specified robot pair.
+     * @param[in] idx Index of the robot pair to start. This index is the same as the index
+     * of the constructor parameter [robot_pairs_sn].
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @throw std::logic_error if initialization sequence hasn't been triggered yet using Init().
+     * @note None of the teleoperation participants will move until both sides are started.
+     */
+    void StartWithIdx(unsigned int idx);
+
+    /**
+     * @brief [Blocking] Stop the teleoperation control loop and make robot hold their pose for
+     * specified robot pair.
+     * @param[in] idx Index of the robot pair to stop. This index is the same as the index
+     * of the constructor parameter [robot_pairs_sn].
+     * @throw std::runtime_error if failed to stop the robots.
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @note If users want to control a robot individually, first need to call Stop() to stop
+     * the teleop process. Whenever users want to restart teleop, the restart process should be call
+     * Init() first and then call Start().
+     * @note This function blocks until all robots stopped in hold. If users do NOT want to stop the
+     * teleop process but temporarily pause teleop, users can lock/unlock all the axes, which is
+     * non-blocking. See SetAxisLockCmd.
+     */
+    void StopWithIdx(unsigned int idx);
 
     /**
      * @brief [Non-blocking] Engage/disengage the leader and follower robot.
@@ -95,6 +153,8 @@ public:
      * @param[in] idx Index of the robot pair to set flag for. This index is the same as the index
      * of the constructor parameter [robot_pairs_sn].
      * @param[in] engaged True to engage the teleop, false to disengage.
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @throw std::logic_error if the teleoperation control loop is not started.
      * @note The teleop will keep disengaged by default.
      */
     void Engage(unsigned int idx, bool engaged);
@@ -216,6 +276,7 @@ public:
      * \mathbb{R}^{3 \times 1} \f$ maximum moment: \f$ [f_x, f_y, f_z, m_x, m_y, m_z]^T \f$. Unit:
      * \f$ [N]~[Nm] \f$.
      * @throw std::invalid_argument if [max_wrench] contains any negative value.
+     * @throw std::invalid_argument if [idx] is outside the valid range.
      * @throw std::logic_error if teleop is not initialized.
      */
     void SetFollowerMaxContactWrench(
@@ -232,6 +293,7 @@ public:
      * \mathbb{R}^{3 \times 1} \f$ maximum moment: \f$ [f_x, f_y, f_z, m_x, m_y, m_z]^T \f$. Unit:
      * \f$ [N]~[Nm] \f$.
      * @throw std::invalid_argument if [max_wrench] contains any negative value.
+     * @throw std::invalid_argument if [idx] is outside the valid range.
      * @throw std::logic_error if teleop is not initialized.
      */
     void SetLeaderMaxContactWrench(
@@ -266,6 +328,10 @@ public:
      * \f$. Valid range: [0, RobotInfo::K_x_nom]. Unit: \f$ [N/m]:[Nm/rad] \f$.
      * @throw std::invalid_argument if any value outside the valid range.
      * @throw std::logic_error if teleop is not initialized.
+     * @note Generally, the user does not need to adjust the stiffness of the follower robot. In
+     * particular, when the follower robot is in contact with a workpiece with high stiffness, the
+     * stiffness needs to be adjusted to a relatively low level. This depends on the specific
+     * application.
      * @note This function blocks until the request is successfully delivered.
      */
     void SetFollowerCartStiff(unsigned int idx, const std::array<double, kCartDoF>& K_x);
@@ -280,6 +346,7 @@ public:
      * Unit: \f$ [N] \f$.
      *  @param[in] in_world Flag to indicate that the repulsive force is in World frame or Tcp
      * frame. true in World frame, false in Tcp frame.
+     * @throw std::invalid_argument if [idx] is outside the valid range.
      * @note This virtual repulsive wrench will only work on those unlocked axis, and will be
      * ignored if the manipulability is not good enough.
      * @warning Overlarge or discontinuous force can cause the robot to report errors. Please use
@@ -315,6 +382,7 @@ public:
      * @brief [Non-blocking] Set the leader robot axis locking command.
      * @param[in] idx Index of the robot pair to set commands for. This index is the same as the
      * index of the constructor parameter [robot_pairs_sn].
+     * @throw std::invalid_argument if [idx] is outside the valid range.
      * @param[in] cmd User input command to lock the motion of the specified axis in the reference
      * coordinate.
      */
@@ -324,6 +392,7 @@ public:
      * @brief [Non-blocking] Get the leader robot axis locking status
      * @param[in] idx Index of the robot pair to get state for. This index is the same as the
      * index of the constructor parameter [robot_pairs_sn].
+     * @throw std::invalid_argument if [idx] is outside the valid range.
      * @param[out] data Current axis locking state of leader robot.
      */
     void GetAxisLockState(unsigned int idx, AxisLock& data);
@@ -332,6 +401,7 @@ public:
      * @brief [Non-blocking] Get the leader robot axis locking status
      * @param[in] idx Index of the robot pair to get states for. This index is the same as the
      * index of the constructor parameter [robot_pairs_sn].
+     * @throw std::invalid_argument if [idx] is outside the valid range.
      * @warning This fuction is less efficient than the other overloaded one as additional runtime
      * memory allocation and data copying are performed.
      * @return AxisLock
@@ -340,8 +410,9 @@ public:
 
     /**
      * @brief [Non-blocking] Pointers to the underlying rdk::Robot instances of the robot pair.
-     * @param[in] idx Index of the robot pair to get states for. This index is the same as the
+     * @param[in] idx Index of the robot pair to get rdk instance for. This index is the same as the
      * index of the constructor parameter [robot_pairs_sn].
+     * @throw std::invalid_argument if [idx] is outside the valid range.
      * @return Respective pointers to rdk::Robot instances.
      */
     std::pair<std::shared_ptr<Robot>, std::shared_ptr<Robot>> instances(unsigned int idx) const;
