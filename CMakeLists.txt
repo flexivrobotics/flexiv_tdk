@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16.3)
 # ===================================================================
 #      PROJECT SETUP
 # ===================================================================
-project(flexiv_tdk VERSION 1.4.0)
+project(flexiv_tdk VERSION 1.5.0)
 
 # Configure build type
 if(NOT CMAKE_BUILD_TYPE)
@@ -35,7 +35,7 @@ if(Threads_FOUND)
 endif()
 
 # Flexiv RDK
-find_package(flexiv_rdk 1.7.0 EXACT REQUIRED)
+find_package(flexiv_rdk 1.8.0 EXACT REQUIRED)
 if(flexiv_rdk_FOUND)
   message(STATUS "Found flexiv_rdk: ${flexiv_rdk_DIR}, version: ${flexiv_rdk_VERSION}")
 endif()
