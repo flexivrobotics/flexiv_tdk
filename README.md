@@ -6,16 +6,16 @@ Flexiv TDK (Teleoperation Development Kit) is an SDK for developing customized r
 
 ## Compatibility
 
-| **Supported OS**           | **Supported processor** | **Supported language** | **Required compiler kit**  |
-| -------------------------- | ----------------------- | ---------------------- | -------------------------- |
-| Linux (Ubuntu 20.04/22.04) | x86_64, aarch64         | C++                    | build-essential(GCC v9.4+) |
+| **Supported OS**           | **Supported processor** | **Supported language** | **Required compiler kit**                 |
+| -------------------------- | ----------------------- | ---------------------- | ----------------------------------------- |
+| Linux (Ubuntu 20.04/22.04) | x86_64, aarch64         | C++                    | build-essential(GCC v9.4+, CMake 3.16.3+) |
 
 
 ## Kernel setup for real-time performance
 
-We recommend using low-latency or PREEMPT_RT kernel for better performance.
+We recommend using ``low-latency`` or ``PREEMPT_RT`` kernel for better performance. Using the ``PREEMPT_RT`` kernel can achieve the best real-time performance, but you may encounter some known issues, especially those related to NVIDIA graphics card drivers. Using the low-latency kernel will provide softer real-time performance compared to the ``PREEMPT_RT`` kernel, but you don't need to worry about driver issues. Users can choose according to their own actual situation.
 
-## Low-latency kernel
+### Low-latency kernel
 
 1. Install the low-latency kernel:
    
@@ -38,6 +38,9 @@ We recommend using low-latency or PREEMPT_RT kernel for better performance.
         5.15.0-145-lowlatency
 
 NOTE: If you want to switch back to the generic kernel, just change ``lowlatency`` to ``generic``.
+
+### PREEMPT_RT kernel
+Following this tutorial: [Ubuntu20/22 RT kernel](https://www.flexiv.com/software/rdk/manual/realtime_ubuntu.html#ubuntu-22-04-24-04-enable-via-pro-subscription)
 
 ## Quick Start
 
