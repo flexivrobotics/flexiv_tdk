@@ -13,7 +13,7 @@ Flexiv TDK (Teleoperation Development Kit) is an SDK for developing customized r
 
 ## Kernel setup for real-time performance
 
-We recommend using ``low-latency`` or ``PREEMPT_RT`` kernel for better performance. Using the ``PREEMPT_RT`` kernel can achieve the best real-time performance, but you may encounter some known issues, especially those related to NVIDIA graphics card drivers. Using the low-latency kernel will provide softer real-time performance compared to the ``PREEMPT_RT`` kernel, but you don't need to worry about driver issues. Users can choose according to their own actual situation.
+Using ``low-latency`` or ``PREEMPT_RT`` kernel can provider a better performance for robotics applications than the default ``generic`` kernel. Using the ``PREEMPT_RT`` kernel can achieve the best real-time performance, but it may encounter some known issues, especially those related to NVIDIA graphics card drivers. Using the low-latency kernel will provide softer real-time performance compared to the ``PREEMPT_RT`` kernel. Users can choose according to their own actual situation.
 
 ### Low-latency kernel
 
@@ -52,7 +52,7 @@ The TDK library is packed into a unified modern CMake project named ``flexiv_tdk
 
        sudo apt install build-essential cmake cmake-qt-gui -y
     
-2. Install ``chrony`` for synchronizing the system clock:
+2. Install ``chrony`` for synchronizing the system clock, this is required for teleoperation cross internet:
 
         sudo apt install chrony -y
 
