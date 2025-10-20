@@ -46,8 +46,6 @@ public:
      * any connected robot is not supported; or there are multiple instantiated TDK objects.
      * @warning This constructor blocks until the initialization sequence is successfully finished
      * and connection with all robots is established.
-     * @warning A FT sensor is required to installed on the robot, please NOT use this class if FT
-     * sensor is configured.
      */
     TransparentCartesianTeleopLAN(
         const std::vector<std::pair<std::string, std::string>>& robot_pairs_sn,
@@ -84,7 +82,8 @@ public:
     /**
      * @brief [Non-Blocking] Start the teleoperation control loop for all robot pairs.
      * @throw std::logic_error if initialization sequence hasn't been triggered yet using Init().
-     * @note None of the teleoperation participants will move until both sides are started.
+     * @note Follower robot will only keep following the relative motion of leader robot when
+     * teleoperation is started and engaged.
      */
     void Start();
 
@@ -123,7 +122,8 @@ public:
      * of the constructor parameter [robot_pairs_sn].
      * @throw std::invalid_argument if [idx] is outside the valid range.
      * @throw std::logic_error if initialization sequence hasn't been triggered yet using Init().
-     * @note None of the teleoperation participants will move until both sides are started.
+     * @note Follower robot will only keep following the relative motion of leader robot when
+     * teleoperation is started and engaged.
      */
     void StartWithIdx(unsigned int idx);
 
@@ -145,11 +145,11 @@ public:
 
     /**
      * @brief [Non-blocking] Engage/disengage the leader and follower robot.
-     * TransparentCartesianTeleopLAN supports teleop leader and follower robots in different
+     * TransparentCartesianTeleopLAN supports tele-operate leader and follower robots in different
      * configurations. When disengaged, the operators can move the leader robot to the center of the
      * workspace or re-orientated for better ergonomics. Meanwhile, the follower robot will remain
      * stationary. When engaged again, the follower robot will only mimics the leader's relative
-     * motion instead of simply mirroring the pose.
+     * motion instead of simply mirroring the joint or Cartesian pose.
      * @param[in] idx Index of the robot pair to set flag for. This index is the same as the index
      * of the constructor parameter [robot_pairs_sn].
      * @param[in] engaged True to engage the teleop, false to disengage.
