@@ -10,16 +10,51 @@ Flexiv TDK (Teleoperation Development Kit) is an SDK for developing customized r
 | -------------------------- | ----------------------- | ---------------------- | ----------------------------------------- |
 | Linux (Ubuntu 20.04/22.04) | x86_64, aarch64         | C++                    | build-essential(GCC v9.4+, CMake 3.16.3+) |
 
+## What Is the Low-Latency Kernel?
+
+Ubuntu provides several kernel variants:
+| Kernel Type       | Description                                                               | Typical Use Case                                        |
+| ----------------- | ------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `generic`         | Default Ubuntu kernel with balanced performance and power management.     | Desktop, Server, General-purpose computing.             |
+| `lowlatency`      | Preemptible kernel with reduced interrupt latency and tighter scheduling. | Audio processing, Robotics, Real-time simulations.      |
+| `rt` (PREEMPT_RT) | Fully preemptible, real-time kernel with hard determinism.                | Industrial control, Mission-critical real-time systems. |
 
 ## Kernel setup for real-time performance
 
-Using ``low-latency`` or ``PREEMPT_RT`` kernel can provider a better performance for robotics applications than the default ``generic`` kernel. Using the ``PREEMPT_RT`` kernel can achieve the best real-time performance, but it may encounter some known issues, especially those related to NVIDIA graphics card drivers. Using the low-latency kernel will provide softer real-time performance compared to the ``PREEMPT_RT`` kernel. Users can choose according to their own actual situation.
+Using ``low-latency`` or ``PREEMPT_RT`` kernel can provider a better performance for robotics applications than the default ``generic`` kernel on Ubuntu platform. Using the ``PREEMPT_RT`` or ``low-latency`` kernel can achieve real-time performance, but it may encounter some known issues, especially those related to NVIDIA graphics card drivers. 
+
+---
+
+## ⚠️ Disclaimer
+
+Upgrading your system to a **low-latency** or **real-time (RT) kernel** may introduce **driver compatibility issues** and could potentially **render your system unstable or unbootable**. Certain hardware drivers, proprietary modules, or third-party software may not fully support these kernel variants.  
+
+By proceeding with any kernel upgrade, you **assume full responsibility** for any system malfunction, data loss, or hardware issues that may occur.  
+
+**Please read and fully understand the risks** before attempting any installation, and ensure you have **proper backups** or recovery options in place. Proceed **with caution**.
+
+---
+
+## How to Install the Low-Latency or PREEMPT_RT Kernel on Ubuntu
+
+This guide explains the correct way to install and manage a **low-latency kernel** on Ubuntu systems, typically used for **robotics**, **real-time audio**, or **low-latency control** applications.
 
 ### Low-latency kernel
 
 1. Install the low-latency kernel:
    
         sudo apt update && sudo apt install --install-recommends linux-lowlatency
+
+    or if you are using the Hardware Enablement (HWE) kernel series:
+
+       sudo apt update && sudo apt install linux-lowlatency-hwe-22.04
+
+    where 22.04 should be replaced with your ubuntu version.
+
+    #### 💡How do I determine if the -hwe suffix is ​​required?
+
+    Run ``uname -r``. If the kernel version is higher than the base version (for example, the default for Ubuntu 22.04 is 5.15, but you're using 6.5), you're using the HWE kernel and should install the corresponding hwe low-latency package.
+
 
 2. Boot order prefers low latency over generic kernel
 
