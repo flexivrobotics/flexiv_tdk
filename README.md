@@ -86,21 +86,17 @@ The TDK library is packed into a unified modern CMake project named ``flexiv_tdk
 1. In a new Terminal, install compiler kit, CMake (with GUI), Python interpreter, and Python package manager:
 
        sudo apt install build-essential cmake cmake-qt-gui -y
-    
-2. Install ``chrony`` for synchronizing the system clock, this is required for teleoperation cross internet:
 
-        sudo apt install chrony -y
+2. Choose a directory for installing ``flexiv_tdk`` library and all its dependencies. For example, a new folder named ``tdk_install`` under the home directory.
 
-3. Choose a directory for installing ``flexiv_tdk`` library and all its dependencies. For example, a new folder named ``tdk_install`` under the home directory.
-
-4. In a new Terminal, run the provided script to compile and install all dependencies to the installation directory chosen in step 2:
+3. In a new Terminal, run the provided script to compile and install all dependencies to the installation directory chosen in step 2:
 
        cd flexiv_tdk/thirdparty
        bash build_and_install_dependencies.sh ~/tdk_install
 
    NOTE: Internet connection is required for this step.
 
-5. In a new Terminal, configure ``flexiv_tdk`` library as a CMake project:
+4. In a new Terminal, configure ``flexiv_tdk`` library as a CMake project:
 
        cd flexiv_tdk
        mkdir build && cd build
@@ -108,7 +104,7 @@ The TDK library is packed into a unified modern CMake project named ``flexiv_tdk
 
    NOTE: ``-D`` followed by ``CMAKE_INSTALL_PREFIX`` is a CMake parameter specifying the path of the chosen installation directory. Alternatively, this configuration step can be done using CMake GUI.
 
-6. Install ``flexiv_tdk`` library:
+5. Install ``flexiv_tdk`` library:
 
        cd flexiv_tdk/build
        cmake --build . --target install --config Release
@@ -127,8 +123,58 @@ After the TDK library is installed, it can be found as a CMake target and linked
 
 NOTE: ``-D`` followed by ``CMAKE_INSTALL_PREFIX`` tells the user project's CMake where to find the installed TDK library. The instruction above applies to all supported OS.
 
-### Run example programs
 
+### System Clock Synchronization with Chrony (Required only for WAN Teleop)
+
+1. Install ``chrony`` for synchronizing the system clock, this is required for teleoperation cross internet:
+
+        sudo apt install chrony -y
+
+    the chrony service will running automatically in the background.
+
+2. Check the status of ``chrony`` service:
+
+       systemctl status chrony
+
+    The service will be running if you see the following output:
+
+        Active: active (running)
+
+3. ⏱️ Quick Check: Verify Current Time Synchronization Accuracy
+
+    To quickly check how accurately your system clock is synchronized with the NTP servers:
+
+        chronyc tracking | grep 'System time\|RMS offset'
+    
+
+    System time: the instantaneous offset between local system clock and NTP reference
+
+    RMS offset: the long-term average offset (root mean square) over time
+
+    Use the following table as a guideline:
+
+    | Network Condition | Good (ms) | Acceptable (ms) | Poor (ms) |
+    | ----------------- | --------- | --------------- | --------- |
+    | System time       | < 1       | 1 - 10          | > 10      |
+    | RMS offset        | < 5       | 5 - 20          | > 20      |
+
+4. Improve Time Synchronization Accuracy Quickly
+        
+        sudo chronyc burst 4/4
+        chronyc makestep
+    
+    ``burst 4/4``: Immediately perform 4 quick communication rounds with the NTP server (by default, it usually waits for tens of seconds).
+    
+    ``makestep``: Immediately adjust the system clock to the correct time, instead of gradually correcting the drift.
+
+    If the network environment changes (such as switching from Wi-Fi to Ethernet), it is recommended to restart the service:
+
+        sudo systemctl restart chronyd
+        sleep 5
+        sudo chronyc makestep
+5. To know more about ``chrony`` configuration for clock synchronization, please refer to the [Chrony](https://chrony-project.org/).
+
+### Run example programs
 To run a compiled example program:
 
     cd flexiv_tdk/example/build
