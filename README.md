@@ -161,7 +161,7 @@ NOTE: ``-D`` followed by ``CMAKE_INSTALL_PREFIX`` tells the user project's CMake
 4. Improve Time Synchronization Accuracy Quickly
         
         sudo chronyc burst 4/4
-        chronyc makestep
+        sudo chronyc makestep
     
     ``burst 4/4``: Immediately perform 4 quick communication rounds with the NTP server (by default, it usually waits for tens of seconds).
     
