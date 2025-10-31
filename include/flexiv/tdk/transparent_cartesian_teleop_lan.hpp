@@ -52,6 +52,44 @@ public:
         const std::vector<std::string>& network_interface_whitelist = {});
     virtual ~TransparentCartesianTeleopLAN();
 
+    //========================================= ACCESSORS ==========================================
+    /**
+     * @brief [Non-blocking] Robot states of the specified robot pair.
+     * @param[in] idx Index of the robot pair to get states for. This index is the same as the
+     * index of the constructor parameter [robot_pairs_sn].
+     * @return RobotStates value copy of the first and second robot respectively in the robot pair.
+     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
+     */
+    const std::pair<RobotStates, RobotStates> robot_states(unsigned int idx) const;
+
+    /**
+     * @brief [Non-blocking] Current reading from all digital input ports (16 on the control box + 2
+     * inside the wrist connector) of the specified robot pair.
+     * @param[in] idx Index of the robot pair to read from. This index is the same as the index
+     * of the constructor parameter [robot_pairs_sn].
+     * @return A pair of boolean arrays whose index corresponds to that of the digital input ports
+     * of the corresponding robot in the pair. True: port high; false: port low.
+     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
+     */
+    const std::pair<std::array<bool, kIOPorts>, std::array<bool, kIOPorts>> digital_inputs(
+        unsigned int idx) const;
+
+    /**
+     * @brief [Non-blocking] Fault state of the specified robot pair.
+     * @param[in] idx Index of the robot pair to get fault state for. This index is the same as the
+     * index of the constructor parameter [robot_pairs_sn].
+     * @return Fault state of the first and second robot respectively in the robot pair. True: has
+     * fault; false: no fault.
+     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
+     */
+    const std::pair<bool, bool> fault(unsigned int idx) const;
+
+    /**
+     * @brief [Non-blocking] Whether any of the connected robots is in fault state.
+     * @return True: at least one robot has fault; false: none has fault.
+     */
+    bool any_fault(void) const;
+
     /**
      * @brief [Non-blocking] Whether teleop process has stopped. After teleop is started, the teleop
      * process may stop for certain reasons. If it stops, the user needs to check the reason, then
@@ -66,6 +104,7 @@ public:
      */
     bool stopped(unsigned int idx) const;
 
+    //==================================== TELEOP LIFECYCLE ====================================
     /**
      * @brief [Blocking] Get all robots ready for teleoperation. The following actions will
      * happen in sequence: a) enable robot if it's servo off, b) zero force/torque sensors, c) stop
@@ -143,6 +182,7 @@ public:
      */
     void StopWithIdx(unsigned int idx);
 
+    //==================================== TELEOP CONTROL ====================================
     /**
      * @brief [Non-blocking] Engage/disengage the leader and follower robot.
      * TransparentCartesianTeleopLAN supports tele-operate leader and follower robots in different
@@ -158,183 +198,6 @@ public:
      * @note The teleop will keep disengaged by default.
      */
     void Engage(unsigned int idx, bool engaged);
-
-    /**
-     * @brief [Blocking] Set reference joint positions used in the robot's null-space posture
-     * control module for the specified leader robot. By "leader robot" we mean the first robot in
-     * [robot_pairs_sn], which interacts with human hands. Call this only after Start() is
-     * triggered.
-     * @param[in] idx Index of the robot pair to set null-space posture for. This index is the same
-     * as the index of the constructor parameter [robot_pairs_sn].
-     * @param[in] ref_positions Reference joint positions for the null-space posture control of both
-     * robots in the pair: \f$ q_{ns} \in \mathbb{R}^{n \times 1} \f$. Unit: \f$ [rad] \f$.
-     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
-     * @throw std::invalid_argument if [ref_joint_positions] contains any value outside joint limits
-     * or size of input vector does not match robot DoF.
-     * @throw std::logic_error if the teleoperation control loop is not started.
-     * @throw std::runtime_error if failed to deliver the request to the connected robots.
-     * @note This function blocks until the request is successfully delivered.
-     * @par Null-space posture control
-     * Similar to human arm, a robotic arm with redundant joint-space degree(s) of freedom (DoF > 6)
-     * can change its overall posture without affecting the ongoing primary task. This is achieved
-     * through a technique called "null-space control". After the reference joint positions of a
-     * desired robot posture are set using this function, the robot's null-space control module will
-     * try to pull the arm as close to this posture as possible without affecting the primary
-     * Cartesian motion-force control task.
-     */
-    void SetLeaderNullSpacePosture(
-        unsigned int idx, const std::vector<double>& ref_joint_positions);
-
-    /**
-     * @brief [Blocking] Set reference joint positions used in the robot's null-space posture
-     * control module for the specified follower robot. By "follower robot" we mean the second robot
-     * in [robot_pairs_sn], which interacts with workpiece. Call this only after Start() is
-     * triggered.
-     * @param[in] idx Index of the robot pair to set null-space posture for. This index is the same
-     * as the index of the constructor parameter [robot_pairs_sn].
-     * @param[in] ref_positions Reference joint positions for the null-space posture control of both
-     * robots in the pair: \f$ q_{ns} \in \mathbb{R}^{n \times 1} \f$. Unit: \f$ [rad] \f$.
-     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
-     * @throw std::invalid_argument if [ref_joint_positions] contains any value outside joint limits
-     * or size of input vector does not match robot DoF.
-     * @throw std::logic_error if the teleoperation control loop is not started.
-     * @throw std::runtime_error if failed to deliver the request to the connected robots.
-     * @note This function blocks until the request is successfully delivered.
-     * @par Null-space posture control
-     * Similar to human arm, a robotic arm with redundant joint-space degree(s) of freedom (DoF > 6)
-     * can change its overall posture without affecting the ongoing primary task. This is achieved
-     * through a technique called "null-space control". After the reference joint positions of a
-     * desired robot posture are set using this function, the robot's null-space control module will
-     * try to pull the arm as close to this posture as possible without affecting the primary
-     * Cartesian motion-force control task.
-     */
-    void SetFollowerNullSpacePosture(
-        unsigned int idx, const std::vector<double>& ref_joint_positions);
-
-    /**
-     * @brief [Non-blocking] Robot states of the specified robot pair.
-     * @param[in] idx Index of the robot pair to get states for. This index is the same as the
-     * index of the constructor parameter [robot_pairs_sn].
-     * @return RobotStates value copy of the first and second robot respectively in the robot pair.
-     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
-     */
-    const std::pair<RobotStates, RobotStates> robot_states(unsigned int idx) const;
-
-    /**
-     * @brief [Non-blocking] Fault state of the specified robot pair.
-     * @param[in] idx Index of the robot pair to get fault state for. This index is the same as the
-     * index of the constructor parameter [robot_pairs_sn].
-     * @return Fault state of the first and second robot respectively in the robot pair. True: has
-     * fault; false: no fault.
-     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
-     */
-    const std::pair<bool, bool> fault(unsigned int idx) const;
-
-    /**
-     * @brief [Non-blocking] Whether any of the connected robots is in fault state.
-     * @return True: at least one robot has fault; false: none has fault.
-     */
-    bool any_fault(void) const;
-
-    /**
-     * @brief [Blocking] Try to clear minor or critical fault of the robot without a power cycle.
-     * @param[in] timeout_sec Maximum time in seconds to wait for the fault to be successfully
-     * cleared. Normally, a minor fault should take no more than 3 seconds to clear, and a critical
-     * fault should take no more than 30 seconds to clear.
-     * @return True: successfully cleared fault; false: failed to clear fault.
-     * @return For each element in the pair vector, true: successfully cleared fault or no fault for
-     * this robot, false: failed to clear fault for this robot. The pattern of the pair vector is
-     * the same as the constructor parameter [robot_pairs_sn].
-     * @throw std::runtime_error if failed to deliver the request to the connected robot.
-     * @note This function blocks until the fault is successfully cleared or [timeout_sec] has
-     * elapsed.
-     * @warning Clearing a critical fault through this function without a power cycle requires a
-     * dedicated device, which may not be installed in older robot models.
-     */
-    std::vector<std::pair<bool, bool>> ClearFault(unsigned int timeout_sec = 30);
-
-    /**
-     * @brief [Non-blocking] Current reading from all digital input ports (16 on the control box + 2
-     * inside the wrist connector) of the specified robot pair.
-     * @param[in] idx Index of the robot pair to read from. This index is the same as the index
-     * of the constructor parameter [robot_pairs_sn].
-     * @return A pair of boolean arrays whose index corresponds to that of the digital input ports
-     * of the corresponding robot in the pair. True: port high; false: port low.
-     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
-     */
-    const std::pair<std::array<bool, kIOPorts>, std::array<bool, kIOPorts>> digital_inputs(
-        unsigned int idx) const;
-
-    /**
-     * @brief [Non-blocking] Set maximum contact wrench for the follower robot of specified robot
-     * pair. The controller will regulate its output to maintain contact wrench (force and moment)
-     * with the environment under the set values.
-     * @param[in] idx Index of the robot pair to set max contact wrench for. This index is the same
-     * as the index of the constructor parameter [robot_pairs_sn].
-     * @param[in] max_wrench Maximum contact wrench (force and moment): \f$ F_max \in \mathbb{R}^{6
-     * \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ maximum force and \f$
-     * \mathbb{R}^{3 \times 1} \f$ maximum moment: \f$ [f_x, f_y, f_z, m_x, m_y, m_z]^T \f$. Unit:
-     * \f$ [N]~[Nm] \f$.
-     * @throw std::invalid_argument if [max_wrench] contains any negative value.
-     * @throw std::invalid_argument if [idx] is outside the valid range.
-     * @throw std::logic_error if teleop is not initialized.
-     */
-    void SetFollowerMaxContactWrench(
-        unsigned int idx, const std::array<double, kCartDoF>& max_wrench);
-
-    /**
-     * @brief [Non-blocking] Set maximum contact wrench for the leader robot of specified robot
-     * pair. The controller will regulate its output to maintain contact wrench (force and moment)
-     * with the environment under the set values.
-     * @param[in] idx Index of the robot pair to set max contact wrench for. This index is the same
-     * as the index of the constructor parameter [robot_pairs_sn].
-     * @param[in] max_wrench Maximum contact wrench (force and moment): \f$ F_max \in \mathbb{R}^{6
-     * \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ maximum force and \f$
-     * \mathbb{R}^{3 \times 1} \f$ maximum moment: \f$ [f_x, f_y, f_z, m_x, m_y, m_z]^T \f$. Unit:
-     * \f$ [N]~[Nm] \f$.
-     * @throw std::invalid_argument if [max_wrench] contains any negative value.
-     * @throw std::invalid_argument if [idx] is outside the valid range.
-     * @throw std::logic_error if teleop is not initialized.
-     */
-    void SetLeaderMaxContactWrench(
-        unsigned int idx, const std::array<double, kCartDoF>& max_wrench);
-
-    /**
-     * @brief [Blocking] Set stiffness of the Cartesian motion controller of the follower robot in
-     * specified robot pair.
-     * @param[in] idx Index of the robot pair to set Cartesian stiffness for. This index is the same
-     * as the index of the constructor parameter [robot_pairs_sn].
-     * @param[in] stiff_scale A scale ratio to default Cartesian motion stiffness: \f$ K_x \in
-     * \mathbb{R}^{6 \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ linear stiffness and
-     * \f$ \mathbb{R}^{3 \times 1} \f$ angular stiffness: \f$ [k_x, k_y, k_z, k_{Rx}, k_{Ry},
-     * k_{Rz}]^T \f$. Valid range: [0, 1]. Unit: \f$ [N/m]:[Nm/rad] \f$.
-     * @throw std::invalid_argument if outside the valid range.
-     * @throw std::logic_error if teleop is not initialized.
-     * @note Generally, the user does not need to adjust the stiffness of the follower robot. In
-     * particular, when the follower robot is in contact with a workpiece with high stiffness, the
-     * stiffness needs to be adjusted to a relatively low level. This depends on the specific
-     * application.
-     * @note This function blocks until the request is successfully delivered.
-     */
-    void SetFollowerCartStiff(unsigned int idx, double stiff_scale);
-
-    /**
-     * @brief [Blocking] Set stiffness of the follower robot's Cartesian motion controller.
-     * @param[in] idx Index of the robot pair to set Cartesian stiffness for. This index is the same
-     * as the index of the constructor parameter [robot_pairs_sn].
-     * @param[in] K_x Cartesian motion stiffness: \f$ K_x \in \mathbb{R}^{6 \times 1} \f$.
-     * Consists of \f$ \mathbb{R}^{3 \times 1} \f$ linear stiffness and \f$
-     * \mathbb{R}^{3 \times 1} \f$ angular stiffness: \f$ [k_x, k_y, k_z, k_{Rx}, k_{Ry}, k_{Rz}]^T
-     * \f$. Valid range: [0, RobotInfo::K_x_nom]. Unit: \f$ [N/m]:[Nm/rad] \f$.
-     * @throw std::invalid_argument if any value outside the valid range.
-     * @throw std::logic_error if teleop is not initialized.
-     * @note Generally, the user does not need to adjust the stiffness of the follower robot. In
-     * particular, when the follower robot is in contact with a workpiece with high stiffness, the
-     * stiffness needs to be adjusted to a relatively low level. This depends on the specific
-     * application.
-     * @note This function blocks until the request is successfully delivered.
-     */
-    void SetFollowerCartStiff(unsigned int idx, const std::array<double, kCartDoF>& K_x);
 
     /**
      * @brief [Non-blocking] Set the repulsive force in World or Tcp frame of the follower robot.
@@ -407,6 +270,147 @@ public:
      * @return AxisLock
      */
     AxisLock GetAxisLockState(unsigned int idx);
+
+    /**
+     * @brief [Blocking] Set reference joint positions used in the robot's null-space posture
+     * control module for the specified leader robot. By "leader robot" we mean the first robot in
+     * [robot_pairs_sn], which interacts with human hands. Call this only after Start() is
+     * triggered.
+     * @param[in] idx Index of the robot pair to set null-space posture for. This index is the same
+     * as the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] ref_positions Reference joint positions for the null-space posture control of both
+     * robots in the pair: \f$ q_{ns} \in \mathbb{R}^{n \times 1} \f$. Unit: \f$ [rad] \f$.
+     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
+     * @throw std::invalid_argument if [ref_joint_positions] contains any value outside joint limits
+     * or size of input vector does not match robot DoF.
+     * @throw std::logic_error if the teleoperation control loop is not started.
+     * @throw std::runtime_error if failed to deliver the request to the connected robots.
+     * @note This function blocks until the request is successfully delivered.
+     * @par Null-space posture control
+     * Similar to human arm, a robotic arm with redundant joint-space degree(s) of freedom (DoF > 6)
+     * can change its overall posture without affecting the ongoing primary task. This is achieved
+     * through a technique called "null-space control". After the reference joint positions of a
+     * desired robot posture are set using this function, the robot's null-space control module will
+     * try to pull the arm as close to this posture as possible without affecting the primary
+     * Cartesian motion-force control task.
+     */
+    void SetLeaderNullSpacePosture(
+        unsigned int idx, const std::vector<double>& ref_joint_positions);
+
+    /**
+     * @brief [Blocking] Set reference joint positions used in the robot's null-space posture
+     * control module for the specified follower robot. By "follower robot" we mean the second robot
+     * in [robot_pairs_sn], which interacts with workpiece. Call this only after Start() is
+     * triggered.
+     * @param[in] idx Index of the robot pair to set null-space posture for. This index is the same
+     * as the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] ref_positions Reference joint positions for the null-space posture control of both
+     * robots in the pair: \f$ q_{ns} \in \mathbb{R}^{n \times 1} \f$. Unit: \f$ [rad] \f$.
+     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
+     * @throw std::invalid_argument if [ref_joint_positions] contains any value outside joint limits
+     * or size of input vector does not match robot DoF.
+     * @throw std::logic_error if the teleoperation control loop is not started.
+     * @throw std::runtime_error if failed to deliver the request to the connected robots.
+     * @note This function blocks until the request is successfully delivered.
+     * @par Null-space posture control
+     * Similar to human arm, a robotic arm with redundant joint-space degree(s) of freedom (DoF > 6)
+     * can change its overall posture without affecting the ongoing primary task. This is achieved
+     * through a technique called "null-space control". After the reference joint positions of a
+     * desired robot posture are set using this function, the robot's null-space control module will
+     * try to pull the arm as close to this posture as possible without affecting the primary
+     * Cartesian motion-force control task.
+     */
+    void SetFollowerNullSpacePosture(
+        unsigned int idx, const std::vector<double>& ref_joint_positions);
+
+    /**
+     * @brief [Non-blocking] Set maximum contact wrench for the follower robot of specified robot
+     * pair. The controller will regulate its output to maintain contact wrench (force and moment)
+     * with the environment under the set values.
+     * @param[in] idx Index of the robot pair to set max contact wrench for. This index is the same
+     * as the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] max_wrench Maximum contact wrench (force and moment): \f$ F_max \in \mathbb{R}^{6
+     * \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ maximum force and \f$
+     * \mathbb{R}^{3 \times 1} \f$ maximum moment: \f$ [f_x, f_y, f_z, m_x, m_y, m_z]^T \f$. Unit:
+     * \f$ [N]~[Nm] \f$.
+     * @throw std::invalid_argument if [max_wrench] contains any negative value.
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @throw std::logic_error if teleop is not initialized.
+     */
+    void SetFollowerMaxContactWrench(
+        unsigned int idx, const std::array<double, kCartDoF>& max_wrench);
+
+    /**
+     * @brief [Non-blocking] Set maximum contact wrench for the leader robot of specified robot
+     * pair. The controller will regulate its output to maintain contact wrench (force and moment)
+     * with the environment under the set values.
+     * @param[in] idx Index of the robot pair to set max contact wrench for. This index is the same
+     * as the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] max_wrench Maximum contact wrench (force and moment): \f$ F_max \in \mathbb{R}^{6
+     * \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ maximum force and \f$
+     * \mathbb{R}^{3 \times 1} \f$ maximum moment: \f$ [f_x, f_y, f_z, m_x, m_y, m_z]^T \f$. Unit:
+     * \f$ [N]~[Nm] \f$.
+     * @throw std::invalid_argument if [max_wrench] contains any negative value.
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @throw std::logic_error if teleop is not initialized.
+     */
+    void SetLeaderMaxContactWrench(
+        unsigned int idx, const std::array<double, kCartDoF>& max_wrench);
+
+    /**
+     * @brief [Blocking] Set stiffness of the Cartesian motion controller of the follower robot in
+     * specified robot pair.
+     * @param[in] idx Index of the robot pair to set Cartesian stiffness for. This index is the same
+     * as the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] stiff_scale A scale ratio to default Cartesian motion stiffness: \f$ K_x \in
+     * \mathbb{R}^{6 \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ linear stiffness and
+     * \f$ \mathbb{R}^{3 \times 1} \f$ angular stiffness: \f$ [k_x, k_y, k_z, k_{Rx}, k_{Ry},
+     * k_{Rz}]^T \f$. Valid range: [0, 1]. Unit: \f$ [N/m]:[Nm/rad] \f$.
+     * @throw std::invalid_argument if outside the valid range.
+     * @throw std::logic_error if teleop is not initialized.
+     * @note Generally, the user does not need to adjust the stiffness of the follower robot. In
+     * particular, when the follower robot is in contact with a workpiece with high stiffness, the
+     * stiffness needs to be adjusted to a relatively low level. This depends on the specific
+     * application.
+     * @note This function blocks until the request is successfully delivered.
+     */
+    void SetFollowerCartStiff(unsigned int idx, double stiff_scale);
+
+    /**
+     * @brief [Blocking] Set stiffness of the follower robot's Cartesian motion controller.
+     * @param[in] idx Index of the robot pair to set Cartesian stiffness for. This index is the same
+     * as the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] K_x Cartesian motion stiffness: \f$ K_x \in \mathbb{R}^{6 \times 1} \f$.
+     * Consists of \f$ \mathbb{R}^{3 \times 1} \f$ linear stiffness and \f$
+     * \mathbb{R}^{3 \times 1} \f$ angular stiffness: \f$ [k_x, k_y, k_z, k_{Rx}, k_{Ry}, k_{Rz}]^T
+     * \f$. Valid range: [0, RobotInfo::K_x_nom]. Unit: \f$ [N/m]:[Nm/rad] \f$.
+     * @throw std::invalid_argument if any value outside the valid range.
+     * @throw std::logic_error if teleop is not initialized.
+     * @note Generally, the user does not need to adjust the stiffness of the follower robot. In
+     * particular, when the follower robot is in contact with a workpiece with high stiffness, the
+     * stiffness needs to be adjusted to a relatively low level. This depends on the specific
+     * application.
+     * @note This function blocks until the request is successfully delivered.
+     */
+    void SetFollowerCartStiff(unsigned int idx, const std::array<double, kCartDoF>& K_x);
+
+    //======================================= SYSTEM CONTROL =======================================
+    /**
+     * @brief [Blocking] Try to clear minor or critical fault of the robot without a power cycle.
+     * @param[in] timeout_sec Maximum time in seconds to wait for the fault to be successfully
+     * cleared. Normally, a minor fault should take no more than 3 seconds to clear, and a critical
+     * fault should take no more than 30 seconds to clear.
+     * @return True: successfully cleared fault; false: failed to clear fault.
+     * @return For each element in the pair vector, true: successfully cleared fault or no fault for
+     * this robot, false: failed to clear fault for this robot. The pattern of the pair vector is
+     * the same as the constructor parameter [robot_pairs_sn].
+     * @throw std::runtime_error if failed to deliver the request to the connected robot.
+     * @note This function blocks until the fault is successfully cleared or [timeout_sec] has
+     * elapsed.
+     * @warning Clearing a critical fault through this function without a power cycle requires a
+     * dedicated device, which may not be installed in older robot models.
+     */
+    std::vector<std::pair<bool, bool>> ClearFault(unsigned int timeout_sec = 30);
 
     /**
      * @brief [Non-blocking] Pointers to the underlying rdk::Robot instances of the robot pair.

@@ -59,6 +59,68 @@ public:
         flexiv::tdk::Role role, const NetworkCfg& network_cfg);
     virtual ~TransparentCartesianTeleopWAN();
 
+    //========================================= ACCESSORS ==========================================
+    /**
+     * @brief [Non-blocking] Check the TCP connection status and retrieve the average message
+     * latency.
+     *
+     * This function estimates the average TCP message latency (in milliseconds) using an internal
+     * sliding-window filter to suppress occasional spikes. The result is returned through the
+     * output parameter [latency_ms].
+     *
+     * The return value and latency interpretation are as follows:
+     * - **Case 1:** `latency_ms` is a very large positive number → Connection not yet established.
+     *   Returns **false**.
+     * - **Case 2:** `latency_ms` is within [0, 350] milliseconds → Connection established.
+     *   Returns **true**.
+     * - **Case 3:** `latency_ms` is negative → The system clocks of the two computers are not
+     *   properly synchronized.
+     *   Returns **false**. In this case, ensure both computers run the `chrony` service to
+     *   synchronize their system time.
+     *
+     * @param[in] idx Index of the robot pair. This corresponds to the index of the constructor
+     * parameter [robot_pairs_sn].
+     * @param[out] latency_ms Average TCP message latency in milliseconds.
+     * @return True if a valid connection is established and the average latency is within the
+     *         acceptable range [0, 350] ms. False otherwise.
+     * @throw std::invalid_argument if [idx] is out of range.
+     * @warning
+     * - If [latency_ms] > 200 ms, the connection quality is poor and may cause delayed feedback or
+     *   command responses.
+     * - If [latency_ms] > 350 ms, teleoperation will be disconnected, and follower robots will hold
+     *   their pose until incoming message latency is in valid range.
+     */
+    bool CheckTcpConnectionLatency(unsigned int idx, double& latency_ms);
+
+    /**
+     * @brief [Non-blocking] Robot states of the current role.
+     * @param[in] idx Index of the robot to get states for current role. This index is the same as
+     * the index of the constructor parameter [robot_pairs_sn].
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @return RobotStates value copy.
+     */
+    const RobotStates robot_states(unsigned int idx) const;
+
+    /**
+     * @brief [Non-blocking] Whether the current role is in fault state.
+     * @param[in] idx Index of the robot to get fault state for. This index is the same as the
+     * index of the constructor parameter [robot_pairs_sn].
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @return True: robot has fault; false: robot normal.
+     */
+    bool fault(unsigned int idx) const;
+
+    /**
+     * @brief [Non-blocking] Current reading from all digital input ports (16 on the control box + 2
+     * inside the wrist connector) of the current role in specified robot pair.
+     * @param[in] idx Index of the robot pair to read from. This index is the same as the index
+     * of the constructor parameter [robot_pairs_sn].
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @return A boolean array whose index corresponds to that of the digital input ports.
+     * True: port high; false: port low.
+     */
+    const std::array<bool, kIOPorts> digital_inputs(unsigned int idx) const;
+
     /**
      * @brief [Non-blocking] Whether teleop process has stopped. After teleop is started, the teleop
      * process may stop for certain reasons. If it stops, the user needs to check the reason, then
@@ -73,6 +135,7 @@ public:
      */
     bool stopped(unsigned int idx) const;
 
+    //==================================== TELEOP LIFECYCLE ====================================
     /**
      * @brief [Blocking] Get current role ready for teleoperation. The following actions will
      * happen in sequence: a) enable robot if it's servo off, b) zero force/torque sensors, c) stop
@@ -91,8 +154,9 @@ public:
      * @brief [Non-Blocking] Start the teleoperation control loop for current roles (leaders or
      * followers) specified with 'role' in constructor.
      * @throw std::logic_error if initialization sequence hasn't been triggered yet using Init().
-     * @note Teleop will only work properly when the following conditions are met: 1. The control
-     * loops of leaders and followers start normally 2. TCP connection successfully established.
+     * @note Teleop will only work properly when the following conditions are met: a) The control
+     * loops of leaders and followers start normally b) TCP connection successfully established and
+     * message latency is in valid range. c) Engaged by the leader
      */
     void Start();
 
@@ -130,8 +194,9 @@ public:
      * of the constructor parameter [robot_pairs_sn].
      * @throw std::logic_error if initialization sequence hasn't been triggered yet using Init() or
      * InitWithIdx().
-     * @note Teleop will only work properly when the following conditions are met: 1. The control
-     * loops of leaders and followers start normally 2. TCP connection successfully established.
+     * @note Teleop will only work properly when the following conditions are met: a) The control
+     * loops of leaders and followers start normally b) TCP connection successfully established and
+     * message latency is in valid range. c) Engaged by the leader
      */
     void StartWithIdx(unsigned int idx);
 
@@ -150,6 +215,7 @@ public:
      */
     void StopWithIdx(unsigned int idx);
 
+    //==================================== TELEOP CONTROL ====================================
     /**
      * @brief [Non-blocking] Engage/disengage the leader and follower robot in the specified robot
      * pair. TransparentCartesianTeleopWAN supports teleop leader and follower robots in different
@@ -207,41 +273,7 @@ public:
      */
     void SetMaxContactWrench(unsigned int idx, const std::array<double, kCartDoF>& max_wrench);
 
-    /**
-     * @brief [Non-blocking] Check if TCP(Transmission Control Protocol) connected and get the
-     * average TCP message latency in milliseconds. This function computes the average latency of
-     * TCP messages using an internal online sliding-window filter to suppress occasional spikes.
-     * The result is returned through the output parameter.
-     * @param[in] idx Index of the robot pair to get the average TCP message latency. This index
-     * is the same as the index of the constructor parameter [robot_pairs_sn].
-     * @param[out] delay_ms The average TCP message latency in milliseconds.
-     * @return True if the measured average latency is below the disconnection threshold (350
-     * milliseconds), False otherwise.
-     * @throw std::invalid_argument if [idx] is outside the valid range.
-     * @warning If the latency exceeds 200 milliseconds, the connection can be considered poor,
-     * resulting in delayed commands and feedback. If the latency exceeds 350 milliseconds, teleop
-     * will be disconnected and the followers will hold there until reconnected.
-     */
-    bool GetTcpMessageLatencyMs(unsigned int idx, double& delay_ms);
-
-    /**
-     * @brief [Non-blocking] Robot states of the current role.
-     * @param[in] idx Index of the robot to get states for current role. This index is the same as
-     * the index of the constructor parameter [robot_pairs_sn].
-     * @throw std::invalid_argument if [idx] is outside the valid range.
-     * @return RobotStates value copy.
-     */
-    const RobotStates robot_states(unsigned int idx) const;
-
-    /**
-     * @brief [Non-blocking] Whether the current role is in fault state.
-     * @param[in] idx Index of the robot to get fault state for. This index is the same as the
-     * index of the constructor parameter [robot_pairs_sn].
-     * @throw std::invalid_argument if [idx] is outside the valid range.
-     * @return True: robot has fault; false: robot normal.
-     */
-    bool fault(unsigned int idx) const;
-
+    //======================================= SYSTEM CONTROL =======================================
     /**
      * @brief [Blocking] Try to clear minor or critical fault for current role (leaders or
      * followers) without a power cycle.
@@ -256,17 +288,6 @@ public:
      * dedicated device, which may not be installed in older robot models.
      */
     std::vector<bool> ClearFault(unsigned int timeout_sec = 30);
-
-    /**
-     * @brief [Non-blocking] Current reading from all digital input ports (16 on the control box + 2
-     * inside the wrist connector) of the current role in specified robot pair.
-     * @param[in] idx Index of the robot pair to read from. This index is the same as the index
-     * of the constructor parameter [robot_pairs_sn].
-     * @throw std::invalid_argument if [idx] is outside the valid range.
-     * @return A boolean array whose index corresponds to that of the digital input ports.
-     * True: port high; false: port low.
-     */
-    const std::array<bool, kIOPorts> digital_inputs(unsigned int idx) const;
 
     /**
      * @brief [Non-blocking] Pointer to the underlying rdk::Robot instance of the current role.
