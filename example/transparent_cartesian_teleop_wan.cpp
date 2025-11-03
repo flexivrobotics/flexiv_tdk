@@ -156,7 +156,7 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
                     break;
                 case 'l': {
                     double latency_ms {};
-                    if (teleop.GetTcpMessageLatencyMs(0, latency_ms)) {
+                    if (teleop.CheckTcpConnectionLatency(0, latency_ms)) {
                         spdlog::info("Current tcp message latency is: {}ms", latency_ms);
                     } else {
                         spdlog::warn("tcp disconnection");
