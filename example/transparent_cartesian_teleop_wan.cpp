@@ -1,6 +1,9 @@
 /**
  * @example transparent_cartesian_teleop_wan.cpp
- * @brief Example of using TransparentCartesianTeleopWAN class.
+ * @brief Wide Area Network based Cartesian teleoperation example for controlling a follower robot
+ * using a leader robot with transparent force feedback. Supports both keyboard and digital input
+ * engage/disengage signal reading, with message latency query, nullspace posture tuning, and max
+ * contact wrench setting, etc.
  * @copyright Copyright (C) 2016-2025 Flexiv Ltd. All Rights Reserved.
  * @author Flexiv
  */
@@ -157,9 +160,9 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
                 case 'l': {
                     double latency_ms {};
                     if (teleop.CheckTcpConnectionLatency(0, latency_ms)) {
-                        spdlog::info("Current tcp message latency is: {}ms", latency_ms);
+                        spdlog::info("Current message latency is: {}ms", latency_ms);
                     } else {
-                        spdlog::warn("tcp disconnection");
+                        spdlog::warn("WAN teleop is disconnected.");
                     }
                     break;
                 }
