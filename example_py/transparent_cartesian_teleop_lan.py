@@ -269,7 +269,7 @@ class TeleoperationController:
                 logger.error(f"Exception executing command '{ch}': {e}")
                 return False
         else:
-            logger.info(self._menu)
+            print(self._menu) 
             return True
 
 
@@ -330,6 +330,11 @@ def main(argv: Optional[List[str]] = None):
     # Parse arguments
     args = parse_args(argv)
     robot_pairs = [(args.leader_sn, args.follower_sn)]
+    
+    teleop = None
+    console_thr = None
+    pedal_thread = None
+    
     try:
         # TDK Initialization
         # ==========================================================================================
@@ -359,7 +364,8 @@ def main(argv: Optional[List[str]] = None):
             pedal_thread.join(timeout=1.0)
 
         # Stop teleop process 
-        teleop.Stop()
+        if teleop:
+            teleop.Stop()
         logger.info("Teleop stopped.")
         
     except KeyboardInterrupt:
