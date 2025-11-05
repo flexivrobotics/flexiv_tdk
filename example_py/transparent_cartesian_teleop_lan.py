@@ -3,8 +3,10 @@
 """
 transparent_cartesian_teleop_lan.py
 
-Local Area Network based Cartesian teleoperation example for controlling a follower robot using a leader robot with transparent force feedback.
-Supports both keyboard and digital input engage/disengage signal reading, with various axes lock modes, force scaling, and max contact wrench setting, etc.
+Example usage of Transparent Cartesian teleoperation under Local Area Network,
+controlling a follower robot using a leader robot with transparent force feedback.
+Supports both keyboard and digital input engage/disengage signal reading, 
+with various axes lock modes, force scaling, and max contact wrench setting, etc.
 
 """
 
