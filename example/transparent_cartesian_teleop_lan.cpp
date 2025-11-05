@@ -1,6 +1,9 @@
 /**
- * @example transparent_cartesian_teleop_lan.cpp
- * @brief Example of using TransparentCartesianTeleopLAN class.
+ * @file transparent_cartesian_teleop_lan.cpp
+ * @brief Example usage of Transparent Cartesian teleoperation under Local Area Network for
+ * controlling a follower robot using a leader robot with transparent force feedback. Supports both
+ * keyboard and digital input engage/disengage signal reading, with various axes lock modes, force
+ * scaling, and max contact wrench setting, etc.
  * @copyright Copyright (C) 2016-2025 Flexiv Ltd. All Rights Reserved.
  * @author Flexiv
  */
