@@ -71,8 +71,9 @@ public:
      * The return value and latency interpretation are as follows:
      * - **Case 1:** `latency_ms` is a very large positive number → Connection not yet established.
      *   Returns **false**.
-     * - **Case 2:** `latency_ms` is within [0, 350] milliseconds → Connection established.
-     *   Returns **true**.
+     * - **Case 2:** `latency_ms` is within [0, threshold_ms] milliseconds → Connection established.
+     *   Returns **true**. The default threshold is 200 milliseconds, but can be adjusted using
+     *   SetTeleopLatencyLimit().
      * - **Case 3:** `latency_ms` is negative → The system clocks of the two computers are not
      *   properly synchronized.
      *   Returns **false**. In this case, ensure both computers run the `chrony` service to
@@ -82,15 +83,34 @@ public:
      * parameter [robot_pairs_sn].
      * @param[out] latency_ms Average TCP message latency in milliseconds.
      * @return True if a valid connection is established and the average latency is within the
-     *         acceptable range [0, 350] ms. False otherwise.
+     * acceptable range [0, threshold_ms] ms. False otherwise.
      * @throw std::invalid_argument if [idx] is out of range.
      * @warning
      * - If [latency_ms] > 200 ms, the connection quality is poor and may cause delayed feedback or
      *   command responses.
-     * - If [latency_ms] > 350 ms, teleoperation will be disconnected, and follower robots will hold
-     *   their pose until incoming message latency is in valid range.
+     * - If [latency_ms] > threshold_ms ms, teleoperation will be disengaged, and follower robots
+     * will hold their pose until incoming message latency is in valid range.
+     * @see SetTeleopLatencyLimit()
      */
-    bool CheckTcpConnectionLatency(unsigned int idx, double& latency_ms);
+    bool CheckTeleopConnectionLatency(unsigned int idx, double& latency_ms) const;
+
+    /**
+     * @brief [Non-blocking] Set the maximum acceptable TCP message latency for teleoperation.
+     * If the measured latency exceeds this threshold, teleoperation will be disengaged, and
+     * follower robots will hold their pose until incoming message latency is back within the
+     * acceptable range.
+     * @param[in] idx Index of the robot pair. This corresponds to the index of the constructor
+     * parameter [robot_pairs_sn].
+     * @param[in] threshold_ms Maximum acceptable TCP message latency in milliseconds. Default is
+     * 200 ms.
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @throw std::invalid_argument if input threshold_ms is negative or exceeds 350 milliseconds.
+     * @warning Setting a very low threshold may lead to frequent disengagements during
+     * teleoperation due to normal network latency fluctuations. Setting a very high threshold may
+     * compromise the responsiveness of teleoperation.
+     * @see CheckTeleopConnectionLatency()
+     */
+    void SetTeleopLatencyLimit(unsigned int idx, double threshold_ms = 200.0);
 
     /**
      * @brief [Non-blocking] Robot states of the current role.
