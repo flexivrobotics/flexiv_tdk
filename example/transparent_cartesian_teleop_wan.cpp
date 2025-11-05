@@ -1,9 +1,9 @@
 /**
  * @example transparent_cartesian_teleop_wan.cpp
- * @brief Wide Area Network based Cartesian teleoperation example for controlling a follower robot
- * using a leader robot with transparent force feedback. Supports both keyboard and digital input
- * engage/disengage signal reading, with message latency query, nullspace posture tuning, and max
- * contact wrench setting, etc.
+ * @brief Example usage of Transparent Cartesian teleoperation cross Wide Area Network for
+ * controlling a follower robot using a leader robot with transparent force feedback. Supports both
+ * keyboard and digital input engage/disengage signal reading, with message latency query, nullspace
+ * posture tuning, and max contact wrench setting, etc.
  * @copyright Copyright (C) 2016-2025 Flexiv Ltd. All Rights Reserved.
  * @author Flexiv
  */
