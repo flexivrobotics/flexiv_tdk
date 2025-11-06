@@ -9,8 +9,13 @@ import argparse
 import time
 import spdlog
 # pip install flexivtdk
-import flexiv_tdk
+import flexivtdk
 
+# pip install flexivrdk
+import flexivrdk
+
+# Logger setup
+logger = spdlog.ConsoleLogger("Example")
 
 # Constants
 SHAPED_CART_INERTIA = [60.0, 60.0, 60.0, 20.0, 20.0, 20.0]
@@ -51,9 +56,10 @@ def main():
         print_help()
         sys.exit(1)
     
+    robot_pairs= [(args.first_sn, args.second_sn)]
     try:
         # Create teleop control interface
-        cart_teleop = flexiv.tdk.CartesianTeleopLAN([args.first_sn, args.second_sn])
+        cart_teleop = flexivtdk.CartesianTeleopLAN(robot_pairs)
 
         # Only control 1 pair of robots
         robot_pair_idx = 0
@@ -62,12 +68,12 @@ def main():
         cart_teleop.Init()
 
         # Sync pose, first robot stays still, second robot moves to its tcp pose
-        first_robot_state = cart_teleop.robot_states(robot_pair_idx).first
+        first_robot_state,second_robot_state = cart_teleop.robot_states(robot_pair_idx)
         cart_teleop.SyncPose(robot_pair_idx, first_robot_state.tcp_pose)
 
         # Enable inertia shaping for all Cartesian axes
         shaped_cart_inertia = []
-        for i in range(flexiv.tdk.kCartDoF): 
+        for i in range(flexivtdk.kCartDoF): 
             shaped_cart_inertia.append((True, SHAPED_CART_INERTIA[i]))
         
         cart_teleop.SetInertiaShaping(robot_pair_idx, shaped_cart_inertia)
@@ -86,15 +92,15 @@ def main():
         last_pedal_input = False
         while not cart_teleop.any_fault():
             # Activate by pedal
-            digital_inputs = cart_teleop.digital_inputs(robot_pair_idx).first
+            first_di, second_di= cart_teleop.digital_inputs(robot_pair_idx)
             # First digital input of the first robot is used as pedal input
-            pedal_input = digital_inputs[0]
+            pedal_input = first_di[0]
             if pedal_input != last_pedal_input:
                 cart_teleop.Activate(robot_pair_idx, pedal_input)
                 last_pedal_input = pedal_input
             
             # Sync null-space posture of the second robot to that of the first
-            first_robot_q = cart_teleop.robot_states(robot_pair_idx).first.q
+            first_robot_q = cart_teleop.robot_states(robot_pair_idx)[0].q
             # Create a pair with the same joint positions for both robots
             null_space_postures = (first_robot_q, first_robot_q)
             cart_teleop.SetNullSpacePostures(robot_pair_idx, null_space_postures)
@@ -105,7 +111,7 @@ def main():
         cart_teleop.Stop()
 
     except Exception as e:
-        spdlog.error(str(e))
+        logger.error(str(e))
         sys.exit(1)
 
 if __name__ == "__main__":

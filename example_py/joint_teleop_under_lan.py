@@ -39,10 +39,10 @@ def main():
         print_help()
         return 1
 
+    robot_pairs= [(args.first_sn, args.second_sn)]
     try:
         # Create teleop control interface
-        serial_numbers = [args.first_sn, args.second_sn]
-        joint_teleop = flexiv_tdk.JointTeleopLAN(serial_numbers)
+        joint_teleop = flexivtdk.JointTeleopLAN(robot_pairs)
 
         # Only control 1 pair of robots
         robot_pair_idx = 0

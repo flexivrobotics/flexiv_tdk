@@ -77,28 +77,28 @@ def main():
         wan_interface_whitelist.append(args.wan_whitelist_ip)
     
     if not lan_interface_whitelist or not wan_interface_whitelist:
-        spdlog.warning("LAN or WAN whitelist is not provided, will search all network interfaces.")
+        logger.warn("LAN or WAN whitelist is not provided, will search all network interfaces.")
     
     # Determine TCP role
     is_tcp_server = args.tcp_role == 'server'
     if args.tcp_role not in ['server', 'client']:
-        spdlog.error("Valid inputs for --tcp-role are: server, client")
+        logger.error("Valid inputs for --tcp-role are: server, client")
         sys.exit(1)
     
     # Network configuration
-    network_cfg = flexiv.tdk.NetworkCfg()
+    network_cfg = flexivtdk.NetworkCfg()
     network_cfg.is_tcp_server = is_tcp_server
     network_cfg.public_ipv4_address = args.ip
     network_cfg.listening_port = args.port
     network_cfg.lan_interface_whitelist = lan_interface_whitelist
     network_cfg.wan_interface_whitelist = wan_interface_whitelist
     
-    spdlog.info(f"Robot serial number: {args.serial_number}")
-    spdlog.info(f"Start as {args.tcp_role} on {args.ip}:{args.port}")
+    logger.info(f"Robot serial number: {args.serial_number}")
+    logger.info(f"Start as {args.tcp_role} on {args.ip}:{args.port}")
     
     try:
         # Create teleop control interface instance
-        joint_teleop = flexiv.tdk.JointTeleopWAN(args.serial_number, network_cfg)
+        joint_teleop = flexivtdk.JointTeleopWAN(args.serial_number, network_cfg)
         
         # Run initialization sequence
         joint_teleop.Init()
@@ -146,7 +146,7 @@ def main():
         joint_teleop.Stop()
         
     except Exception as e:
-        spdlog.error(str(e))
+        logger.error(str(e))
         sys.exit(1)
 
 if __name__ == "__main__":

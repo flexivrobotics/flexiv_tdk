@@ -200,7 +200,6 @@ class TeleoperationController:
         """Stop teleoperation and set the stop event."""
         try:
             self.teleop.Stop()
-            _stop_event.set()
             logger.info("Teleop stopped")
         except Exception as e:
             logger.error(f"Failed to stop teleop: {e}")
@@ -210,7 +209,7 @@ class TeleoperationController:
         """Check and log the teleoperation state."""
         try:
             stopped = self.teleop.stopped(self.index)
-            logger.info("Teleop pair {} {}", self.index, "stopped" if stopped else "started")
+            logger.info("Teleop pair {} {}".format(self.index, "stopped" if stopped else "started"))
         except Exception as e:
             logger.error(f"Failed to check teleop state: {e}")
     

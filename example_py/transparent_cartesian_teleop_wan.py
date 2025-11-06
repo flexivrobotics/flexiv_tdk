@@ -105,7 +105,6 @@ class WanTeleoperationController:
         """Stop teleoperation and set the stop event."""
         try:
             self.teleop.Stop()
-            _stop_event.set()
             logger.info("Teleop stopped")
         except Exception as e:
             logger.error(f"Failed to stop teleop: {e}")
@@ -114,14 +113,11 @@ class WanTeleoperationController:
     def _print_latency(self):
         """Print current TCP message latency."""
         try:
-            ok_latency = self.teleop.CheckTcpConnectionLatency(self.index)
-            # binding returns tuple (bool, float) in current version
-            if isinstance(ok_latency, tuple):
-                ok, latency_ms = ok_latency
-                logger.info("TCP connected={} latency_ms={}", ok, latency_ms)
+            ok, latency_ms= self.teleop.CheckTeleopConnectionLatency(self.index)
+            if ok:
+                logger.info(f"Current message latency is: {latency_ms}ms")
             else:
-                # fallback
-                logger.info("CheckTcpConnectionLatency returned: {}", ok_latency)
+                logger.warn("WAN teleop is disconnected.")
         except Exception as e:
             logger.error("Error checking TCP latency: {}", e)
     
@@ -161,7 +157,7 @@ class WanTeleoperationController:
                 self._command_map[ch]()
                 return True
             except Exception as e:
-                logger.error("Exception executing command '{}': {}", ch, e)
+                logger.error(f"Exception executing command '{ch}': {e}")
                 return False
         else:
             print(self._menu)
