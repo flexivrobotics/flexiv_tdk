@@ -4,11 +4,17 @@
 
 Flexiv TDK (Teleoperation Development Kit) is an SDK for developing customized robot-robot or device-robot teleoperation applications with Flexiv's adaptive robots. It features synchronized motions that are force-guided using high-fidelity perceptual feedback and supports both LAN (Local Area Network) and WAN (Wide Area Network, i.e. Internet) connections.
 
+### 🎬 TDK | Teleoperation Made Simple
+
+[![Watch the video](https://img.youtube.com/vi/H0e9FSZIa14/hqdefault.jpg)](https://www.youtube.com/watch?v=H0e9FSZIa14)
+
 ## Compatibility
 
-| **Supported OS**           | **Supported processor** | **Supported language** | **Required compiler kit**                 |
-| -------------------------- | ----------------------- | ---------------------- | ----------------------------------------- |
-| Linux (Ubuntu 20.04/22.04) | x86_64, aarch64         | C++                    | build-essential(GCC v9.4+, CMake 3.16.3+) |
+| **Supported OS**           | **Supported processor** | **Supported language** | **Required compiler kit**                 | **Python interpreter** |
+| -------------------------- | ----------------------- | ---------------------- | ----------------------------------------- | ---------------------- |
+| Linux (Ubuntu 20.04/22.04) | x86_64, aarch64         | C++, python            | build-essential(GCC v9.4+, CMake 3.16.3+) | 3.8,3.10,3.12          |
+
+Contact Flexiv for support if you need to run on other platforms.
 
 ## What Is the Low-Latency Kernel?
 
@@ -35,7 +41,7 @@ By proceeding with any kernel upgrade, you **assume full responsibility** for an
 
 ---
 
-## How to Install the Low-Latency or PREEMPT_RT Kernel on Ubuntu
+## Install the Low-Latency or PREEMPT_RT Kernel on Ubuntu (Optional)
 
 This guide explains the correct way to install and manage a **low-latency kernel** on Ubuntu systems, typically used for **robotics**, **real-time audio**, or **low-latency control** applications.
 
@@ -178,7 +184,7 @@ NOTE: ``-D`` followed by ``CMAKE_INSTALL_PREFIX`` tells the user project's CMake
 To run a compiled example program:
 
     cd flexiv_tdk/example/build
-    sudo ./<program_name> [arguments]
+    ./<program_name> [arguments]
 
 The exact arguments required by an example program are documented in the program's code. Also, ``sudo`` is required to grant root permissions.
 
