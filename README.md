@@ -32,7 +32,7 @@ Ubuntu offers multiple kernel variants tailored for different workloads:
 | `lowlatency`        | Reduced interrupt latency; better scheduling responsiveness | Robotics, audio processing, soft real-time   |
 | `rt` (`PREEMPT_RT`) | Fully preemptible; hard real-time determinism               | Industrial control, mission-critical systems |
 
-> 🔧 Using `lowlatency` or `PREEMPT_RT` can significantly improve teleoperation performance—but may cause **driver incompatibilities**, especially with NVIDIA GPUs.
+> 🔧 Using `lowlatency` or `PREEMPT_RT` can significantly improve teleoperation performance—but may cause **driver incompatibilities**.
 
 ---
 
@@ -47,28 +47,20 @@ Upgrading to a **low-latency** or **real-time (RT) kernel** may:
 
 ---
 
-## Enable Real-Time Privileges for Non-root Users
 
-To allow a regular user to create high-priority (real-time) threads without `sudo`, configure system to apply real-time and nice priority limits:
+## Install Low-Latency or PREEMPT_RT Kernel for Ubuntu/x84-64 
 
-```bash
-echo "${USERNAME}    -   rtprio    99" | sudo tee -a /etc/security/limits.conf
-echo "${USERNAME}    -   nice     -20" | sudo tee -a /etc/security/limits.conf
-```
-Log out and log back in (or reboot) for the settings to take effect.
-
-## Install Low-Latency or PREEMPT_RT Kernel
-
-### Option 1: Low-Latency Kernel (Recommended for most users)
+### Option 1: Low-Latency Kernel
 
 1. **Install the kernel**:
-   ```bash
-   sudo apt update && sudo apt install --install-recommends linux-lowlatency
-   ```
-   If you're using the Hardware Enablement (HWE) stack (check with uname -r; e.g., Ubuntu 22.04 with kernel 6.x), use:
+   For Hardware Enablement (HWE) stack (check with `uname -r`; e.g., Ubuntu 22.04 with kernel 6.x), use:
 
    ```bash
-   sudo apt install linux-lowlatency-hwe-22.04  # replace "22.04" with your version
+   sudo apt update && sudo apt install --install-recommends linux-lowlatency-hwe-22.04  # replace "22.04" with your version
+   ```
+   For the original kernel (5.15), use:
+   ```bash
+   sudo apt update && sudo apt install --install-recommends linux-lowlatency
    ```
 
 2. **Set GRUB to prefer low-latency**:
@@ -87,14 +79,94 @@ Log out and log back in (or reboot) for the settings to take effect.
 ### Option 2: PREEMPT_RT Kernel (For hard real-time)
 
 Follow the official guide:  
-🔗 [Real-time Ubuntu Setup (RDK Documentation)](https://www.flexiv.com/software/rdk/manual/realtime_ubuntu.html#ubuntu-22-04-24-04-enable-via-pro-subscription)
+🔗 [Real-time Ubuntu Setup (TDK Documentation)](https://www.flexiv.com/software/tdk/manual/realtime_ubuntu.html#ubuntu-22-04-24-04-enable-via-pro-subscription)
 
 > ℹ️ Ubuntu 22.04/24.04 users can enable RT kernel via **free Ubuntu Pro subscription**.  
 > Ubuntu 20.04 requires manual patching (advanced users only).
 
+> ℹ️ For  Nvidia Jetson(**arrch64**), please refer to Nvidia's official documentation.
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start - Python
+
+### 1. Install the Python package
+
+On all supported platforms, the Python package of TDK and its dependencies for a specific Python version can be installed using the `pip` module:
+
+    python3.x -m pip install numpy spdlog flexivtdk
+
+NOTE: replace `3.x` with a specific Python version.
+
+### 2. Use the installed Python package
+
+After the ``flexivtdk`` Python package is installed, it can be imported from any Python script. Test with the following commands in a new Terminal, which should start Flexiv TDK:
+
+    python3.x
+    import flexivtdk
+    flexivtdk.__version__ 
+
+### 3.🕒 System Clock Sync 
+
+Note: This is only required for **WAN** Teleoperation, users can skip this section if only using LAN teleoperation.
+
+Accurate time sync is critical for teleop over the internet.
+
+1. Install & Start chrony
+```bash
+sudo apt install chrony -y
+systemctl status chrony  # Should show "active (running)"
+```
+2. Check Sync Accuracy
+```bash
+chronyc tracking | grep 'System time\|RMS offset'
+```
+
+System time: the instantaneous offset between local system clock and NTP reference
+
+RMS offset: the long-term average offset (root mean square) over time
+
+| Network Condition | Good (ms) | Acceptable (ms) | Poor (ms) |
+| ----------------- | --------- | --------------- | --------- |
+| System time       | < 1       | 1 - 10          | > 10      |
+| RMS offset        | < 5       | 5 - 20          | > 20      |
+
+
+3. Force Immediate Sync (if needed)
+```bash
+sudo chronyc burst 4/4
+sudo chronyc makestep
+```
+🔄 After network changes (e.g., Wi-Fi → Ethernet), restart:
+
+```bash
+sudo systemctl restart chronyd
+sleep 5
+sudo chronyc makestep
+```
+4. Learn more: [Chrony Documentation]((https://chrony-project.org/))
+
+### 4. Enable Real-Time Privileges for Non-root Users
+
+To allow a regular user to create high-priority (real-time) threads without `sudo`, configure system to apply real-time and nice priority limits:
+
+```bash
+echo "${USER}    -   rtprio    99" | sudo tee -a /etc/security/limits.conf
+echo "${USER}    -   nice     -20" | sudo tee -a /etc/security/limits.conf
+```
+Log out and log back in (or reboot) for the settings to take effect.
+
+### 5. Run example Python scripts
+
+To run an example Python script in this repo:
+
+```bash
+cd flexiv_tdk/example_py
+python3.x <example_name>.py [arguments]
+```
+
+Check each example’s source code for usage details.
+
+## 🚀 Quick Start - C++
 
 The TDK is distributed as a modern CMake project named `flexiv_tdk`.
 
@@ -135,44 +207,9 @@ cmake --build . --config Release -j 4
 
 NOTE: ``-D`` followed by ``CMAKE_INSTALL_PREFIX`` tells the user project's CMake where to find the installed TDK library. 
 
-### 6.🕒 System Clock Sync (Required for WAN Teleoperation)
-Accurate time sync is critical for teleop over the internet.
-
-1. Install & Start chrony
-```bash
-sudo apt install chrony -y
-systemctl status chrony  # Should show "active (running)"
-```
-2. Check Sync Accuracy
-```bash
-chronyc tracking | grep 'System time\|RMS offset'
-```
-
-System time: the instantaneous offset between local system clock and NTP reference
-
-RMS offset: the long-term average offset (root mean square) over time
-
-| Network Condition | Good (ms) | Acceptable (ms) | Poor (ms) |
-| ----------------- | --------- | --------------- | --------- |
-| System time       | < 1       | 1 - 10          | > 10      |
-| RMS offset        | < 5       | 5 - 20          | > 20      |
 
 
-3. Force Immediate Sync (if needed)
-```bash
-sudo chronyc burst 4/4
-sudo chronyc makestep
-```
-🔄 After network changes (e.g., Wi-Fi → Ethernet), restart:
-
-```bash
-sudo systemctl restart chronyd
-sleep 5
-sudo chronyc makestep
-```
-4. 📚 Learn more: [Chrony Documentation]((https://chrony-project.org/))
-
-### 7. Run Examples
+### 6. Run Examples
 ```bash
 cd flexiv_tdk/example/build
 ./<program_name> [arguments]
