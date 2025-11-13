@@ -287,8 +287,6 @@ def read_digital_input_task(teleop: flexivtdk.TransparentCartesianTeleopLAN):
                 logger.info(f"Digital input engage state: {engage_state}")
         except Exception as e:
             logger.error(f"Exception in ReadDigitalInputTask: {e}")
-            _stop_event.set()
-            return
         time.sleep(0.01)
     logger.info("ReadDigitalInputTask exiting.")
 

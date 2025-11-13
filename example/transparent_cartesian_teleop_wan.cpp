@@ -83,8 +83,6 @@ void ReadDigitalInputTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
             teleop.Engage(0, teleop.digital_inputs(0)[0]);
         } catch (const std::exception& e) {
             spdlog::error("Exception in ReadDigitalInputTask: {}", e.what());
-            g_running.store(false);
-            return;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
