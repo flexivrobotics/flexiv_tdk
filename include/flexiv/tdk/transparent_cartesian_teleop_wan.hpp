@@ -95,24 +95,6 @@ public:
     bool CheckTeleopConnectionLatency(unsigned int idx, double& latency_ms) const;
 
     /**
-     * @brief [Non-blocking] Set the maximum acceptable TCP message latency for teleoperation.
-     * If the measured latency exceeds this threshold, teleoperation will be disengaged, and
-     * follower robots will hold their pose until incoming message latency is back within the
-     * acceptable range.
-     * @param[in] idx Index of the robot pair. This corresponds to the index of the constructor
-     * parameter [robot_pairs_sn].
-     * @param[in] threshold_ms Maximum acceptable TCP message latency in milliseconds. Default is
-     * 200 ms.
-     * @throw std::invalid_argument if [idx] is outside the valid range.
-     * @throw std::invalid_argument if input threshold_ms is negative or exceeds 350 milliseconds.
-     * @warning Setting a very low threshold may lead to frequent disengagements during
-     * teleoperation due to normal network latency fluctuations. Setting a very high threshold may
-     * compromise the responsiveness of teleoperation.
-     * @see CheckTeleopConnectionLatency()
-     */
-    void SetTeleopLatencyLimit(unsigned int idx, double threshold_ms = 200.0);
-
-    /**
      * @brief [Non-blocking] Robot states of the current role.
      * @param[in] idx Index of the robot to get states for current role. This index is the same as
      * the index of the constructor parameter [robot_pairs_sn].
@@ -292,6 +274,24 @@ public:
      * @throw std::logic_error if teleop is not initialized.
      */
     void SetMaxContactWrench(unsigned int idx, const std::array<double, kCartDoF>& max_wrench);
+
+    /**
+     * @brief [Non-blocking] Set the maximum acceptable TCP message latency for teleoperation.
+     * If the measured latency exceeds this threshold, teleoperation will be disengaged, and
+     * follower robots will hold their pose until incoming message latency is back within the
+     * acceptable range.
+     * @param[in] idx Index of the robot pair. This corresponds to the index of the constructor
+     * parameter [robot_pairs_sn].
+     * @param[in] threshold_ms Maximum acceptable TCP message latency in milliseconds. Default is
+     * 200 ms.
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @throw std::invalid_argument if input threshold_ms is negative or exceeds 350 milliseconds.
+     * @warning Setting a very low threshold may lead to frequent disengagements during
+     * teleoperation due to normal network latency fluctuations. Setting a very high threshold may
+     * compromise the responsiveness of teleoperation.
+     * @see CheckTeleopConnectionLatency()
+     */
+    void SetTeleopLatencyLimit(unsigned int idx, double threshold_ms = 200.0);
 
     //======================================= SYSTEM CONTROL =======================================
     /**
