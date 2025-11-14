@@ -27,7 +27,16 @@ else()
 endif()
 
 # Parse expected hash of the library file
-file(READ ${CMAKE_CURRENT_SOURCE_DIR}/lib/${TDK_LIB}.sha256 EXPECTED_HASH)
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/lib/${TDK_LIB}.sha256 EXPECTED_HASH_RAW)
+
+# Remove leading/trailing whitespace (including \n, \r, spaces)
+string(STRIP "${EXPECTED_HASH_RAW}" EXPECTED_HASH)
+
+# Verify length of EXPECTED_HASH, expected length is 64 
+string(LENGTH "${EXPECTED_HASH}" HASH_LEN)
+if(NOT HASH_LEN EQUAL 64)
+    message(FATAL_ERROR "Invalid SHA256 hash length: ${HASH_LEN}. Expected 64. Value: '${EXPECTED_HASH}'")
+endif()
 
 # Download the library file from GitHub 
 set(TDK_LIB_URL https://github.com/flexivrobotics/flexiv_tdk/releases/download/v1.5/${TDK_LIB})
