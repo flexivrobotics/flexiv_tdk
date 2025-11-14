@@ -9,11 +9,11 @@ project(flexiv_tdk VERSION 1.5.0)
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "CMake build type" FORCE)
 endif()
-set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Debug" "RelWithDebInfo")
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Debug" "RelWithDebInfo" "MinSizeRel")
 
-# Set static library
-message("OS: ${CMAKE_SYSTEM_NAME}")
-message("Processor: ${CMAKE_SYSTEM_PROCESSOR}")
+# Set static library according to platform
+message(STATUS "OS: ${CMAKE_SYSTEM_NAME}")
+message(STATUS "Processor: ${CMAKE_SYSTEM_PROCESSOR}")
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64")
     set(TDK_LIB "libflexiv_tdk.x86_64-linux-gnu.a")
@@ -59,45 +59,40 @@ endif()
 # Threads
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
-if(Threads_FOUND)
-  message(STATUS "Found Threads: HAVE_PTHREAD = ${THREADS_HAVE_PTHREAD_ARG}")
-endif()
+message(STATUS "Found Threads")
 
 # Flexiv RDK
 find_package(flexiv_rdk 1.8.0 REQUIRED)
-if(flexiv_rdk_FOUND)
-  message(STATUS "Found flexiv_rdk: ${flexiv_rdk_DIR}, version: ${flexiv_rdk_VERSION}")
-endif()
+message(STATUS "Found flexiv_rdk: ${flexiv_rdk_DIR}, version: ${flexiv_rdk_VERSION}")
 
 # ===================================================================
 #      CREATE LIBRARY
 # ===================================================================
-# Create static library with dummy file to compile
+# Create static library target with dummy source
 add_library(${PROJECT_NAME} STATIC ${CMAKE_CURRENT_SOURCE_DIR}/lib/dummy.cpp)
 
-
-# Create an alias of the library using flexiv namespace, 
-# to imitate the install target which uses flexiv namespace.
+# Create an alias of the target with flexiv namespace
 add_library(flexiv::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-target_include_directories(${PROJECT_NAME} PUBLIC 
+# Set include directories
+target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
 
+# Link to dependencies
 target_link_libraries(${PROJECT_NAME} PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/${TDK_LIB}
   Threads::Threads
   flexiv::flexiv_rdk
 )
 
 # Use moderate compiler warning option 
 if(CMAKE_HOST_UNIX)
-  target_compile_options(${PROJECT_NAME} INTERFACE -Wall -Wextra)
+  target_compile_options(${PROJECT_NAME} PUBLIC -Wall -Wextra)
 else()
-  target_compile_options(${PROJECT_NAME} INTERFACE /W1)
+  target_compile_options(${PROJECT_NAME} PUBLIC /W1)
 endif()
 
-# Install the INTERFACE library
+# Install the library
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/FlexivInstallLibrary.cmake)
 FlexivInstallLibrary()
