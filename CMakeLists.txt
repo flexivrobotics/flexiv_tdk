@@ -16,12 +16,33 @@ message("OS: ${CMAKE_SYSTEM_NAME}")
 message("Processor: ${CMAKE_SYSTEM_PROCESSOR}")
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64")
-    set(TDK_STATIC_LIB "libflexiv_tdk.x86_64-linux-gnu.a")
+    set(TDK_LIB "libflexiv_tdk.x86_64-linux-gnu.a")
   elseif(${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64")
-    set(TDK_STATIC_LIB "libflexiv_tdk.aarch64-linux-gnu.a")
+    set(TDK_LIB "libflexiv_tdk.aarch64-linux-gnu.a")
   else()
     message(FATAL_ERROR "Linux with ${CMAKE_SYSTEM_PROCESSOR} processor is currently not supported.")
   endif()
+endif()
+else()
+  message(FATAL_ERROR "${CMAKE_SYSTEM_NAME} is currently not supported.")
+endif()
+
+# Parse expected hash of the library file
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/lib/${TDK_LIB}.sha256 EXPECTED_HASH)
+
+# Download the library file from GitHub 
+set(TDK_LIB_URL https://github.com/flexivrobotics/flexiv_tdk/releases/download/v1.5/${TDK_LIB})
+message(STATUS "Downloading ${TDK_LIB_URL} ...")
+file(DOWNLOAD ${TDK_LIB_URL} ${CMAKE_CURRENT_BINARY_DIR}/${TDK_LIB}
+     SHOW_PROGRESS
+     TLS_VERIFY ON
+     EXPECTED_HASH SHA256=${EXPECTED_HASH}
+     STATUS status)
+list(GET status 0 code)
+if(code EQUAL 0)
+  message(STATUS "Download finished")
+else()
+  message(FATAL_ERROR "Download failed: ${status}")
 endif()
 
 # ===================================================================
@@ -43,20 +64,21 @@ endif()
 # ===================================================================
 #      CREATE LIBRARY
 # ===================================================================
-# Create an INTERFACE library with no source file to compile
-add_library(${PROJECT_NAME} INTERFACE)
+# Create static library with dummy file to compile
+add_library(${PROJECT_NAME} STATIC ${CMAKE_CURRENT_SOURCE_DIR}/lib/dummy.cpp)
+
 
 # Create an alias of the library using flexiv namespace, 
 # to imitate the install target which uses flexiv namespace.
 add_library(flexiv::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-target_include_directories(${PROJECT_NAME} INTERFACE 
+target_include_directories(${PROJECT_NAME} PUBLIC 
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(${PROJECT_NAME} INTERFACE
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/${TDK_STATIC_LIB}
+target_link_libraries(${PROJECT_NAME} PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/${TDK_LIB}
   Threads::Threads
   flexiv::flexiv_rdk
 )
