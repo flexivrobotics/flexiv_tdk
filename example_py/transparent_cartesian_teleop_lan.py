@@ -284,7 +284,6 @@ def read_digital_input_task(teleop: flexivtdk.TransparentCartesianTeleopLAN):
             if leader_di and len(leader_di) > 0:
                 engage_state = bool(leader_di[0])
                 teleop.Engage(idx, engage_state)
-                logger.info(f"Digital input engage state: {engage_state}")
         except Exception as e:
             logger.error(f"Exception in ReadDigitalInputTask: {e}")
         time.sleep(0.01)
