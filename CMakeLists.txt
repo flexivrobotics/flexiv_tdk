@@ -30,7 +30,7 @@ endif()
 file(READ ${CMAKE_CURRENT_SOURCE_DIR}/lib/${TDK_LIB}.sha256 EXPECTED_HASH)
 
 # Download the library file from GitHub 
-set(TDK_LIB_URL https://github.com/flexivrobotics/flexiv_tdk/releases/download/v1.5_test/${TDK_LIB})
+set(TDK_LIB_URL https://github.com/flexivrobotics/flexiv_tdk/releases/download/v1.5/${TDK_LIB})
 message(STATUS "Downloading ${TDK_LIB_URL} ...")
 file(DOWNLOAD ${TDK_LIB_URL} ${CMAKE_CURRENT_BINARY_DIR}/${TDK_LIB}
      SHOW_PROGRESS
