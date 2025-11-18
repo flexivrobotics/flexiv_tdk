@@ -11,7 +11,8 @@ assignees: pzhu-flexiv, ZhipengZhang-flexiv
 On a scale of 1 to 10.
 
 **Is your feature request related to a problem? Please describe.**
-What the problem is. E.g. I'm always frustrated when [...]
+This new feature is needed so that ... can be solved.
+
 
 **Describe the solution you'd like**
 What you want to happen.

@@ -18,7 +18,7 @@ You can follow the [README](https://github.com/flexivrobotics/flexiv_tdk/blob/ma
 
 ## Not sure how to get started and write a working teleoperation program?
 
-You can take a look at the [C++ examples](https://github.com/flexivrobotics/flexiv_tdk/tree/main/example) to get started.
+You can take a look at the [C++ examples](https://github.com/flexivrobotics/flexiv_tdk/tree/main/example) or [Python examples](https://github.com/flexivrobotics/flexiv_tdk/tree/main/example_py) to get started.
 
 ## Is this related to a specific version of TDK?
 
