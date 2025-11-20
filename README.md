@@ -8,7 +8,15 @@
 
 🎬 **[Flexiv's TDK | Teleoperation Made Simple](https://www.youtube.com/watch?v=H0e9FSZIa14)**  
 *(Click image below to play)*  
-[![TDK Demo](https://img.youtube.com/vi/H0e9FSZIa14/hqdefault.jpg)](https://www.youtube.com/watch?v=H0e9FSZIa14)
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=H0e9FSZIa14" target="_blank">
+    <img src="https://img.youtube.com/vi/H0e9FSZIa14/hqdefault.jpg" alt="TDK Demo 1" width="320" style="margin-right:10px;" />
+  </a>
+  <a href="https://www.youtube.com/watch?v=udkddqxth5Q" target="_blank">
+    <img src="https://img.youtube.com/vi/udkddqxth5Q/hqdefault.jpg" alt="TDK Demo 2" width="320" />
+  </a>
+</p>
+
 
 ---
 
@@ -143,7 +151,7 @@ sudo systemctl restart chronyd
 sleep 5
 sudo chronyc makestep
 ```
-4. Learn more: [Chrony Documentation]((https://chrony-project.org/))
+4. Learn more: [Chrony Documentation](https://chrony-project.org/)
 
 ### 4. Enable Real-Time Privileges for Non-root Users
 
@@ -196,7 +204,7 @@ cmake --build . --target install --config Release
 
 ### 5. Link TDK in Your Project
 
-After the TDK library is installed, it can be found as a CMake target and linked to from other CMake projects. Using the provided examples project for instance::
+After the TDK library is installed, it can be found as a CMake target and linked to from other CMake projects. Using the provided examples project for instance:
 
 ```bash
 cd flexiv_tdk/example
