@@ -10,10 +10,10 @@
 *(Click image below to play)*  
 <p align="center">
   <a href="https://www.youtube.com/watch?v=H0e9FSZIa14" target="_blank">
-    <img src="https://img.youtube.com/vi/H0e9FSZIa14/hqdefault.jpg" alt="TDK Demo 1" width="320" style="margin-right:10px;" />
+    <img src="https://img.youtube.com/vi/H0e9FSZIa14/hqdefault.jpg" alt="TDK Demo 1" width="350" style="margin-right:10px;" />
   </a>
   <a href="https://www.youtube.com/watch?v=udkddqxth5Q" target="_blank">
-    <img src="https://img.youtube.com/vi/udkddqxth5Q/hqdefault.jpg" alt="TDK Demo 2" width="320" />
+    <img src="https://img.youtube.com/vi/udkddqxth5Q/hqdefault.jpg" alt="TDK Demo 2" width="350" />
   </a>
 </p>
 
