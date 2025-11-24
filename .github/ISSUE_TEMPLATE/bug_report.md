@@ -8,7 +8,7 @@ assignees: pzhu-flexiv, ZhipengZhang-flexiv
 ---
 
 **Version information**
-- TDK: [e.g. v1.8]
+- TDK: [e.g. v1.5]
 - Robot software: [e.g. v3.10]
 - OS: [e.g. Ubuntu 20.04 - x86_64]
 
