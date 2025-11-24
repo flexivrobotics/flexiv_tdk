@@ -40,8 +40,6 @@ Ubuntu offers multiple kernel variants tailored for different workloads:
 | `lowlatency`        | Reduced interrupt latency; better scheduling responsiveness | Robotics, audio processing, soft real-time   |
 | `rt` (`PREEMPT_RT`) | Fully preemptible; hard real-time determinism               | Industrial control, mission-critical systems |
 
-> 🔧 Using `lowlatency` or `PREEMPT_RT` can significantly improve teleoperation performance—but may cause **driver incompatibilities**.
-
 ---
 
 ## ⚠️ Important Disclaimer
@@ -87,7 +85,7 @@ Upgrading to a **low-latency** or **real-time (RT) kernel** may:
 ### Option 2: PREEMPT_RT Kernel (For hard real-time)
 
 Follow the official guide:  
-🔗 [Real-time Ubuntu Setup (TDK Documentation)](https://www.flexiv.com/software/tdk/manual/realtime_ubuntu.html#ubuntu-22-04-24-04-enable-via-pro-subscription)
+🔗 [Real-time Ubuntu Setup (Documentation)](https://www.flexiv.com/software/rdk/manual/realtime_ubuntu.html#ubuntu-22-04-24-04-enable-via-pro-subscription)
 
 > ℹ️ Ubuntu 22.04/24.04 users can enable RT kernel via **free Ubuntu Pro subscription**.  
 > Ubuntu 20.04 requires manual patching (advanced users only).
