@@ -24,7 +24,7 @@
 
 | OS            | Processor       | Languages   | Compiler Requirements     | Python Versions |
 | ------------- | --------------- | ----------- | ------------------------- | --------------- |
-| Ubuntu 20.04+ | x86_64, aarch64 | C++, Python | GCC ≥ 9.4, CMake ≥ 3.16.3 | 3.8, 3.10, 3.12 |
+| Ubuntu 22.04+ | x86_64, aarch64 | C++, Python | GCC ≥ 9.4, CMake ≥ 3.16.3 | 3.8, 3.10, 3.12 |
 
 >💡 Need support for other platforms? [Contact Flexiv](https://www.flexiv.com/contact).
 
@@ -82,7 +82,7 @@ Upgrading to a **low-latency** or **real-time (RT) kernel** may:
     ```
     🔄 To revert to ``generic``, change ``GRUB_FLAVOUR_ORDER="generic"`` and run ``sudo update-grub``.
 
-### Option 2: PREEMPT_RT Kernel (For hard real-time)
+### Option 2: PREEMPT_RT Kernel
 
 Follow the official guide:  
 🔗 [Real-time Ubuntu Setup (Documentation)](https://www.flexiv.com/software/rdk/manual/realtime_ubuntu.html#ubuntu-22-04-24-04-enable-via-pro-subscription)
@@ -190,7 +190,6 @@ Example: `~/tdk_install`
 cd flexiv_tdk/thirdparty
 bash build_and_install_dependencies.sh ~/tdk_install
 ```
-> 🌐 Internet connection to GitHub is required.
 
 ### 4. Configure & Install TDK
 ```bash
@@ -199,6 +198,7 @@ mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=~/tdk_install
 cmake --build . --target install --config Release
 ```
+> 🌐 Internet connection to GitHub is required for  [3. Build & Install Third-Party Dependencies](#3-build--install-third-party-dependencies) and [4. Configure & Install TDK](#4-configure--install-tdk).
 
 ### 5. Link TDK in Your Project
 
