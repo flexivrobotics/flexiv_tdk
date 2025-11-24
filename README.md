@@ -99,7 +99,7 @@ Follow the official guide:
 
 On all supported platforms, the Python package of TDK and its dependencies for a specific Python version can be installed using the `pip` module:
 
-    python3.x -m pip install numpy spdlog flexivtdk
+    python3.x -m pip install spdlog flexivtdk
 
 NOTE: replace `3.x` with a specific Python version.
 
@@ -113,9 +113,9 @@ After the ``flexivtdk`` Python package is installed, it can be imported from any
 
 ### 3.🕒 System Clock Sync 
 
-Note: This is only required for **WAN** Teleoperation, users can skip this section if only using LAN teleoperation.
+Accurate time sync is critical for teleop over the internet. For WAN teleop, there are two edge computers, one acting as a server and the other as a client, and the system time of these two computers needs to be calibrated. 
 
-Accurate time sync is critical for teleop over the internet.
+Note: This is only required for **WAN** Teleoperation, users can skip this section if only using LAN teleoperation.
 
 1. Install & Start chrony
 ```bash
