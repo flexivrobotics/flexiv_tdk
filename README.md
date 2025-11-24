@@ -1,75 +1,234 @@
 # Flexiv TDK
 
-![CMake Badge](https://github.com/flexivrobotics/flexiv_tdk/actions/workflows/cmake.yml/badge.svg) ![Version](https://img.shields.io/badge/version-1.4-blue.svg) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
+[![CMake](https://github.com/flexivrobotics/flexiv_tdk/actions/workflows/cmake.yml/badge.svg)](https://github.com/flexivrobotics/flexiv_tdk/actions/workflows/cmake.yml)
+[![Version](https://img.shields.io/badge/version-1.5-blue.svg)]()
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
-Flexiv TDK (Teleoperation Development Kit) is an SDK for developing customized robot-robot or device-robot teleoperation applications with Flexiv's adaptive robots. It features synchronized motions that are force-guided using high-fidelity perceptual feedback and supports both LAN (Local Area Network) and WAN (Wide Area Network, i.e. Internet) connections.
+**Flexiv TDK (Teleoperation Development Kit)** is an SDK for building custom robot-to-robot or device-to-robot teleoperation applications with Flexiv's adaptive robots. It enables synchronized, force-guided motion using **high-fidelity perceptual feedback** and supports both **LAN** (Local Area Network) and **WAN** (Internet) connections.
 
-## Compatibility
+🎬 **[Flexiv's TDK | Teleoperation Made Simple](https://www.youtube.com/watch?v=H0e9FSZIa14)**  
+*(Click image below to play)*  
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=H0e9FSZIa14" target="_blank">
+    <img src="https://img.youtube.com/vi/H0e9FSZIa14/hqdefault.jpg" alt="TDK Demo 1" width="350" style="margin-right:10px;" />
+  </a>
+  <a href="https://www.youtube.com/watch?v=udkddqxth5Q" target="_blank">
+    <img src="https://img.youtube.com/vi/udkddqxth5Q/hqdefault.jpg" alt="TDK Demo 2" width="350" />
+  </a>
+</p>
 
-| **Supported OS**           | **Supported processor** | **Supported language** | **Required compiler kit** |
-| -------------------------- | ----------------------- | ---------------------- | ------------------------- |
-| Linux (Ubuntu 20.04/22.04) | x86_64                  | C++                    | build-essential           |
 
-## Quick Start
+---
 
-The TDK library is packed into a unified modern CMake project named ``flexiv_tdk``, which can be configured and installed using CMake on all supported OS.
+## ✅ Compatibility
 
-### Install on Linux
+| OS            | Processor       | Languages   | Compiler Requirements     | Python Versions |
+| ------------- | --------------- | ----------- | ------------------------- | --------------- |
+| Ubuntu 22.04+ | x86_64, aarch64 | C++, Python | GCC ≥ 9.4, CMake ≥ 3.16.3 | 3.8, 3.10, 3.12 |
 
-1. In a new Terminal, install compiler kit, CMake (with GUI), Python interpreter, and Python package manager:
+>💡 Need support for other platforms? [Contact Flexiv](https://www.flexiv.com/contact).
 
-       sudo apt install build-essential cmake cmake-qt-gui -y
+---
 
-2. Choose a directory for installing ``flexiv_tdk`` library and all its dependencies. For example, a new folder named ``tdk_install`` under the home directory.
+## ⚙️ Kernel Options for Real-Time Performance
 
-3. In a new Terminal, run the provided script to compile and install all dependencies to the installation directory chosen in step 2:
+Ubuntu offers multiple kernel variants tailored for different workloads:
 
-       cd flexiv_tdk/thirdparty
-       bash build_and_install_dependencies.sh ~/tdk_install
+| Kernel Type         | Description                                                 | Typical Use Case                             |
+| ------------------- | ----------------------------------------------------------- | -------------------------------------------- |
+| `generic`           | Default kernel: balanced performance & power management     | General desktop/server use                   |
+| `lowlatency`        | Reduced interrupt latency; better scheduling responsiveness | Robotics, audio processing, soft real-time   |
+| `rt` (`PREEMPT_RT`) | Fully preemptible; hard real-time determinism               | Industrial control, mission-critical systems |
 
-   NOTE: Internet connection is required for this step.
+---
 
-4. In a new Terminal, configure ``flexiv_tdk`` library as a CMake project:
+## ⚠️ Important Disclaimer
 
-       cd flexiv_tdk
-       mkdir build && cd build
-       cmake .. -DCMAKE_INSTALL_PREFIX=~/tdk_install
+Upgrading to a **low-latency** or **real-time (RT) kernel** may:
+- Break proprietary drivers (e.g., NVIDIA, Wi-Fi modules)
+- Cause system instability or boot failure
 
-   NOTE: ``-D`` followed by ``CMAKE_INSTALL_PREFIX`` is a CMake parameter specifying the path of the chosen installation directory. Alternatively, this configuration step can be done using CMake GUI.
+**You assume full responsibility** for any issues arising from kernel changes.  
+✅ **Always back up your system** before proceeding.
 
-5. Install ``flexiv_tdk`` library:
+---
 
-       cd flexiv_tdk/build
-       cmake --build . --target install --config Release
 
-   The library will be installed to ``CMAKE_INSTALL_PREFIX`` path, which may or may not be globally discoverable by CMake.
+## Install Low-Latency or PREEMPT_RT Kernel for Ubuntu/x84-64 
 
-### Link to installed library from a user program
+### Option 1: Low-Latency Kernel
 
-After the TDK library is installed, it can be found as a CMake target and linked to from other CMake projects. Using the provided examples project for instance::
+1. **Install the kernel**:
+   For Hardware Enablement (HWE) stack (check with `uname -r`; e.g., Ubuntu 22.04 with kernel 6.x), use:
 
-    cd flexiv_tdk/example
-    mkdir build && cd build
-    cmake .. -DCMAKE_PREFIX_PATH=~/tdk_install
-    cmake --build . --config Release -j 4
+   ```bash
+   sudo apt update && sudo apt install --install-recommends linux-lowlatency-hwe-22.04  # replace "22.04" with your version
+   ```
+   For the original kernel (5.15), use:
+   ```bash
+   sudo apt update && sudo apt install --install-recommends linux-lowlatency
+   ```
 
-NOTE: ``-D`` followed by ``CMAKE_INSTALL_PREFIX`` tells the user project's CMake where to find the installed TDK library. The instruction above applies to all supported OS.
+2. **Set GRUB to prefer low-latency**:
+   ```bash
+    echo 'GRUB_FLAVOUR_ORDER="lowlatency"' | sudo tee -a /etc/default/grub
+    sudo update-grub
+   ```
 
-### Run example programs
+3. **Reboot and verify**:
+    ```bash
+    sudo reboot
+    uname -r  # Should show "...-lowlatency"
+    ```
+    🔄 To revert to ``generic``, change ``GRUB_FLAVOUR_ORDER="generic"`` and run ``sudo update-grub``.
 
-To run a compiled example program:
+### Option 2: PREEMPT_RT Kernel
 
-    cd flexiv_tdk/example/build
-    sudo ./<program_name> [arguments]
+Follow the official guide:  
+🔗 [Real-time Ubuntu Setup (Documentation)](https://www.flexiv.com/software/rdk/manual/realtime_ubuntu.html#ubuntu-22-04-24-04-enable-via-pro-subscription)
 
-The exact arguments required by an example program are documented in the program's code. Also, ``sudo`` is required to grant root permissions.
+> ℹ️ Ubuntu 22.04/24.04 users can enable RT kernel via **free Ubuntu Pro subscription**.  
+> Ubuntu 20.04 requires manual patching (advanced users only).
 
-## API Documentation
+> ℹ️ For  Nvidia Jetson(**arrch64**), please refer to Nvidia's official documentation.
+---
 
-The API documentation can be generated using doxygen:
+## 🚀 Quick Start - Python
 
-      sudo apt install doxygen-latex graphviz
-      cd flexiv_tdk
-      doxygen doc/Doxyfile.in
+### 1. Install the Python package
 
-The generated API documentation is under ``flexiv_tdk/doc/html/`` directory. Open any html file with your browser to view it.
+On all supported platforms, the Python package of TDK and its dependencies for a specific Python version can be installed using the `pip` module:
+
+    python3.x -m pip install spdlog flexivtdk
+
+NOTE: replace `3.x` with a specific Python version.
+
+### 2. Use the installed Python package
+
+After the ``flexivtdk`` Python package is installed, it can be imported from any Python script. Test with the following commands in a new Terminal, which should start Flexiv TDK:
+
+    python3.x
+    import flexivtdk
+    flexivtdk.__version__ 
+
+### 3.🕒 System Clock Sync 
+
+Accurate time sync is critical for teleop over the internet. For WAN teleop, there are two edge computers, one acting as a server and the other as a client, and the system time of these two computers needs to be calibrated. 
+
+Note: This is only required for **WAN** Teleoperation, users can skip this section if only using LAN teleoperation.
+
+1. Install & Start chrony
+```bash
+sudo apt install chrony -y
+systemctl status chrony  # Should show "active (running)"
+```
+2. Check Sync Accuracy
+```bash
+chronyc tracking | grep 'System time\|RMS offset'
+```
+
+System time: the instantaneous offset between local system clock and NTP reference
+
+RMS offset: the long-term average offset (root mean square) over time
+
+| Network Condition | Good (ms) | Acceptable (ms) | Poor (ms) |
+| ----------------- | --------- | --------------- | --------- |
+| System time       | < 1       | 1 - 10          | > 10      |
+| RMS offset        | < 5       | 5 - 20          | > 20      |
+
+
+3. Force Immediate Sync (if needed)
+```bash
+sudo chronyc burst 4/4
+sudo chronyc makestep
+```
+🔄 After network changes (e.g., Wi-Fi → Ethernet), restart:
+
+```bash
+sudo systemctl restart chronyd
+sleep 5
+sudo chronyc makestep
+```
+4. Learn more: [Chrony Documentation](https://chrony-project.org/)
+
+### 4. Enable Real-Time Privileges for Non-root Users
+
+To allow a regular user to create high-priority (real-time) threads without `sudo`, configure system to apply real-time and nice priority limits:
+
+```bash
+echo "${USER}    -   rtprio    99" | sudo tee -a /etc/security/limits.conf
+echo "${USER}    -   nice     -20" | sudo tee -a /etc/security/limits.conf
+```
+Log out and log back in (or reboot) for the settings to take effect.
+
+### 5. Run example Python scripts
+
+To run an example Python script in this repo:
+
+```bash
+cd flexiv_tdk/example_py
+python3.x <example_name>.py [arguments]
+```
+
+Check each example’s source code for usage details.
+
+## 🚀 Quick Start - C++
+
+The TDK is distributed as a modern CMake project named `flexiv_tdk`.
+
+### 1. Install Build Dependencies
+```bash
+sudo apt install build-essential cmake cmake-qt-gui -y
+```
+
+### 2. Choose an Installation Directory
+
+Example: `~/tdk_install`
+
+### 3. Build & Install Third-Party Dependencies
+```bash
+cd flexiv_tdk/thirdparty
+bash build_and_install_dependencies.sh ~/tdk_install
+```
+
+### 4. Configure & Install TDK
+```bash
+cd flexiv_tdk
+mkdir build && cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=~/tdk_install
+cmake --build . --target install --config Release
+```
+> 🌐 Internet connection to GitHub is required for  [3. Build & Install Third-Party Dependencies](#3-build--install-third-party-dependencies) and [4. Configure & Install TDK](#4-configure--install-tdk).
+
+### 5. Link TDK in Your Project
+
+After the TDK library is installed, it can be found as a CMake target and linked to from other CMake projects. Using the provided examples project for instance:
+
+```bash
+cd flexiv_tdk/example
+mkdir build && cd build
+cmake .. -DCMAKE_PREFIX_PATH=~/tdk_install
+cmake --build . --config Release -j 4
+```
+
+NOTE: ``-D`` followed by ``CMAKE_INSTALL_PREFIX`` tells the user project's CMake where to find the installed TDK library. 
+
+
+
+### 6. Run Examples
+```bash
+cd flexiv_tdk/example/build
+./<program_name> [arguments]
+```
+
+Check each example’s source code for usage details.
+
+## 📚 Generate API Documentation
+
+```bash
+sudo apt install doxygen-latex graphviz
+cd flexiv_tdk
+doxygen doc/Doxyfile.in
+```
+
+Open flexiv_tdk/doc/html/index.html in your browser.

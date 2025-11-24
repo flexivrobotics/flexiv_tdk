@@ -1,6 +1,9 @@
 /**
  * @example transparent_cartesian_teleop_lan.cpp
- * @brief Example of using TransparentCartesianTeleopLAN class.
+ * @brief Example usage of Transparent Cartesian teleoperation under Local Area Network for
+ * controlling a follower robot using a leader robot with transparent force feedback. Supports both
+ * keyboard and digital input engage/disengage signal reading, with various axes lock modes, force
+ * scaling, and max contact wrench setting, etc.
  * @copyright Copyright (C) 2016-2025 Flexiv Ltd. All Rights Reserved.
  * @author Flexiv
  */
@@ -15,6 +18,7 @@
 #include <chrono>
 #include <iostream>
 #include <thread>
+#include <optional>
 
 namespace {
 /** Nullspace to a preferred posture */
@@ -41,6 +45,7 @@ void PrintHelp()
     std::cout<<"     -l     [necessary] serial number of leader robot."<<std::endl;
     std::cout<<"     -f     [necessary] serial number of follower robot."<<std::endl;
     std::cout<<"     -i     [optional] The ip address of the network card connected to the robot." << std::endl;
+    std::cout<<"     -D     [optional] Enable Digital Input reading task." << std::endl;
     std::cout<<"Usage: sudo ./transparent_cartesian_teleop_lan [-l leader_robot_sn] [-f follower_robot_sn] [-i white_list_ip_of_network_interface]"<<std::endl;
     // clang-format on
 }
@@ -50,6 +55,7 @@ const struct option kLongOptions[] = {
     {"leader SN",                                       required_argument,  0, 'l'},
     {"follower SN",                                     required_argument,  0, 'f'},
     {"ip address of whitelisted network interface",     optional_argument,  0, 'i'},
+    {"enable digital input",                            no_argument,        0, 'D'},
     {0,                                                                 0,  0,  0 }
     // clang-format on
 };
@@ -64,8 +70,6 @@ void ReadDigitalInputTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
             teleop.Engage(0, teleop.digital_inputs(0).first[0]);
         } catch (const std::exception& e) {
             spdlog::error("Exception in ReadDigitalInputTask: {}", e.what());
-            g_running.store(false);
-            return;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -92,6 +96,7 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
   --- Wrench Feedback Scaling ---
     t        : Set wrench feedback scaling to 0.5
     T        : Set wrench feedback scaling to 2.0
+    c        : Reset wrench feedback scaling to 1.0 default value
 
   --- Axis Lock Presets ---
     u        : Unlock all axes (TCP coord)
@@ -106,7 +111,16 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
 
   --- Repulsive Force ---
     a        : Set repulsive force to {5, 0, 0}
-    A        : Clear repulsive force
+    A        : Set repulsive force to {-5, 0, 0}
+    C        : Clear force 
+
+  --- Start/Stop ---
+    b        : Stop teleop
+    B        : Start teleop
+
+
+  --- Is teleop stopped or not ---
+    s        : Query if teleop stopped or not
 
   --- Help ---
     Any other key to show this help menu
@@ -240,9 +254,25 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
                     teleop.SetRepulsiveForce(index, {5, 0, 0});
                     break;
                 case 'A':
+                    teleop.SetRepulsiveForce(index, {-5, 0, 0});
+                    break;
+                case 'b':
+                    teleop.Stop();
+                    break;
+                case 'B':
+                    teleop.Init();
+                    teleop.Start();
+                    break;
+                case 'c':
+                    teleop.SetWrenchFeedbackScalingFactor(index, 1);
+                    break;
+                case 'C':
                     teleop.SetRepulsiveForce(index, {0, 0, 0});
                     break;
-
+                case 's':
+                    teleop.stopped(0) ? spdlog::info("Teleop pair 0 stopped")
+                                      : spdlog::info("Teleop pair 0 started");
+                    break;
                 default:
                     spdlog::warn("Invalid command!");
                     PrintCommandMenu();
@@ -266,7 +296,9 @@ int main(int argc, char* argv[])
     std::vector<std::string> network_interface_whitelist {};
     int opt = 0;
     int longIndex = 0;
-    while ((opt = getopt_long_only(argc, argv, "f:l:i:", kLongOptions, &longIndex)) != -1) {
+    bool enable_digital_input = false;
+
+    while ((opt = getopt_long_only(argc, argv, "f:l:i:D", kLongOptions, &longIndex)) != -1) {
         switch (opt) {
             case 'f':
                 follower_sn = std::string(optarg);
@@ -277,6 +309,9 @@ int main(int argc, char* argv[])
             case 'i':
                 whitelist_ip = std::string(optarg);
                 network_interface_whitelist.emplace_back(whitelist_ip);
+                break;
+            case 'D':
+                enable_digital_input = true;
                 break;
             default:
                 PrintHelp();
@@ -306,11 +341,27 @@ int main(int argc, char* argv[])
 
         // Start console and pedal input threads
         std::thread console_thread(std::bind(ConsoleTask, std::ref(tctl)));
-        std::thread pedal_thread(std::bind(ReadDigitalInputTask, std::ref(tctl)));
+
+        // Start pedal_thread based on the new flag or the role
+        std::optional<std::thread> pedal_thread;
+
+        if (enable_digital_input) {
+            spdlog::info("Starting ReadDigitalInputTask thread.");
+            pedal_thread.emplace(ReadDigitalInputTask, std::ref(tctl));
+        } else {
+            spdlog::info("ReadDigitalInputTask thread NOT started (-D flag not provided).");
+        }
 
         // Wait for threads to finish
         console_thread.join();
-        pedal_thread.join();
+
+        // Stop all threads, notify other threads exit
+        g_running.store(false);
+
+        // Wait for digital reading task exit
+        if (pedal_thread && pedal_thread->joinable()) {
+            pedal_thread->join();
+        }
 
         // Exit high transparency teleop
         tctl.Stop();

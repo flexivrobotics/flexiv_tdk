@@ -1,6 +1,9 @@
 /**
  * @example transparent_cartesian_teleop_wan.cpp
- * @brief Example of using TransparentCartesianTeleopWAN class.
+ * @brief Example usage of Transparent Cartesian teleoperation cross Wide Area Network for
+ * controlling a follower robot using a leader robot with transparent force feedback. Supports both
+ * keyboard and digital input engage/disengage signal reading, with message latency query, nullspace
+ * posture tuning, and max contact wrench setting, etc.
  * @copyright Copyright (C) 2016-2025 Flexiv Ltd. All Rights Reserved.
  * @author Flexiv
  */
@@ -29,37 +32,43 @@ std::vector<double> kHomeJntPos = {0 * M_PI / 180.0, -40 * M_PI / 180.0, 0 * M_P
 
 /** Maximum contact wrench for soft contact*/
 const std::array<double, flexiv::tdk::kCartDoF> kDefaultMaxContactWrench
-    = {5.0, 5.0, 5.0, 40.0, 40.0, 40.0};
+    = {50.0, 50.0, 50.0, 40.0, 40.0, 40.0};
 
 /** Atomic signal to stop console and DI reading tasks */
 std::atomic<bool> g_running {true};
 
+/** Teleop role */
+flexiv::tdk::Role kRole;
 }
 
 void PrintHelp()
 {
     // clang-format off
     std::cout<<"Invalid program arguments!"<<std::endl;
-    std::cout<<"     -s     [necessary] Serial number of the robot to connect with ethernet cable."<<std::endl;
+    std::cout<<"     -l     [necessary] serial number of leader robot."<<std::endl;
+    std::cout<<"     -f     [necessary] serial number of follower robot."<<std::endl;
     std::cout<<"     -r     [necessary] Role of participants in teleop. can be [follower] or [leader]"<<std::endl;
     std::cout<<"     -t     [necessary] Role in the TCP connection, can be [server] or [client]."<<std::endl;
     std::cout<<"     -i     [necessary] Public IPV4 address of the machine that functions as TCP server."<<std::endl;
     std::cout<<"     -p     [necessary] Listening port of the TCP server machine."<<std::endl;
-    std::cout<<"     -l     [optional] The ip address of the network card connected to the robot." << std::endl;
-    std::cout<<"     -w     [optional] The ip address of the network card connected to the Internet." << std::endl;
-    std::cout<<"Usage: sudo ./transparent_cartesian_teleop_wan [-s robot_serial_number] [-r leader/follower] [-t server/client] [-i server_public_ip] [-p server_port] [-l white_list_ip_of_lan_interface] [-w white_list_ip_of_wan_interface]"<<std::endl;
+    std::cout<<"     -A     [optional] The ip address of the network card connected to the robot (LAN)." << std::endl;
+    std::cout<<"     -W     [optional] The ip address of the network card connected to the Internet (WAN)." << std::endl;
+    std::cout<<"     -D     [optional] Enable Digital Input reading task." << std::endl;
+    std::cout<<"Usage: sudo ./transparent_cartesian_teleop_wan [-l leader_robot_serial_number] [-f follower_robot_serial_number] [-r leader/follower] [-t server/client] [-i server_public_ip] [-p server_port] [-A lan_interface_ip] [-W wan_interface_ip] [-D]"<<std::endl;
     // clang-format on
 }
 
 const struct option kLongOptions[] = {
     // clang-format off
-    {"serial number",               required_argument,  0, 's'},
+    {"leader SN",                   required_argument,  0, 'l'},
+    {"follower SN",                 required_argument,  0, 'f'},
     {"role",                        required_argument,  0, 'r'},
     {"tcp role",                    required_argument,  0, 't'},
     {"public ipv4 address",         required_argument,  0, 'i'},
     {"port",                        required_argument,  0, 'p'},
-    {"lan whitelist ip",            optional_argument,  0, 'l'},
-    {"wan whitelist ip",            optional_argument,  0, 'w'},
+    {"lan whitelist ip",            optional_argument,  0, 'A'},
+    {"wan whitelist ip",            optional_argument,  0, 'W'},
+    {"enable digital input",        no_argument,        0, 'D'},
     {0,                             0,                  0,  0 }
     // clang-format on
 };
@@ -69,13 +78,11 @@ const struct option kLongOptions[] = {
  */
 void ReadDigitalInputTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
 {
-    while (g_running.load() && !teleop.fault()) {
+    while (g_running.load() && !teleop.fault(0)) {
         try {
-            teleop.Engage(teleop.digital_inputs()[0]);
+            teleop.Engage(0, teleop.digital_inputs(0)[0]);
         } catch (const std::exception& e) {
             spdlog::error("Exception in ReadDigitalInputTask: {}", e.what());
-            g_running.store(false);
-            return;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -100,12 +107,19 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
   --- Max Contact Wrench ---
     p        : Set default max contact wrench
 
+  --- Reinit and start ---
+    u        : Recall Init and Start 
+    U        : Stop teleop
+
+  --- Tcp message latency ---
+    l       : print current message latency in milliseconds
+
   --- Help ---
     Any other key to show this help menu
         )" << std::endl;
     };
 
-    while (g_running.load() && !teleop.fault()) {
+    while (g_running.load() && !teleop.fault(0)) {
 
         std::string user_input {};
 
@@ -120,20 +134,36 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
         try {
             switch (user_input[0]) {
                 case 'r':
-                    teleop.Engage(true);
+                    teleop.Engage(0, true);
                     break;
                 case 'R':
-                    teleop.Engage(false);
+                    teleop.Engage(0, false);
                     break;
                 case 'i':
-                    teleop.SetNullSpacePosture(kPreferredJntPos);
+                    teleop.SetNullSpacePosture(0, kPreferredJntPos);
                     break;
                 case 'I':
-                    teleop.SetNullSpacePosture(kHomeJntPos);
+                    teleop.SetNullSpacePosture(0, kHomeJntPos);
                     break;
                 case 'p':
-                    teleop.SetMaxContactWrench(kDefaultMaxContactWrench);
+                    teleop.SetMaxContactWrench(0, kDefaultMaxContactWrench);
                     break;
+                case 'u':
+                    teleop.Init();
+                    teleop.Start();
+                    break;
+                case 'U':
+                    teleop.Stop();
+                    break;
+                case 'l': {
+                    double latency_ms {};
+                    if (teleop.CheckTeleopConnectionLatency(0, latency_ms)) {
+                        spdlog::info("Current message latency is: {}ms", latency_ms);
+                    } else {
+                        spdlog::warn("WAN teleop is disconnected.");
+                    }
+                    break;
+                }
 
                 default:
                     spdlog::warn("Invalid command!");
@@ -152,16 +182,20 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
 
 int main(int argc, char* argv[])
 {
-    std::string local_sn, teleop_role, tcp_role, public_server_ip, lan_ip, wan_ip;
+    std::string follower_sn, leader_sn, teleop_role, tcp_role, public_server_ip, lan_ip, wan_ip;
     unsigned int server_port = 0;
     std::vector<std::string> lan_interface_whitelist {};
     std::vector<std::string> wan_interface_whitelist {};
+    bool enable_digital_input = false;
 
     int opt = 0;
-    while ((opt = getopt_long_only(argc, argv, "s:r:t:i:p:l:w:", kLongOptions, nullptr)) != -1) {
+    while ((opt = getopt_long_only(argc, argv, "l:f:r:t:i:p:A:W:D", kLongOptions, nullptr)) != -1) {
         switch (opt) {
-            case 's':
-                local_sn = std::string(optarg);
+            case 'f':
+                follower_sn = std::string(optarg);
+                break;
+            case 'l':
+                leader_sn = std::string(optarg);
                 break;
             case 'r':
                 teleop_role = std::string(optarg);
@@ -180,21 +214,24 @@ int main(int argc, char* argv[])
                     return 1;
                 }
                 break;
-            case 'l':
+            case 'A':
                 lan_ip = std::string(optarg);
                 lan_interface_whitelist.push_back(lan_ip);
                 break;
-            case 'w':
+            case 'W':
                 wan_ip = std::string(optarg);
                 wan_interface_whitelist.push_back(wan_ip);
+                break;
+            case 'D':
+                enable_digital_input = true;
                 break;
             default:
                 PrintHelp();
                 return 1;
         }
     }
-    if (local_sn.empty() || tcp_role.empty() || teleop_role.empty() || public_server_ip.empty()
-        || server_port == 0) {
+    if (follower_sn.empty() || leader_sn.empty() || tcp_role.empty() || teleop_role.empty()
+        || public_server_ip.empty() || server_port == 0) {
         PrintHelp();
         return 1;
     }
@@ -214,11 +251,10 @@ int main(int argc, char* argv[])
     }
 
     // Whether this is leader or follower
-    flexiv::tdk::Role role;
     if (teleop_role == "follower") {
-        role = flexiv::tdk::Role::WAN_TELEOP_FOLLOWER;
+        kRole = flexiv::tdk::Role::WAN_TELEOP_FOLLOWER;
     } else if (teleop_role == "leader") {
-        role = flexiv::tdk::Role::WAN_TELEOP_LEADER;
+        kRole = flexiv::tdk::Role::WAN_TELEOP_LEADER;
     } else {
         spdlog::error("Valid inputs for [-r] are: follower, leader");
         return 1;
@@ -232,34 +268,46 @@ int main(int argc, char* argv[])
     network_cfg.lan_interface_whitelist = lan_interface_whitelist;
     network_cfg.wan_interface_whitelist = wan_interface_whitelist;
 
-    spdlog::info("Robot serial number: {}", local_sn);
-    spdlog::info("Start as {} on {}:{}", tcp_role, public_server_ip, server_port);
-
+    std::vector<std::pair<std::string, std::string>> robot_sn_pairs {};
+    robot_sn_pairs.push_back({leader_sn, follower_sn});
     try {
 
         // Allocate tdk object
-        flexiv::tdk::TransparentCartesianTeleopWAN tctw(local_sn, network_cfg);
+        flexiv::tdk::TransparentCartesianTeleopWAN tctw(robot_sn_pairs, kRole, network_cfg);
 
         // Init high transparency teleop
-        tctw.Init(role);
+        tctw.Init();
 
         // Start high transparency teleop
         tctw.Start();
 
+        // Set max contact wrench
+        tctw.SetMaxContactWrench(0, kDefaultMaxContactWrench);
+
         // Start console_thread
         std::thread console_thread(std::bind(ConsoleTask, std::ref(tctw)));
 
-        // Start pedal_thread according to teleop_role
+        // Start pedal_thread based on the new flag or the role
         std::optional<std::thread> pedal_thread;
-        if (teleop_role == "leader") {
+        // Modified condition: Start if -D is given OR if role is leader (original behavior)
+        if (teleop_role == "leader" && enable_digital_input) {
+            spdlog::info(
+                "Starting ReadDigitalInputTask thread as role is 'leader' and requested by -D "
+                "flag.");
             pedal_thread.emplace(ReadDigitalInputTask, std::ref(tctw));
+        } else {
+            spdlog::info(
+                "ReadDigitalInputTask thread NOT started (role is not 'leader' or -D flag not "
+                "provided).");
         }
+
         // Wait for console_thread to finish
         console_thread.join();
 
-        // Stop all threads
+        // Stop all threads, notify other threads exit
         g_running = false;
 
+        // Wait for digital reading task exit
         if (pedal_thread && pedal_thread->joinable()) {
             pedal_thread->join();
         }

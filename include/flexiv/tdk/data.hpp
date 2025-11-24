@@ -23,8 +23,11 @@ constexpr size_t kPoseSize = 7;
 /** Number of digital IO ports (16 on control box + 2 inside the wrist connector) */
 constexpr size_t kIOPorts = 18;
 
-/** Max wrench feedback scaling factor for high transparency teleop*/
+/** Max wrench feedback scaling factor for transparent teleop */
 constexpr double kMaxWrenchFeedbackScale = 3;
+
+/** Max robot pairs */
+constexpr size_t kMaxRobotPairsNum = 2;
 
 /**
  * @struct NetworkCfg

@@ -3,10 +3,17 @@ runs:
   using: "composite"
   # Note: working directory will be reset to the repo root for each new step
   steps:
-    # Build and install all dependencies to TDK installation directory.
+    # Use a fixed CMake version
+    - name: Set up CMake
+      uses: jwlawson/actions-setup-cmake@v2
+      with:
+        cmake-version: "3.22.1"
+
+    # Build and install all dependencies to RDK installation directory.
     - name: Build and install dependencies
       shell: bash
       run: |
+        cmake --version
         pwd
         cd thirdparty
         bash build_and_install_dependencies.sh ~/tdk_install 4
