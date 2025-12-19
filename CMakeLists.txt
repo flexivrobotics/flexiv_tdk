@@ -35,7 +35,7 @@ if(NOT HASH_LEN EQUAL 64)
 endif()
 
 # Download the library file from GitHub 
-set(TDK_LIB_URL https://github.com/flexivrobotics/flexiv_tdk/releases/download/v1.5/${TDK_LIB})
+set(TDK_LIB_URL https://github.com/flexivrobotics/flexiv_tdk/releases/download/v1.5_patch/${TDK_LIB})
 message(STATUS "Downloading ${TDK_LIB_URL} ...")
 file(DOWNLOAD ${TDK_LIB_URL} ${CMAKE_CURRENT_BINARY_DIR}/${TDK_LIB}
      SHOW_PROGRESS
