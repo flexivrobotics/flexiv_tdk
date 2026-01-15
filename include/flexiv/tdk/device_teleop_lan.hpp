@@ -47,12 +47,13 @@ public:
     /**
      * @brief [Blocking] Get all robots ready for teleoperation. The following actions will
      * happen in sequence: a) enable robot,b) clear fault if any, c) zero force/torque sensors.
+     * @param [in] zero_ft_sensor Whether to calibrate force/torque sensor.
      * @throw std::runtime_error if the initialization sequence failed.
      * @note This function blocks until the initialization sequence is finished.
      * @warning This process involves sensor zeroing, please make sure the robot is not in contact
      * with anything during the process.
      */
-    void Init();
+    void Init(ZeroFTSensor zero_ft_sensor = ZeroFTSensor::Enable);
 
     /**
      * @brief [Blocking] Start the teleoperation control loop.
