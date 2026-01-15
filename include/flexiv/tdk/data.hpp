@@ -103,6 +103,9 @@ enum Role
                          /// teleoperation over WAN.
 };
 
+static const std::string RoleTypeStr[]
+    = {"UNKNOWN", "LAN_TELEOP", "WAN_TELEOP_LEADER", "WAN_TELEOP_FOLLOWER"};
+
 /**
  * @struct MotionControlCmds
  * @brief Motion control command struct for general device-robot teleop.
@@ -238,6 +241,16 @@ struct AxisLock
      * True for locking, false for floating.
      */
     std::array<bool, 3> lock_ori_axis = {false, false, false};
+};
+
+/**
+ * @enum ZeroFTSensor
+ * @brief Sensor calibration options
+ */
+enum class ZeroFTSensor
+{
+    Enable,
+    Disable
 };
 
 } // namespace tdk
