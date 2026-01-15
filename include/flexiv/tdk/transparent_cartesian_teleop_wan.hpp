@@ -140,17 +140,18 @@ public:
     //==================================== TELEOP LIFECYCLE ====================================
     /**
      * @brief [Blocking] Get current role ready for teleoperation. The following actions will
-     * happen in sequence: a) enable robot if it's servo off, b) zero force/torque sensors, c) stop
-     * the robot and init teleop control params.
+     * happen in sequence: a) enable robot if it's servo off, b) zero force/torque sensors if flag
+     * zero_ft_sensor is enabled, c) stop the robot and init teleop control params.
      * @param[in] limit_wrist_singular Whether to limit wrist singularity. If twisted towards the
      * wrist singularity zone, it may cause the robot to report error.
+     * @param [in] zero_ft_sensor Whether to calibrate force/torque sensor.
      * @throw std::runtime_error if the initialization sequence failed.
      * @note This function blocks until the initialization sequence is finished.
      * @warning This process involves sensor zeroing, please make sure the robot is not in contact
      * with anything during the process.
      * @see Role
      */
-    void Init(bool limit_wrist_singular = true);
+    void Init(bool limit_wrist_singular = true, ZeroFTSensor zero_ft_sensor = ZeroFTSensor::Enable);
 
     /**
      * @brief [Non-Blocking] Start the teleoperation control loop for current roles (leaders or
@@ -177,18 +178,21 @@ public:
     /**
      * @brief [Blocking] Get current role in specified pair ready for teleoperation. The
      * following actions will happen in sequence: a) enable robot if it's servo off, b) zero
-     * force/torque sensors, c) stop the robot and init teleop control params.
+     * force/torque sensors if flag zero_ft_sensor is enabled, c) stop the robot and init teleop
+     * control params.
      * @param[in] idx Index of the robot pair to init. This index is the same as the index
      * of the constructor parameter [robot_pairs_sn].
      * @param[in] limit_wrist_singular Whether to limit wrist singularity. If twisted towards the
      * wrist singularity zone, it may cause the robot to report error.
+     * @param [in] zero_ft_sensor Whether to calibrate force/torque sensor.
      * @throw std::runtime_error if the initialization sequence failed.
      * @note This function blocks until the initialization sequence is finished.
      * @warning This process involves sensor zeroing, please make sure the robot is not in contact
      * with anything during the process.
      * @see Role
      */
-    void InitWithIdx(unsigned int idx, bool limit_wrist_singular = true);
+    void InitWithIdx(unsigned int idx, bool limit_wrist_singular = true,
+        ZeroFTSensor zero_ft_sensor = ZeroFTSensor::Enable);
 
     /**
      * @brief [Non-Blocking] Start the teleoperation control loop for the specified robot pair.
@@ -292,6 +296,39 @@ public:
      * @see CheckTeleopConnectionLatency()
      */
     void SetTeleopLatencyLimit(unsigned int idx, double threshold_ms = 200.0);
+
+    /**
+     * @brief [Non-blocking] Set the leader robot axis locking command.
+     * @param[in] idx Index of the robot pair to set commands for. This index is the same as the
+     * index of the constructor parameter [robot_pairs_sn].
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @throw std::logic_error if this teleop instance is not initialized as leader robot.
+     * @param[in] cmd User input command to lock the motion of the specified axis in the reference
+     * coordinate.
+     */
+    void SetAxisLockCmd(unsigned int idx, const AxisLock& cmd);
+
+    /**
+     * @brief [Non-blocking] Get the leader robot axis locking status
+     * @param[in] idx Index of the robot pair to get state for. This index is the same as the
+     * index of the constructor parameter [robot_pairs_sn].
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @throw std::logic_error if this teleop instance is not initialized as leader robot.
+     * @param[out] data Current axis locking state of leader robot.
+     */
+    void GetAxisLockState(unsigned int idx, AxisLock& data);
+
+    /**
+     * @brief [Non-blocking] Get the leader robot axis locking status
+     * @param[in] idx Index of the robot pair to get states for. This index is the same as the
+     * index of the constructor parameter [robot_pairs_sn].
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @throw std::logic_error if this teleop instance is not initialized as leader robot.
+     * @warning This fuction is less efficient than the other overloaded one as additional runtime
+     * memory allocation and data copying are performed.
+     * @return AxisLock
+     */
+    AxisLock GetAxisLockState(unsigned int idx);
 
     //======================================= SYSTEM CONTROL =======================================
     /**
