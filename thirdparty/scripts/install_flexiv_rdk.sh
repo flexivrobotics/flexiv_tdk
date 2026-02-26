@@ -3,7 +3,7 @@ set -e
 echo "Installing flexiv_rdk"
 
 # Use a specific version
-GIT_TAG=v1.8
+GIT_TAG=v1.9
 
 # Get install directory and number of parallel build jobs as script arguments
 INSTALL_DIR=$1
@@ -20,9 +20,13 @@ fi
 # Save path to flexiv_rdk root
 ROOT_DIR=$(pwd)
 
-# Build and install nested dependencies
+# Build and install flexiv_rdk's dependencies
 cd thirdparty
-bash build_and_install_dependencies.sh $INSTALL_DIR $NUM_JOBS
+if [ -n "$BUILD_FOR_JAZZY" ] ; then
+  bash build_and_install_dependencies_not_in_ros2.sh $INSTALL_DIR $NUM_JOBS
+else
+  bash build_and_install_dependencies.sh $INSTALL_DIR $NUM_JOBS
+fi
 
 # Configure CMake
 cd $ROOT_DIR
