@@ -21,8 +21,8 @@ set(EXAMPLE_LIST
   joint_teleop_under_lan
 )
 
-# Find flexiv_tdk INTERFACE library
-find_package(flexiv_tdk 1.5.0 EXACT REQUIRED)
+# Find flexiv_tdk library
+find_package(flexiv_tdk REQUIRED)
 if(flexiv_tdk_FOUND)
   message(STATUS "Found flexiv_tdk: ${flexiv_tdk_DIR}, version: ${flexiv_tdk_VERSION}")
 endif()

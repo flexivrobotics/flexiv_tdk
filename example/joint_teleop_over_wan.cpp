@@ -12,6 +12,7 @@
 
 #include <getopt.h>
 #include <iostream>
+#include <thread>
 
 namespace {
 const std::vector<double> kJointStiffnessRatio = {0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02};
