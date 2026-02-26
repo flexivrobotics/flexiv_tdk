@@ -282,8 +282,8 @@ public:
      * triggered.
      * @param[in] idx Index of the robot pair to set null-space posture for. This index is the same
      * as the index of the constructor parameter [robot_pairs_sn].
-     * @param[in] ref_positions Reference joint positions for the null-space posture control of both
-     * robots in the pair: \f$ q_{ns} \in \mathbb{R}^{n \times 1} \f$. Unit: \f$ [rad] \f$.
+     * @param[in] ref_joint_positions Reference joint positions for the null-space posture control
+     * of both robots in the pair: \f$ q_{ns} \in \mathbb{R}^{n \times 1} \f$. Unit: \f$ [rad] \f$.
      * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
      * @throw std::invalid_argument if [ref_joint_positions] contains any value outside joint limits
      * or size of input vector does not match robot DoF.
@@ -308,8 +308,8 @@ public:
      * triggered.
      * @param[in] idx Index of the robot pair to set null-space posture for. This index is the same
      * as the index of the constructor parameter [robot_pairs_sn].
-     * @param[in] ref_positions Reference joint positions for the null-space posture control of both
-     * robots in the pair: \f$ q_{ns} \in \mathbb{R}^{n \times 1} \f$. Unit: \f$ [rad] \f$.
+     * @param[in] ref_joint_positions Reference joint positions for the null-space posture control
+     * of both robots in the pair: \f$ q_{ns} \in \mathbb{R}^{n \times 1} \f$. Unit: \f$ [rad] \f$.
      * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
      * @throw std::invalid_argument if [ref_joint_positions] contains any value outside joint limits
      * or size of input vector does not match robot DoF.
