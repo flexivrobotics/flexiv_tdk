@@ -1,7 +1,7 @@
 /**
  * @file data.hpp
  * @brief Header file containing various constant expressions, data structs, and enums.
- * @copyright Copyright (C) 2016-2025 Flexiv Ltd. All Rights Reserved.
+ * @copyright Copyright (C) 2016-2026 Flexiv Ltd. All Rights Reserved.
  */
 
 #pragma once
@@ -191,7 +191,7 @@ public:
 
 /**
  * @enum CoordType
- * @brief Reference coordinate that the axis to be locked for high transparency teleop
+ * @brief Reference coordinate that the axis to be locked used by transparent cartesian teleop
  */
 enum CoordType
 {
@@ -203,7 +203,7 @@ enum CoordType
 static const std::string CoordTypeStr[] = {"UNKNOWN", "TCP", "WORLD"};
 
 /**
- * @brief Get the coordinate type of axis locking status for high transparency teleop
+ * @brief Get the coordinate type of axis locking status used by transparent cartesian teleop
  * @param[in] str string name of the coordinate
  * @return CoordType
  */
@@ -219,9 +219,9 @@ static inline CoordType GetCoordType(const std::string& str)
 
 /**
  * @struct AxisLock
- * @brief Data for locking axis, including reference frame and axis to be locked for high
- * transparency teleop. Coordinate type options are: "COORD_TCP" for TCP frame and "COORD_WORLD"
- * for WORLD frame.
+ * @brief Data for locking axis, including reference frame and axis to be locked for transparent
+ * cartesian teleop. Coordinate type options are: "COORD_TCP" for TCP frame and "COORD_WORLD" for
+ * WORLD frame.
  */
 struct AxisLock
 {

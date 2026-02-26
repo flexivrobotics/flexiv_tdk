@@ -1,6 +1,6 @@
 /**
  * @file transparent_cartesian_teleop_wan.hpp
- * @copyright Copyright (C) 2016-2025 Flexiv Ltd. All Rights Reserved.
+ * @copyright Copyright (C) 2016-2026 Flexiv Ltd. All Rights Reserved.
  */
 #pragma once
 
@@ -61,35 +61,33 @@ public:
 
     //========================================= ACCESSORS ==========================================
     /**
-     * @brief [Non-blocking] Check the TCP connection status and retrieve the average message
-     * latency.
+     * @brief Non-blocking check of TCP connection status and average message latency.
      *
-     * This function estimates the average TCP message latency (in milliseconds) using an internal
-     * sliding-window filter to suppress occasional spikes. The result is returned through the
-     * output parameter [latency_ms].
+     * Estimates the average TCP message latency (in milliseconds) using an internal
+     * sliding-window filter to suppress transient spikes. The computed value is
+     * returned via [latency_ms].
      *
-     * The return value and latency interpretation are as follows:
-     * - **Case 1:** `latency_ms` is a very large positive number → Connection not yet established.
-     *   Returns **false**.
-     * - **Case 2:** `latency_ms` is within [0, threshold_ms] milliseconds → Connection established.
-     *   Returns **true**. The default threshold is 200 milliseconds, but can be adjusted using
-     *   SetTeleopLatencyLimit().
-     * - **Case 3:** `latency_ms` is negative → The system clocks of the two computers are not
-     *   properly synchronized.
-     *   Returns **false**. In this case, ensure both computers run the `chrony` service to
-     *   synchronize their system time.
+     * Interpretation of return value and latency:
+     * - **Not connected:** [latency_ms] is a very large positive value. Returns false.
+     * - **Connected:** [latency_ms] ∈ [0, threshold_ms]. Returns true.
+     *   The default threshold is 200 ms and can be modified via SetTeleopLatencyLimit().
+     * - **Clock mismatch:** [latency_ms] is negative. Returns false.
+     *   Ensure both computers synchronize system time (e.g., using chrony).
      *
-     * @param[in] idx Index of the robot pair. This corresponds to the index of the constructor
-     * parameter [robot_pairs_sn].
-     * @param[out] latency_ms Average TCP message latency in milliseconds.
-     * @return True if a valid connection is established and the average latency is within the
-     * acceptable range [0, threshold_ms] ms. False otherwise.
-     * @throw std::invalid_argument if [idx] is out of range.
+     * @param[in]  idx         Index of the robot pair corresponding to [robot_pairs_sn].
+     * @param[out] latency_ms  Estimated average TCP message latency in milliseconds.
+     *
+     * @return True if the connection is established and latency is within
+     *         [0, threshold_ms]; otherwise false.
+     *
+     * @throw std::invalid_argument If [idx] is out of range.
+     *
      * @warning
-     * - If [latency_ms] > 200 ms, the connection quality is poor and may cause delayed feedback or
-     *   command responses.
-     * - If [latency_ms] > threshold_ms ms, teleoperation will be disengaged, and follower robots
-     * will hold their pose until incoming message latency is in valid range.
+     * - Latency > 200 ms indicates poor connection quality and may cause delayed feedback
+     *   or command execution.
+     * - If latency exceeds threshold_ms, teleoperation is disengaged and follower robots
+     *   hold their pose until latency returns to a valid range.
+     *
      * @see SetTeleopLatencyLimit()
      */
     bool CheckTeleopConnectionLatency(unsigned int idx, double& latency_ms) const;
@@ -140,8 +138,8 @@ public:
     //==================================== TELEOP LIFECYCLE ====================================
     /**
      * @brief [Blocking] Get current role ready for teleoperation. The following actions will
-     * happen in sequence: a) enable robot if it's servo off, b) zero force/torque sensors if flag
-     * zero_ft_sensor is enabled, c) stop the robot and init teleop control params.
+     * happen in sequence: a) enable robot if it's servo off, b) zero force/torque sensors, c) stop
+     * the robot and init teleop control params.
      * @param[in] limit_wrist_singular Whether to limit wrist singularity. If twisted towards the
      * wrist singularity zone, it may cause the robot to report error.
      * @param [in] zero_ft_sensor Whether to calibrate force/torque sensor.
@@ -178,8 +176,7 @@ public:
     /**
      * @brief [Blocking] Get current role in specified pair ready for teleoperation. The
      * following actions will happen in sequence: a) enable robot if it's servo off, b) zero
-     * force/torque sensors if flag zero_ft_sensor is enabled, c) stop the robot and init teleop
-     * control params.
+     * force/torque sensors, c) stop the robot and init teleop control params.
      * @param[in] idx Index of the robot pair to init. This index is the same as the index
      * of the constructor parameter [robot_pairs_sn].
      * @param[in] limit_wrist_singular Whether to limit wrist singularity. If twisted towards the
