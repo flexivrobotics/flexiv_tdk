@@ -23,6 +23,7 @@ ROOT_DIR=$(pwd)
 # Build and install flexiv_rdk's dependencies
 cd thirdparty
 if [ -n "$BUILD_FOR_JAZZY" ] ; then
+  source /opt/ros/jazzy/setup.bash
   bash build_and_install_dependencies_not_in_ros2.sh $INSTALL_DIR $NUM_JOBS
 else
   bash build_and_install_dependencies.sh $INSTALL_DIR $NUM_JOBS
@@ -30,10 +31,11 @@ fi
 
 # Configure CMake
 cd $ROOT_DIR
-mkdir -p build && cd build
+rm -rf build && mkdir build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release \
          -DCMAKE_PREFIX_PATH=$INSTALL_DIR \
-         -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR
+         -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR \
+         -DRDK_SUPPORT_ROS2_JAZZY=ON
 
 # Build and install
 cmake --build . --target install --config Release -j $NUM_JOBS
