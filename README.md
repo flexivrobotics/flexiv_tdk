@@ -218,8 +218,9 @@ NOTE: ``-D`` followed by ``CMAKE_INSTALL_PREFIX`` tells the user project's CMake
 ### 6. Run Examples
 ```bash
 cd flexiv_tdk/example/build
-./<program_name> [arguments]
+LD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
 ```
+``LD_LIBRARY_PATH`` is used to specify where the shared libraries of the dependencies are installed.
 
 Check each example’s source code for usage details.
 
