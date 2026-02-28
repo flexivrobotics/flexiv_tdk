@@ -32,10 +32,19 @@ fi
 # Configure CMake
 cd $ROOT_DIR
 rm -rf build && mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release \
-         -DCMAKE_PREFIX_PATH=$INSTALL_DIR \
-         -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR \
-         -DRDK_SUPPORT_ROS2_JAZZY=ON
+
+# Configure CMake for Jazzy if requested
+if [ -n "$BUILD_FOR_JAZZY" ] ; then
+  cmake .. -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_PREFIX_PATH=$INSTALL_DIR \
+          -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR \
+          -DRDK_SUPPORT_ROS2_JAZZY=ON
+else
+  cmake .. -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_PREFIX_PATH=$INSTALL_DIR \
+          -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR \
+          -DRDK_SUPPORT_ROS2_JAZZY=OFF
+fi
 
 # Build and install
 cmake --build . --target install --config Release -j $NUM_JOBS
