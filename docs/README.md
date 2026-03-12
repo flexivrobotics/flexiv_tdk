@@ -20,7 +20,7 @@ To generate locally:
 ```bash
 sudo apt install doxygen-latex graphviz
 cd flexiv_tdk
-doxygen doc/Doxyfile.in
+doxygen docs/doxygen/Doxyfile.in
 ```
 
-The output will be at `doc/html/index.html`.
+The output will be at `docs/doxygen/html/index.html`.

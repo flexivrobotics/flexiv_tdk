@@ -17,7 +17,7 @@ This manual guides you through installing, configuring, and using the Flexiv TDK
 - `include/`: C++ headers
 - `example/`: C++ example apps
 - `example_py/`: Python example apps
-- `doc/`: Doxygen configuration and assets
+- `docs/doxygen/`: Doxygen configuration and assets
 
 ## Where to Start
 - New to the SDK? Start with [Quick Start (Python)](quick-start-python.md) or [Quick Start (C++)](quick-start-cpp.md).

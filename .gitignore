@@ -3,8 +3,7 @@ build*/
 install/
 config.h
 site/
-doc/html
-html/
+docs/doxygen/html/
 .vscode
 *.pyc
 release/

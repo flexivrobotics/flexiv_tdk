@@ -229,7 +229,7 @@ Check each example’s source code for usage details.
 ```bash
 sudo apt install doxygen-latex graphviz
 cd flexiv_tdk
-doxygen doc/Doxyfile.in
+doxygen docs/doxygen/Doxyfile.in
 ```
 
-Open flexiv_tdk/doc/html/index.html in your browser.
+Open flexiv_tdk/docs/doxygen/html/index.html in your browser.
