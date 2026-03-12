@@ -1,0 +1,51 @@
+site_name: Flexiv TDK Documentation
+site_description: User Manual, API docs, and Q&A for Flexiv TDK
+site_url: https://flexivrobotics.github.io/flexiv_tdk/
+repo_url: https://github.com/flexivrobotics/flexiv_tdk
+repo_name: flexivrobotics/flexiv_tdk
+edit_uri: edit/main/docs/
+exclude_docs: |
+  README.md
+
+nav:
+  - Home: index.md
+  - User Manual:
+      - Overview: user-manual/overview.md
+      - Quick Start (Python): user-manual/quick-start-python.md
+      - Quick Start (C++): user-manual/quick-start-cpp.md
+      - Real-Time Kernel: user-manual/real-time-kernel.md
+      - Time Sync (WAN): user-manual/time-sync.md
+      - Examples: user-manual/examples.md
+      - Troubleshooting: user-manual/troubleshooting.md
+  - API Reference:
+      - C++ API (Doxygen): api/index.md
+  - Q&A: qa/index.md
+
+theme:
+  name: material
+  language: en
+  logo: assets/flexiv_logo.png
+  favicon: assets/flexiv_logo.png
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - tables
+  - def_list
+  - attr_list
+
+plugins:
+  - search
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/flexivrobotics/flexiv_tdk

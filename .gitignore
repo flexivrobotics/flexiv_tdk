@@ -2,6 +2,7 @@ bin/
 build*/
 install/
 config.h
+site/
 doc/html
 html/
 .vscode
