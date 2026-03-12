@@ -16,7 +16,7 @@ runs:
         cmake --version
         pwd
         cd thirdparty
-        bash build_and_install_dependencies.sh ~/tdk_install 4
+        bash build_and_install_dependencies.sh ~/tdk_install -j 4
 
     # Configure CMake, then build and install flexiv_tdk library to TDK installation directory.
     - name: Build and install library
