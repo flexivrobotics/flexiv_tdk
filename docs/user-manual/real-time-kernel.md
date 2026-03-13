@@ -44,8 +44,7 @@ uname -r  # should show "-lowlatency"
 To revert to `generic`, update `GRUB_FLAVOUR_ORDER` and run `sudo update-grub`.
 
 ## PREEMPT_RT Kernel
-Follow the official guide:
-- https://www.flexiv.com/software/rdk/manual/realtime_ubuntu.html#ubuntu-22-04-24-04-enable-via-pro-subscription
+Follow the [official guide](https://www.flexiv.com/software/rdk/manual/realtime_ubuntu.html#ubuntu-22-04-24-04-enable-via-pro-subscription)
 
 > Ubuntu 22.04/24.04 users can enable RT kernel via **free Ubuntu Pro**. Ubuntu 20.04 requires manual patching.
 

@@ -35,4 +35,4 @@ sleep 5
 sudo chronyc makestep
 ```
 
-Learn more: https://chrony-project.org/
+Learn more: [chrony](https://chrony-project.org/)

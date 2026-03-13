@@ -13,5 +13,4 @@
 - **Time sync inaccurate**: Use `chronyc tracking` and consider re-running `chronyc burst` and `chronyc makestep`.
 
 ## Getting Help
-- GitHub Issues: https://github.com/flexivrobotics/flexiv_tdk/issues
-- Flexiv Contact: https://www.flexiv.com/contact
+- [GitHub Issues](https://github.com/flexivrobotics/flexiv_tdk/issues)
