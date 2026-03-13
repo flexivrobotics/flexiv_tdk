@@ -143,7 +143,6 @@ sudo chronyc burst 4/4
 sudo chronyc makestep
 ```
 🔄 After network changes (e.g., Wi-Fi → Ethernet), restart:
-
 ```bash
 sudo systemctl restart chronyd
 sleep 5
