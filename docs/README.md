@@ -21,6 +21,7 @@ To generate locally:
 sudo apt install doxygen-latex graphviz
 cd flexiv_tdk
 doxygen docs/doxygen/Doxyfile.in
+mkdocs serve -a 127.0.0.1:8000
 ```
 
-The output will be at `docs/doxygen/html/index.html`.
+The output will be at `docs/api/doxygen/index.html`, can be opened via web browser with http://127.0.0.1:8000/flexiv_tdk/api/doxygen/

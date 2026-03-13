@@ -5,6 +5,17 @@ Welcome to the **Flexiv TDK (Teleoperation Development Kit)** documentation site
 ## What is Flexiv TDK?
 Flexiv TDK is an SDK for building custom robot-to-robot or device-to-robot teleoperation applications with Flexiv's adaptive robots. It enables synchronized, force-guided motion using **high-fidelity perceptual feedback** and supports both **LAN** (Local Area Network) and **WAN** (Internet) connections.
 
+🎬 **[Flexiv's TDK | Teleoperation Made Simple](https://www.youtube.com/watch?v=H0e9FSZIa14)**  
+*(Click image below to play)*  
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=H0e9FSZIa14" target="_blank">
+    <img src="https://img.youtube.com/vi/H0e9FSZIa14/hqdefault.jpg" alt="TDK Demo 1" width="350" style="margin-right:10px;" />
+  </a>
+  <a href="https://www.youtube.com/watch?v=udkddqxth5Q" target="_blank">
+    <img src="https://img.youtube.com/vi/udkddqxth5Q/hqdefault.jpg" alt="TDK Demo 2" width="350" />
+  </a>
+</p>
+
 ## Quick Links
 - [User Manual](user-manual/overview.md)
 - [API Reference](api/index.md)

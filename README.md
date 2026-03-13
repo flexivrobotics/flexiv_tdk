@@ -80,7 +80,8 @@ Upgrading to a **low-latency** or **real-time (RT) kernel** may:
     sudo reboot
     uname -r  # Should show "...-lowlatency"
     ```
-    🔄 To revert to ``generic``, change ``GRUB_FLAVOUR_ORDER="generic"`` and run ``sudo update-grub``.
+
+  🔄 To revert to ``generic``, change ``GRUB_FLAVOUR_ORDER="generic"`` and run ``sudo update-grub``.
 
 ### Option 2: PREEMPT_RT Kernel
 
@@ -231,4 +232,4 @@ cd flexiv_tdk
 doxygen docs/doxygen/Doxyfile.in
 ```
 
-Open flexiv_tdk/docs/doxygen/html/index.html in your browser.
+Open flexiv_tdk/docs/api/doxygen/index.html in your browser.

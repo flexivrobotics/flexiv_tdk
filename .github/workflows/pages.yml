@@ -41,10 +41,8 @@ jobs:
 
       - name: Generate Doxygen HTML
         run: |
-          doxygen docs/doxygen/Doxyfile.in
           rm -rf docs/api/doxygen
-          mkdir -p docs/api/doxygen
-          cp -R docs/doxygen/html/* docs/api/doxygen/
+          doxygen docs/doxygen/Doxyfile.in
 
       - name: Build MkDocs site
         run: mkdocs build --clean
