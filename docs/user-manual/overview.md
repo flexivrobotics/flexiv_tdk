@@ -8,6 +8,13 @@ This manual guides you through installing, configuring, and using the Flexiv TDK
 - Researchers building custom haptic or robot-to-robot workflows
 
 ## Prerequisites
+
+### Robot
+- At least two Flexiv Rizon robots with FT sensors configured
+### Network Devices
+- Network devices (e.g., Ethernet switch/router) with sufficient bandwidth and latency
+- CAT 6 or CAT 7 Ethernet cables
+### User PC
 - Ubuntu 22.04+ (x86_64 or aarch64)
 - C++ toolchain: GCC ≥ 9.4, CMake ≥ 3.16.3
 - Python 3.8/3.10/3.12 (for Python SDK usage)

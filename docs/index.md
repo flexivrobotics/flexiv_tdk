@@ -16,6 +16,13 @@ Flexiv TDK is an SDK for building custom robot-to-robot or device-to-robot teleo
   </a>
 </p>
 
+## Key Features
+- **High Fidelity Perceptual Feedback**: 100% tactile feedback transparency ensures the fidelity of human operation.
+- **Better Physical Human-Robot Interaction**: The leader robot can be repositioned or reoriented at any time. Upon re-engagement, only relative motion is mapped—no absolute pose constraints.
+- **Selective Cartesian Constraints**: Constrain motion along specific directions for faster, more precise task execution.
+- **Robust Force/Moment Protection**: Prevents damage to the robot and workpiece while ensuring intrinsic safety during contact.
+- **LAN/WAN Support**: Flexible network configurations for both LAN and WAN.
+
 ## Quick Links
 - [User Manual](user-manual/overview.md)
 - [API Reference](api/index.md)
