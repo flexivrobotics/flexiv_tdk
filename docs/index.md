@@ -29,7 +29,7 @@ Flexiv TDK has been recognized on the [Manipulation Net Peg-in-Hole Leaderboard]
 
 ## Quick Links
 - [User Manual](user-manual/overview.md)
-- [API Reference](api/index.md)
+- [API Reference](api/doxygen/index.html)
 - [Q&A](qa/index.md)
 - [GitHub Repository](https://github.com/flexivrobotics/flexiv_tdk)
 

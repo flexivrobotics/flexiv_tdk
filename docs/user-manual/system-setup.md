@@ -13,7 +13,7 @@ Follow instructions in the provided Quick Start Guide to complete hardware setup
 Go to Settings > Remote Mode on the Flexiv Elements.
 ![settings_remote_mode](../assets/settings_remote_mode.png)
 To enable Remote Mode, turn on the toggle, then select Ethernet from the Select a Mode drop-down list
-![remote_mote_ethernet](../assets/remote_mote_ethernet.png)
+![remote_mode_ethernet](../assets/remote_mode_ethernet.png)
 
 View the currently applied Ethernet communication protocol(s). If no license has been installed, you can install the TDK license in Settings >
 License.
