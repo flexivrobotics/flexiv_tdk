@@ -1,5 +1,5 @@
 # Robots setup and network configuration
-Before using TDK, robot needs to be properly installed and the network configured. TDK can be adapted to both local area networks (LAN) and wide area networks (WAN). The following will take a LAN as an example to explain how to set up the robot network and the user computer network.
+Before using TDK, ensure that the robots are properly mounted and the network is correctly configured. TDK supports both local area network (LAN) and wide area network (WAN) deployments. The following section uses a LAN setup as an example to describe the network configuration for the robots and the user computer.
 
 
 ## ⚠️ Important
