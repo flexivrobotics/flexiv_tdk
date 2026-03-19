@@ -1,51 +1,67 @@
 # Real-Time Kernel Options
 
-Real-time performance can significantly improve teleoperation responsiveness. Ubuntu provides multiple kernel variants:
 
-| Kernel Type         | Description                          | Typical Use Case                     |
-| ------------------- | ------------------------------------ | ------------------------------------ |
-| `generic`           | Default kernel; balanced performance | General desktop/server use           |
-| `lowlatency`        | Reduced interrupt latency            | Robotics, audio, soft real-time      |
-| `rt` (`PREEMPT_RT`) | Fully preemptible                    | Industrial control, mission-critical |
+## ⚙️ Kernel Options for Real-Time Performance
 
-## Important Disclaimer
-Upgrading to a low-latency or RT kernel **may**:
-- Break proprietary drivers (e.g., NVIDIA, Wi-Fi)
-- Cause instability or boot failure
+Ubuntu offers multiple kernel variants tailored for different workloads:
 
-**You assume full responsibility** for any issues arising from kernel changes. Always back up your system.
+| Kernel Type         | Description                                                 | Typical Use Case                             |
+| ------------------- | ----------------------------------------------------------- | -------------------------------------------- |
+| `generic`           | Default kernel: balanced performance & power management     | General desktop/server use                   |
+| `lowlatency`        | Reduced interrupt latency; better scheduling responsiveness | Robotics, audio processing, soft real-time   |
+| `rt` (`PREEMPT_RT`) | Fully preemptible; hard real-time determinism               | Industrial control, mission-critical systems |
 
-## Install Low-Latency Kernel (Ubuntu)
+---
 
-```bash
-sudo apt update && sudo apt install --install-recommends linux-lowlatency-hwe-22.04  # replace 22.04 with your version
-```
+## ⚠️ Important Disclaimer
 
-For the original 5.15 kernel:
+Upgrading to a **low-latency** or **real-time (RT) kernel** may:
+- Break proprietary drivers (e.g., NVIDIA, Wi-Fi modules)
+- Cause system instability or boot failure
 
-```bash
-sudo apt update && sudo apt install --install-recommends linux-lowlatency
-```
+**You assume full responsibility** for any issues arising from kernel changes.  
+✅ **Always back up your system** before proceeding.
 
-Set GRUB to prefer low-latency:
+---
 
-```bash
-echo 'GRUB_FLAVOUR_ORDER="lowlatency"' | sudo tee -a /etc/default/grub
-sudo update-grub
-```
 
-Reboot and verify:
+## Install Low-Latency or PREEMPT_RT Kernel for Ubuntu/x84-64 
 
-```bash
-sudo reboot
-uname -r  # should show "-lowlatency"
-```
+### Option 1: Low-Latency Kernel
 
-To revert to `generic`, update `GRUB_FLAVOUR_ORDER` and run `sudo update-grub`.
+1. **Install the kernel**:
+   For Hardware Enablement (HWE) stack (check with `uname -r`; e.g., Ubuntu 22.04 with kernel 6.x), use:
 
-## PREEMPT_RT Kernel
-Follow the [official guide](https://www.flexiv.com/software/rdk/manual/realtime_ubuntu.html#ubuntu-22-04-24-04-enable-via-pro-subscription)
+   ```bash
+   sudo apt update && sudo apt install --install-recommends linux-lowlatency-hwe-22.04  # replace "22.04" with your version
+   ```
+   For the original kernel (5.15), use:
+   ```bash
+   sudo apt update && sudo apt install --install-recommends linux-lowlatency
+   ```
 
-> Ubuntu 22.04/24.04 users can enable RT kernel via **free Ubuntu Pro**. Ubuntu 20.04 requires manual patching.
+2. **Set GRUB to prefer low-latency**:
+   ```bash
+    echo 'GRUB_FLAVOUR_ORDER="lowlatency"' | sudo tee -a /etc/default/grub
+    sudo update-grub
+   ```
 
-> For NVIDIA Jetson (aarch64), refer to NVIDIA’s official documentation.
+3. **Reboot and verify**:
+    ```bash
+    sudo reboot
+    uname -r  # Should show "...-lowlatency"
+    ```
+
+  🔄 To revert to ``generic``, change ``GRUB_FLAVOUR_ORDER="generic"`` and run ``sudo update-grub``.
+
+### Option 2: PREEMPT_RT Kernel
+
+Follow the official guide:  
+🔗 [Real-time Ubuntu Setup (Documentation)](https://www.flexiv.com/software/rdk/manual/realtime_ubuntu.html#ubuntu-22-04-24-04-enable-via-pro-subscription)
+
+> ℹ️ Ubuntu 22.04/24.04 users can enable RT kernel via **free Ubuntu Pro subscription**.  
+> Ubuntu 20.04 requires manual patching (advanced users only).
+
+> ℹ️ For  Nvidia Jetson(**arrch64**), please refer to Nvidia's official documentation.
+
+---

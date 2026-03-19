@@ -6,6 +6,10 @@
 
 **Flexiv TDK (Teleoperation Development Kit)** is an SDK for building custom robot-to-robot or device-to-robot teleoperation applications with Flexiv's adaptive robots. It enables synchronized, force-guided motion using **high-fidelity perceptual feedback** and supports both **LAN** (Local Area Network) and **WAN** (Internet) connections.
 
+## Contact-Rich Manipulation Benchmarks
+Flexiv TDK has been recognized on the [Manipulation Net Peg-in-Hole Leaderboard](https://manipulation-net.org/leaderboards/peg_in_hole.html). The [Manipulation Net](https://manipulation-net.org) is a public benchmark for robotic manipulation in the real world at scale with any robot at any time and anywhere. This provides external evidence for the contact-rich manipulation capability relevant to TDK use cases, including compliant insertion, alignment, and force-sensitive teleoperation workflows.
+
+
 🎬 **[Flexiv's TDK | Teleoperation Made Simple](https://www.youtube.com/watch?v=H0e9FSZIa14)**  
 *(Click image below to play)*  
 <p align="center">
@@ -16,7 +20,6 @@
     <img src="https://img.youtube.com/vi/udkddqxth5Q/hqdefault.jpg" alt="TDK Demo 2" width="350" />
   </a>
 </p>
-
 
 ---
 
@@ -34,70 +37,6 @@
 
 >💡 Need support for other platforms? [Contact Flexiv](https://www.flexiv.com/contact).
 
----
-
-## ⚙️ Kernel Options for Real-Time Performance
-
-Ubuntu offers multiple kernel variants tailored for different workloads:
-
-| Kernel Type         | Description                                                 | Typical Use Case                             |
-| ------------------- | ----------------------------------------------------------- | -------------------------------------------- |
-| `generic`           | Default kernel: balanced performance & power management     | General desktop/server use                   |
-| `lowlatency`        | Reduced interrupt latency; better scheduling responsiveness | Robotics, audio processing, soft real-time   |
-| `rt` (`PREEMPT_RT`) | Fully preemptible; hard real-time determinism               | Industrial control, mission-critical systems |
-
----
-
-## ⚠️ Important Disclaimer
-
-Upgrading to a **low-latency** or **real-time (RT) kernel** may:
-- Break proprietary drivers (e.g., NVIDIA, Wi-Fi modules)
-- Cause system instability or boot failure
-
-**You assume full responsibility** for any issues arising from kernel changes.  
-✅ **Always back up your system** before proceeding.
-
----
-
-
-## Install Low-Latency or PREEMPT_RT Kernel for Ubuntu/x84-64 
-
-### Option 1: Low-Latency Kernel
-
-1. **Install the kernel**:
-   For Hardware Enablement (HWE) stack (check with `uname -r`; e.g., Ubuntu 22.04 with kernel 6.x), use:
-
-   ```bash
-   sudo apt update && sudo apt install --install-recommends linux-lowlatency-hwe-22.04  # replace "22.04" with your version
-   ```
-   For the original kernel (5.15), use:
-   ```bash
-   sudo apt update && sudo apt install --install-recommends linux-lowlatency
-   ```
-
-2. **Set GRUB to prefer low-latency**:
-   ```bash
-    echo 'GRUB_FLAVOUR_ORDER="lowlatency"' | sudo tee -a /etc/default/grub
-    sudo update-grub
-   ```
-
-3. **Reboot and verify**:
-    ```bash
-    sudo reboot
-    uname -r  # Should show "...-lowlatency"
-    ```
-
-  🔄 To revert to ``generic``, change ``GRUB_FLAVOUR_ORDER="generic"`` and run ``sudo update-grub``.
-
-### Option 2: PREEMPT_RT Kernel
-
-Follow the official guide:  
-🔗 [Real-time Ubuntu Setup (Documentation)](https://www.flexiv.com/software/rdk/manual/realtime_ubuntu.html#ubuntu-22-04-24-04-enable-via-pro-subscription)
-
-> ℹ️ Ubuntu 22.04/24.04 users can enable RT kernel via **free Ubuntu Pro subscription**.  
-> Ubuntu 20.04 requires manual patching (advanced users only).
-
-> ℹ️ For  Nvidia Jetson(**arrch64**), please refer to Nvidia's official documentation.
 ---
 
 ## 🚀 Quick Start - Python
