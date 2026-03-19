@@ -20,6 +20,12 @@
 
 ---
 
+## References
+
+[Flexiv TDK Page](https://flexivrobotics.github.io/flexiv_tdk/) is the main reference. It contains important information including user manual and API documentation. The instructions below serve as a quick reference, and you can find the full documentation at [Flexiv TDK Manual](https://flexivrobotics.github.io/flexiv_tdk/user-manual/overview/).
+
+---
+
 ## ✅ Compatibility
 
 | OS            | Processor       | Languages   | Compiler Requirements     | Python Versions |
@@ -225,10 +231,12 @@ LD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
 Check each example’s source code for usage details.
 
 ## 📚 Generate API Documentation
-
+The complete and detailed API documentation of the latest release can be found at [API Reference](https://flexivrobotics.github.io/flexiv_tdk/api/doxygen/index.html).
+The API documentation of a previous release can be generated manually using Doxygen. For example, on Linux:
 ```bash
 sudo apt install doxygen-latex graphviz
 cd flexiv_tdk
+git checkout <tag_name>
 doxygen docs/doxygen/Doxyfile.in
 ```
 
