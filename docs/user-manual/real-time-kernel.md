@@ -1,5 +1,6 @@
 # Real-Time Kernel Options
 
+Not all use cases require a real-time OS, please read below to determine if you need it.
 
 ## ⚙️ Kernel Options for Real-Time Performance
 
@@ -56,11 +57,10 @@ Upgrading to a **low-latency** or **real-time (RT) kernel** may:
 
 ### Option 2: PREEMPT_RT Kernel
 
-Follow the official guide:  
-🔗 [Real-time Ubuntu Setup (Documentation)](https://www.flexiv.com/software/rdk/manual/realtime_ubuntu.html#ubuntu-22-04-24-04-enable-via-pro-subscription)
+Ubuntu releases listed in this page have native real-time kernel support, and can be easily enabled via a few commands, see full tutorial at https://ubuntu.com/real-time.
 
-> ℹ️ Ubuntu 22.04/24.04 users can enable RT kernel via **free Ubuntu Pro subscription**.  
-> Ubuntu 20.04 requires manual patching (advanced users only).
+
+> ℹ️ Ubuntu 22.04/24.04 users can enable RT kernel via **free Ubuntu Pro subscription**. The subscription is free for personal use.
 
 > ℹ️ For  Nvidia Jetson(**arrch64**), please refer to Nvidia's official documentation.
 
