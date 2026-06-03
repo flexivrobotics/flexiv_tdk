@@ -75,7 +75,7 @@ find_package(Threads REQUIRED)
 message(STATUS "Found Threads")
 
 # Flexiv RDK
-find_package(flexiv_rdk 1.9.0 REQUIRED)
+find_package(flexiv_rdk 1.9.1 REQUIRED)
 message(STATUS "Found flexiv_rdk: ${flexiv_rdk_DIR}, version: ${flexiv_rdk_VERSION}")
 
 # ===================================================================
