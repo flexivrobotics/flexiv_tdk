@@ -140,6 +140,16 @@ public:
     void Stop();
 
     /**
+     * @brief [Blocking] Move all connected robots to their home posture simultaneously.
+     * @throw std::logic_error if teleoperation is currently running. Call Stop() first.
+     * @throw std::runtime_error if failed to command any of the connected robots.
+     * @note This function blocks until all connected robots have reached their home posture.
+     * @warning All connected robots will move to their home posture. Make sure the workspace around
+     * every robot is clear before calling this function.
+     */
+    void HomeAll();
+
+    /**
      * @brief [Blocking] Get connected robot in specified pair ready for teleoperation. The
      * following actions will happen in sequence: a) enable robot if it's servo off, b) zero
      * force/torque sensors if flag zero_ft_sensor is enabled, c) stop the robot and initialize

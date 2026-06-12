@@ -174,6 +174,20 @@ public:
     void Stop();
 
     /**
+     * @brief [Blocking] Move all connected robots of the current role to their home posture
+     * simultaneously.
+     * @throw std::logic_error if teleoperation is currently running. Call Stop() first.
+     * @throw std::runtime_error if failed to command any of the connected robots.
+     * @note This function blocks until all connected robots of the current role have reached their
+     * home posture.
+     * @note Each role (leader or follower) homes its own robots; call this on both roles to home
+     * all robots in every pair.
+     * @warning All connected robots of the current role will move to their home posture. Make sure
+     * the workspace around every robot is clear before calling this function.
+     */
+    void HomeAll();
+
+    /**
      * @brief [Blocking] Get current role in specified pair ready for teleoperation. The
      * following actions will happen in sequence: a) enable robot if it's servo off, b) zero
      * force/torque sensors, c) stop the robot and init teleop control params.

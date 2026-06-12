@@ -90,6 +90,18 @@ public:
     void Stop();
 
     /**
+     * @brief [Blocking] Move the connected local robot to its home posture.
+     * @throw std::logic_error if teleoperation is currently running. Call Stop() first.
+     * @throw std::runtime_error if failed to command the connected robot.
+     * @note This function blocks until the local robot has reached its home posture.
+     * @note Each side of teleoperation homes its own robot; call this on both sides to home both
+     * the local and remote robots.
+     * @warning The local robot will move to its home posture. Make sure the workspace around the
+     * robot is clear before calling this function.
+     */
+    void HomeAll();
+
+    /**
      * @brief [Non-blocking] Activate/deactivate teleoperation.
      * @param[in] activated True: allow local robot to move; false: hold local robot. When either
      * local or remote robot holds, the other robot will also hold.
