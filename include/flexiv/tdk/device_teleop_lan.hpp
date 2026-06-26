@@ -113,15 +113,6 @@ public:
     void SetNullSpacePostures(unsigned int idx, const std::vector<double>& ref_positions);
 
     /**
-     * @brief [Non-blocking] Robot states of the specified robot.
-     * @param[in] idx Index of the robot to get states for. This index is the same as the
-     * index of the constructor parameter [robot_pairs_sn].
-     * @return RobotStates value copy.
-     * @throw std::invalid_argument if [idx] exceeds total number of robots.
-     */
-    const RobotStates robot_states(unsigned int idx) const;
-
-    /**
      * @brief [Non-blocking] Fault state of the specified robot.
      * @param[in] idx Index of the robot to get fault state for. This index is the same as the
      * index of the constructor parameter [robot_sn_vec].

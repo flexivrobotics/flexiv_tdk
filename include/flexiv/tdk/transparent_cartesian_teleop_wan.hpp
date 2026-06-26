@@ -93,15 +93,6 @@ public:
     bool CheckTeleopConnectionLatency(unsigned int idx, double& latency_ms) const;
 
     /**
-     * @brief [Non-blocking] Robot states of the current role.
-     * @param[in] idx Index of the robot to get states for current role. This index is the same as
-     * the index of the constructor parameter [robot_pairs_sn].
-     * @throw std::invalid_argument if [idx] is outside the valid range.
-     * @return RobotStates value copy.
-     */
-    const RobotStates robot_states(unsigned int idx) const;
-
-    /**
      * @brief [Non-blocking] Whether the current role is in fault state.
      * @param[in] idx Index of the robot to get fault state for. This index is the same as the
      * index of the constructor parameter [robot_pairs_sn].
