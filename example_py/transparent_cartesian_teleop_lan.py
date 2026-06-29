@@ -106,6 +106,9 @@ class TeleoperationController:
             'B': self._start_teleop,
             # Check teleop stopped state
             's': self._check_teleop_state,
+            'h': self._home_all,
+            # Print action/state
+            'a': self._print_action_state,
         }
     
     def _create_menu(self) -> str:
@@ -143,6 +146,12 @@ class TeleoperationController:
 
   --- Is teleop stopped or not ---
     s        : Query if teleop stopped or not
+
+  --- Home all robots ---
+    h        : Stop teleop and home all robots, need to confirm nothing is in the way while homing, otherwise it may cause collision
+
+  --- Print action/states via instance ---
+    a        : Print follower action and state
 
   --- Help ---
     Any other key to show this help menu
@@ -203,6 +212,27 @@ class TeleoperationController:
             logger.info("Teleop stopped")
         except Exception as e:
             logger.error(f"Failed to stop teleop: {e}")
+            _stop_event.set()
+
+    def _home_all(self):
+        """Stop teleoperation and home all robots."""
+        try:
+            self.teleop.Stop()
+            self.teleop.HomeAll()
+            logger.info("Teleop stopped for homing")
+        except Exception as e:
+            logger.error(f"Failed to home all robots: {e}")
+            _stop_event.set()
+
+    def _print_action_state(self):
+        """Print follower action and state."""
+        try:
+           leader, robot = self.teleop.instances(self.index)
+           print(f"q: {['%.2f' % i for i in robot.states().q]}")
+           print(f"q_d: {['%.2f' % i for i in robot.actions().q_d]}")
+           logger.info("Printing follower action and state")
+        except Exception as e:
+            logger.error(f"Failed to print follower action and state: {e}")
             _stop_event.set()
     
     def _check_teleop_state(self):
