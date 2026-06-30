@@ -93,15 +93,6 @@ public:
     bool CheckTeleopConnectionLatency(unsigned int idx, double& latency_ms) const;
 
     /**
-     * @brief [Non-blocking] Robot states of the current role.
-     * @param[in] idx Index of the robot to get states for current role. This index is the same as
-     * the index of the constructor parameter [robot_pairs_sn].
-     * @throw std::invalid_argument if [idx] is outside the valid range.
-     * @return RobotStates value copy.
-     */
-    const RobotStates robot_states(unsigned int idx) const;
-
-    /**
      * @brief [Non-blocking] Whether the current role is in fault state.
      * @param[in] idx Index of the robot to get fault state for. This index is the same as the
      * index of the constructor parameter [robot_pairs_sn].
@@ -172,6 +163,20 @@ public:
      * is non-blocking. See SetAxisLockCmd.
      */
     void Stop();
+
+    /**
+     * @brief [Blocking] Move all connected robots of the current role to their home posture
+     * simultaneously.
+     * @throw std::logic_error if teleoperation is currently running. Call Stop() first.
+     * @throw std::runtime_error if failed to command any of the connected robots.
+     * @note This function blocks until all connected robots of the current role have reached their
+     * home posture.
+     * @note Each role (leader or follower) homes its own robots; call this on both roles to home
+     * all robots in every pair.
+     * @warning All connected robots of the current role will move to their home posture. Make sure
+     * the workspace around every robot is clear before calling this function.
+     */
+    void HomeAll();
 
     /**
      * @brief [Blocking] Get current role in specified pair ready for teleoperation. The

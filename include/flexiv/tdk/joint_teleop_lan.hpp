@@ -88,6 +88,16 @@ public:
     void Stop();
 
     /**
+     * @brief [Blocking] Move all connected robots to their home posture simultaneously.
+     * @throw std::logic_error if teleoperation is currently running. Call Stop() first.
+     * @throw std::runtime_error if failed to command any of the connected robots.
+     * @note This function blocks until all connected robots have reached their home posture.
+     * @warning All connected robots will move to their home posture. Make sure the workspace around
+     * every robot is clear before calling this function.
+     */
+    void HomeAll();
+
+    /**
      * @brief [Non-blocking] Activate/deactivate teleoperation for the specified robot pair.
      * @param[in] idx Index of the robot pair to set flag for. This index is the same as the index
      * of the constructor parameter [robot_pairs_sn].
@@ -150,15 +160,6 @@ public:
      */
     void SetInertiaShaping(
         unsigned int idx, const std::vector<std::pair<bool, double>>& shaped_joint_inertia);
-
-    /**
-     * @brief [Non-blocking] Robot states of the specified robot pair.
-     * @param[in] idx Index of the robot pair to get states for. This index is the same as the
-     * index of the constructor parameter [robot_pairs_sn].
-     * @return RobotStates value copy of the first and second robot respectively in the robot pair.
-     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
-     */
-    const std::pair<RobotStates, RobotStates> robot_states(unsigned int idx) const;
 
     /**
      * @brief Joint-space degrees of freedom of both robots in the specified robot pair.

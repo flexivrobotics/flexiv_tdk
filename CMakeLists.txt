@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16.3)
 # ===================================================================
 #      PROJECT SETUP
 # ===================================================================
-project(flexiv_tdk VERSION 1.6.0 LANGUAGES CXX)
+project(flexiv_tdk VERSION 1.6.1 LANGUAGES CXX)
 
 # Configure build type
 if(NOT CMAKE_BUILD_TYPE)
@@ -52,7 +52,7 @@ if(NOT HASH_LEN EQUAL 64)
 endif()
 
 # Download the library file from GitHub 
-set(TDK_LIB_URL https://github.com/flexivrobotics/flexiv_tdk/releases/download/v1.6/${TDK_LIB})
+set(TDK_LIB_URL https://github.com/flexivrobotics/flexiv_tdk/releases/download/v${PROJECT_VERSION}/${TDK_LIB})
 message(STATUS "Downloading ${TDK_LIB_URL} ...")
 file(DOWNLOAD ${TDK_LIB_URL} ${CMAKE_CURRENT_BINARY_DIR}/${TDK_LIB}
      SHOW_PROGRESS
@@ -75,7 +75,7 @@ find_package(Threads REQUIRED)
 message(STATUS "Found Threads")
 
 # Flexiv RDK
-find_package(flexiv_rdk 1.9.0 REQUIRED)
+find_package(flexiv_rdk 1.9.2 REQUIRED)
 message(STATUS "Found flexiv_rdk: ${flexiv_rdk_DIR}, version: ${flexiv_rdk_VERSION}")
 
 # ===================================================================

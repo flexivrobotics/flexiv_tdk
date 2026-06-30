@@ -53,14 +53,6 @@ public:
     virtual ~TransparentCartesianTeleopLAN();
 
     //========================================= ACCESSORS ==========================================
-    /**
-     * @brief [Non-blocking] Robot states of the specified robot pair.
-     * @param[in] idx Index of the robot pair to get states for. This index is the same as the
-     * index of the constructor parameter [robot_pairs_sn].
-     * @return RobotStates value copy of the first and second robot respectively in the robot pair.
-     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
-     */
-    const std::pair<RobotStates, RobotStates> robot_states(unsigned int idx) const;
 
     /**
      * @brief [Non-blocking] Current reading from all digital input ports (16 on the control box + 2
@@ -138,6 +130,16 @@ public:
      * non-blocking. See SetAxisLockCmd.
      */
     void Stop();
+
+    /**
+     * @brief [Blocking] Move all connected robots to their home posture simultaneously.
+     * @throw std::logic_error if teleoperation is currently running. Call Stop() first.
+     * @throw std::runtime_error if failed to command any of the connected robots.
+     * @note This function blocks until all connected robots have reached their home posture.
+     * @warning All connected robots will move to their home posture. Make sure the workspace around
+     * every robot is clear before calling this function.
+     */
+    void HomeAll();
 
     /**
      * @brief [Blocking] Get connected robot in specified pair ready for teleoperation. The
