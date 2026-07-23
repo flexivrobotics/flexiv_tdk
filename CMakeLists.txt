@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16.3)
 # ===================================================================
 #      PROJECT SETUP
 # ===================================================================
-project(flexiv_tdk VERSION 1.6.1 LANGUAGES CXX)
+project(flexiv_tdk VERSION 2.1 LANGUAGES CXX)
 
 # Configure build type
 if(NOT CMAKE_BUILD_TYPE)
@@ -26,22 +26,6 @@ else()
   message(FATAL_ERROR "${CMAKE_SYSTEM_NAME} is currently not supported.")
 endif()
 
-# Option to support ROS2 Jazzy
-option(TDK_SUPPORT_ROS2_JAZZY "Use TDK library compatible with ROS2 Jazzy" OFF)
-if(TDK_SUPPORT_ROS2_JAZZY)
-  if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64")
-      set(TDK_LIB "libflexiv_tdk.x86_64-linux-gnu.ros2-jazzy.a")
-    elseif(${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64")
-      set(TDK_LIB "libflexiv_tdk.aarch64-linux-gnu.ros2-jazzy.a")
-    else()
-      message(FATAL_ERROR 
-        "Compatibility with ROS2 Jazzy is currently not supported on Linux with ${CMAKE_SYSTEM_PROCESSOR} processor.")
-    endif()
-  else()
-    message(FATAL_ERROR "Compatibility with ROS2 Jazzy is currently not supported on ${CMAKE_SYSTEM_NAME}.")
-  endif()
-endif()
 
 # Read expected SHA256 hash
 file(READ ${CMAKE_CURRENT_SOURCE_DIR}/lib/${TDK_LIB}.sha256 EXPECTED_HASH_RAW)
@@ -75,7 +59,7 @@ find_package(Threads REQUIRED)
 message(STATUS "Found Threads")
 
 # Flexiv RDK
-find_package(flexiv_rdk 1.9.2 REQUIRED)
+find_package(flexiv_rdk 2.1 EXACT REQUIRED)
 message(STATUS "Found flexiv_rdk: ${flexiv_rdk_DIR}, version: ${flexiv_rdk_VERSION}")
 
 # ===================================================================
