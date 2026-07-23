@@ -7,6 +7,7 @@
 #include "data.hpp"
 #include <string>
 #include <memory>
+#include <map>
 
 #include <flexiv/rdk/robot.hpp>
 namespace flexiv {
@@ -18,8 +19,9 @@ using namespace rdk;
  * @brief Teleoperation control interface to run Cartesian-space teleoperation for one or more pairs
  * of robots connected to the same LAN.  It performs synchronized, force guided real-time motions
  * and provide the operator with high-fidelity haptic feedback.
- * @warning This is highly transparent Cartesian teleoperation and therefore requires the
- * robot to be configured with a flange-end FT sensor before using this class.
+ * @note In the documentation of this class, "leader robot" refers to the robot which operated by a
+ * human operator during teleoperation; "follower robot" refers to the robot interacts with
+ * workpieces.
  */
 class TransparentCartesianTeleopLAN
 {
@@ -34,10 +36,6 @@ public:
      * first robot is referred to as the "leader robot", which operated by human operator during
      * teleoperation. The second robot is referred to as the "follower robot", which interacts with
      * the workpiece.
-     * @param[in] network_interface_whitelist Limit the network interface(s) that can be used to try
-     * to establish connection with the specified robot. The whitelisted network interface is
-     * defined by its associated IPv4 address. For example, {"10.42.0.1", "192.168.2.102"}. If left
-     * empty, all available network interfaces will be tried when searching for the specified robot.
      * @throw std::invalid_argument if the format of any element in [robot_pairs_sn] is invalid; or
      * the size of [robot_pairs_sn] exceeds the allowed number.
      * @throw std::runtime_error if error occurred during construction.
@@ -48,11 +46,20 @@ public:
      * and connection with all robots is established.
      */
     TransparentCartesianTeleopLAN(
-        const std::vector<std::pair<std::string, std::string>>& robot_pairs_sn,
-        const std::vector<std::string>& network_interface_whitelist = {});
+        const std::vector<std::pair<std::string, std::string>>& robot_pairs_sn);
     virtual ~TransparentCartesianTeleopLAN();
 
     //========================================= ACCESSORS ==========================================
+    /**
+     * @brief [Non-blocking] Current states data of all joint groups of the specified robot pair.
+     * @param[in] idx Index of the robot pair to get states for. This index is the same as the
+     * index of the constructor parameter [robot_pairs_sn].
+     * @return States data of all joint groups of the first and second robot respectively in the
+     * robot pair.
+     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
+     */
+    const std::pair<std::map<JointGroup, RobotStates>, std::map<JointGroup, RobotStates>>
+    robot_states(unsigned int idx) const;
 
     /**
      * @brief [Non-blocking] Current reading from all digital input ports (16 on the control box + 2
@@ -132,16 +139,6 @@ public:
     void Stop();
 
     /**
-     * @brief [Blocking] Move all connected robots to their home posture simultaneously.
-     * @throw std::logic_error if teleoperation is currently running. Call Stop() first.
-     * @throw std::runtime_error if failed to command any of the connected robots.
-     * @note This function blocks until all connected robots have reached their home posture.
-     * @warning All connected robots will move to their home posture. Make sure the workspace around
-     * every robot is clear before calling this function.
-     */
-    void HomeAll();
-
-    /**
      * @brief [Blocking] Get connected robot in specified pair ready for teleoperation. The
      * following actions will happen in sequence: a) enable robot if it's servo off, b) zero
      * force/torque sensors if flag zero_ft_sensor is enabled, c) stop the robot and initialize
@@ -198,17 +195,19 @@ public:
      * motion instead of simply mirroring the joint or Cartesian pose.
      * @param[in] idx Index of the robot pair to set flag for. This index is the same as the index
      * of the constructor parameter [robot_pairs_sn].
+     * @param[in] group The joint group to engage/disengage arm-arm teleoperation.
      * @param[in] engaged True to engage the teleop, false to disengage.
      * @throw std::invalid_argument if [idx] is outside the valid range.
      * @throw std::logic_error if the teleoperation control loop is not started.
      * @note The teleop will keep disengaged by default.
      */
-    void Engage(unsigned int idx, bool engaged);
+    void Engage(unsigned int idx, JointGroup group, bool engaged);
 
     /**
      * @brief [Non-blocking] Set the repulsive force in World or Tcp frame of the follower robot.
      * @param[in] idx Index of the robot pair to set for. This index is the same as the
      * index of the constructor parameter [robot_pairs_sn].
+     * @param[in] group The joint group to set the repulsive force for.
      * @param[in] repulsive_force The virtual repulsive force that will applied on the follower
      * robot in the specified robot pair [idx].: \f$ repulsiveF \in \mathbb{R}^{3 \times 1} \f$.
      * Consists of \f$ \mathbb{R}^{3 \times 1} \f$ repulsive force : \f$ [f_x, f_y, f_z]^T \f$.
@@ -224,13 +223,14 @@ public:
      * @see SetLocalAxisLockCmd
      * @see GetLocalAxisLockState
      */
-    void SetRepulsiveForce(
-        unsigned int idx, const std::array<double, 3>& repulsive_force, bool in_world = true);
+    void SetRepulsiveForce(unsigned int idx, JointGroup group,
+        const std::array<double, 3>& repulsive_force, bool in_world = true);
 
     /**
      * @brief[Non-blocking] Set the wrench feedback scaling factor.
      * @param[in] idx Index of the robot pair to set for. This index is the same as the
      * index of the constructor parameter [robot_pairs_sn].
+     * @param[in] group The joint group to set the wrench feedback scaling factor for.
      * @param[in] factor This coefficient will scale the feedback wrench of the follower robot.
      * Scale factor greater than 1 means that the external force received by the follower robot is
      * amplified, otherwise it will be reduce. Setting scale to zero means no wrench feedback
@@ -245,37 +245,40 @@ public:
      * @see SetFollowerMaxContactWrench
      * @see kMaxWrenchFeedbackScale
      */
-    void SetWrenchFeedbackScalingFactor(unsigned int idx, double factor = 1.0);
+    void SetWrenchFeedbackScalingFactor(unsigned int idx, JointGroup group, double factor = 1.0);
 
     /**
      * @brief [Non-blocking] Set the leader robot axis locking command.
      * @param[in] idx Index of the robot pair to set commands for. This index is the same as the
      * index of the constructor parameter [robot_pairs_sn].
+     * @param[in] group The joint group to set the axis lock command for.
      * @throw std::invalid_argument if [idx] is outside the valid range.
      * @param[in] cmd User input command to lock the motion of the specified axis in the reference
      * coordinate.
      */
-    void SetAxisLockCmd(unsigned int idx, const AxisLock& cmd);
+    void SetAxisLockCmd(unsigned int idx, JointGroup group, const AxisLock& cmd);
 
     /**
      * @brief [Non-blocking] Get the leader robot axis locking status
      * @param[in] idx Index of the robot pair to get state for. This index is the same as the
      * index of the constructor parameter [robot_pairs_sn].
+     * @param[in] group The joint group to get the axis lock state for.
      * @throw std::invalid_argument if [idx] is outside the valid range.
      * @param[out] data Current axis locking state of leader robot.
      */
-    void GetAxisLockState(unsigned int idx, AxisLock& data);
+    void GetAxisLockState(unsigned int idx, JointGroup group, AxisLock& data);
 
     /**
      * @brief [Non-blocking] Get the leader robot axis locking status
      * @param[in] idx Index of the robot pair to get states for. This index is the same as the
      * index of the constructor parameter [robot_pairs_sn].
+     * @param[in] group The joint group to get the axis lock state for.
      * @throw std::invalid_argument if [idx] is outside the valid range.
      * @warning This fuction is less efficient than the other overloaded one as additional runtime
      * memory allocation and data copying are performed.
      * @return AxisLock
      */
-    AxisLock GetAxisLockState(unsigned int idx);
+    AxisLock GetAxisLockState(unsigned int idx, JointGroup group);
 
     /**
      * @brief [Blocking] Set reference joint positions used in the robot's null-space posture
@@ -284,6 +287,7 @@ public:
      * triggered.
      * @param[in] idx Index of the robot pair to set null-space posture for. This index is the same
      * as the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] group The joint group to set the null-space posture for.
      * @param[in] ref_joint_positions Reference joint positions for the null-space posture control
      * of both robots in the pair: \f$ q_{ns} \in \mathbb{R}^{n \times 1} \f$. Unit: \f$ [rad] \f$.
      * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
@@ -301,7 +305,7 @@ public:
      * Cartesian motion-force control task.
      */
     void SetLeaderNullSpacePosture(
-        unsigned int idx, const std::vector<double>& ref_joint_positions);
+        unsigned int idx, JointGroup group, const std::vector<double>& ref_joint_positions);
 
     /**
      * @brief [Blocking] Set reference joint positions used in the robot's null-space posture
@@ -310,6 +314,7 @@ public:
      * triggered.
      * @param[in] idx Index of the robot pair to set null-space posture for. This index is the same
      * as the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] group The joint group to set the null-space posture for.
      * @param[in] ref_joint_positions Reference joint positions for the null-space posture control
      * of both robots in the pair: \f$ q_{ns} \in \mathbb{R}^{n \times 1} \f$. Unit: \f$ [rad] \f$.
      * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
@@ -327,7 +332,7 @@ public:
      * Cartesian motion-force control task.
      */
     void SetFollowerNullSpacePosture(
-        unsigned int idx, const std::vector<double>& ref_joint_positions);
+        unsigned int idx, JointGroup group, const std::vector<double>& ref_joint_positions);
 
     /**
      * @brief [Non-blocking] Set maximum contact wrench for the follower robot of specified robot
@@ -335,6 +340,7 @@ public:
      * with the environment under the set values.
      * @param[in] idx Index of the robot pair to set max contact wrench for. This index is the same
      * as the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] group The joint group to set the max contact wrench for.
      * @param[in] max_wrench Maximum contact wrench (force and moment): \f$ F_max \in \mathbb{R}^{6
      * \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ maximum force and \f$
      * \mathbb{R}^{3 \times 1} \f$ maximum moment: \f$ [f_x, f_y, f_z, m_x, m_y, m_z]^T \f$. Unit:
@@ -344,7 +350,7 @@ public:
      * @throw std::logic_error if teleop is not initialized.
      */
     void SetFollowerMaxContactWrench(
-        unsigned int idx, const std::array<double, kCartDoF>& max_wrench);
+        unsigned int idx, JointGroup group, const std::array<double, kCartDoF>& max_wrench);
 
     /**
      * @brief [Non-blocking] Set maximum contact wrench for the leader robot of specified robot
@@ -352,6 +358,7 @@ public:
      * with the environment under the set values.
      * @param[in] idx Index of the robot pair to set max contact wrench for. This index is the same
      * as the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] group The joint group to set the max contact wrench for.
      * @param[in] max_wrench Maximum contact wrench (force and moment): \f$ F_max \in \mathbb{R}^{6
      * \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ maximum force and \f$
      * \mathbb{R}^{3 \times 1} \f$ maximum moment: \f$ [f_x, f_y, f_z, m_x, m_y, m_z]^T \f$. Unit:
@@ -361,13 +368,14 @@ public:
      * @throw std::logic_error if teleop is not initialized.
      */
     void SetLeaderMaxContactWrench(
-        unsigned int idx, const std::array<double, kCartDoF>& max_wrench);
+        unsigned int idx, JointGroup group, const std::array<double, kCartDoF>& max_wrench);
 
     /**
      * @brief [Blocking] Set stiffness of the Cartesian motion controller of the follower robot in
      * specified robot pair.
      * @param[in] idx Index of the robot pair to set Cartesian stiffness for. This index is the same
      * as the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] group The joint group to set the Cartesian stiffness for.
      * @param[in] stiff_scale A scale ratio to default Cartesian motion stiffness: \f$ K_x \in
      * \mathbb{R}^{6 \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ linear stiffness and
      * \f$ \mathbb{R}^{3 \times 1} \f$ angular stiffness: \f$ [k_x, k_y, k_z, k_{Rx}, k_{Ry},
@@ -380,12 +388,13 @@ public:
      * application.
      * @note This function blocks until the request is successfully delivered.
      */
-    void SetFollowerCartStiff(unsigned int idx, double stiff_scale);
+    void SetFollowerCartStiff(unsigned int idx, JointGroup group, double stiff_scale);
 
     /**
      * @brief [Blocking] Set stiffness of the follower robot's Cartesian motion controller.
      * @param[in] idx Index of the robot pair to set Cartesian stiffness for. This index is the same
      * as the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] group The joint group to set the Cartesian stiffness for.
      * @param[in] K_x Cartesian motion stiffness: \f$ K_x \in \mathbb{R}^{6 \times 1} \f$.
      * Consists of \f$ \mathbb{R}^{3 \times 1} \f$ linear stiffness and \f$
      * \mathbb{R}^{3 \times 1} \f$ angular stiffness: \f$ [k_x, k_y, k_z, k_{Rx}, k_{Ry}, k_{Rz}]^T
@@ -398,7 +407,8 @@ public:
      * application.
      * @note This function blocks until the request is successfully delivered.
      */
-    void SetFollowerCartStiff(unsigned int idx, const std::array<double, kCartDoF>& K_x);
+    void SetFollowerCartStiff(
+        unsigned int idx, JointGroup group, const std::array<double, kCartDoF>& K_x);
 
     //======================================= SYSTEM CONTROL =======================================
     /**

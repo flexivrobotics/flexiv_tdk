@@ -88,24 +88,15 @@ public:
     void Stop();
 
     /**
-     * @brief [Blocking] Move all connected robots to their home posture simultaneously.
-     * @throw std::logic_error if teleoperation is currently running. Call Stop() first.
-     * @throw std::runtime_error if failed to command any of the connected robots.
-     * @note This function blocks until all connected robots have reached their home posture.
-     * @warning All connected robots will move to their home posture. Make sure the workspace around
-     * every robot is clear before calling this function.
-     */
-    void HomeAll();
-
-    /**
      * @brief [Non-blocking] Activate/deactivate teleoperation for the specified robot pair.
      * @param[in] idx Index of the robot pair to set flag for. This index is the same as the index
      * of the constructor parameter [robot_pairs_sn].
+     * @param[in] group Joint group of the robot to activate/deactivate.
      * @param[in] activated True: allow this robot pair to move; false: hold this robot pair.
      * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
      * @note The teleoperation is deactivated by default.
      */
-    void Activate(unsigned int idx, bool activated);
+    void Activate(unsigned int idx, JointGroup group, bool activated);
 
     /**
      * @brief [Non-blocking] Set the size of soft limit zone on both sides of all joints for the
@@ -113,16 +104,18 @@ public:
      * to keep the joint from reaching the actual joint limit.
      * @param[in] idx Index of the robot pair to set soft limit for. This index is the same as the
      * index of the constructor parameter [robot_pairs_sn].
+     * @param[in] group Joint group of the robot to set soft limit for.
      * @param[in] zone_degrees Size of the zone in degrees. Set to 0 to disable soft limit.
      * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
      * @note No soft limit by default.
      */
-    void SetSoftLimit(unsigned int idx, double zone_degrees);
+    void SetSoftLimit(unsigned int idx, JointGroup group, double zone_degrees);
 
     /**
      * @brief [Blocking] Set joint impedance properties for the specified robot pair.
      * @param[in] idx Index of the robot pair to set properties for. This index is the same as the
      * index of the constructor parameter [robot_pairs_sn].
+     * @param[in] group Joint group of the robot to set impedance for.
      * @param[in] K_q_ratio Joint stiffness ratio. Actual K_q = K_q_ratio * K_q_nom.
      * Valid range: [0.0, 1.0].
      * @param[in] Z_q Joint damping ratio. Valid range: [0.3, 0.8]. The nominal (safe) value is
@@ -137,13 +130,14 @@ public:
      * @warning Changing damping ratio [Z_q] to a non-nominal value may lead to performance and
      * stability issues, please use with caution.
      */
-    void SetJointImpedance(unsigned int idx, const std::vector<double>& K_q_ratio,
+    void SetJointImpedance(unsigned int idx, JointGroup group, const std::vector<double>& K_q_ratio,
         const std::vector<double>& Z_q = {0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7});
 
     /**
      * @brief [Non-blocking] Set joint inertia shaping for the specified robot pair.
      * @param[in] idx Index of the robot pair to set inertia shaping for. This index is the same as
      * the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] group Joint group of the robot to set inertia shaping for.
      * @param[in] shaped_joint_inertia Flag to enable/disable inertia shaping and the corresponding
      * shaped inertia value for each joint in the specified robot pair, see below for more details.
      * Valid range: > 0. Unit: \f$ [kg·m^2] \f$.
@@ -158,8 +152,18 @@ public:
      * actual value. A small shaped inertia makes the joint feel light, whereas a large shaped
      * inertia makes the joint feel heavy.
      */
-    void SetInertiaShaping(
-        unsigned int idx, const std::vector<std::pair<bool, double>>& shaped_joint_inertia);
+    void SetInertiaShaping(unsigned int idx, JointGroup group,
+        const std::vector<std::pair<bool, double>>& shaped_joint_inertia);
+
+    /**
+     * @brief [Non-blocking] Robot states of all joint groups of the specified robot pair.
+     * @param[in] idx Index of the robot pair to get states for. This index is the same as the
+     * index of the constructor parameter [robot_pairs_sn].
+     * @return Robot states mapped by joint group for the first and second robot respectively.
+     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
+     */
+    const std::pair<std::map<JointGroup, RobotStates>, std::map<JointGroup, RobotStates>>
+    robot_states(unsigned int idx) const;
 
     /**
      * @brief Joint-space degrees of freedom of both robots in the specified robot pair.

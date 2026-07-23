@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <string>
 #include <mutex>
+#include <flexiv/rdk/data.hpp>
 
 namespace flexiv {
 namespace tdk {
@@ -20,19 +21,19 @@ constexpr size_t kCartDoF = 6;
 /** Size of pose array (3 position + 4 quaternion) */
 constexpr size_t kPoseSize = 7;
 
-/** Number of digital IO ports (16 on control box + 2 inside the wrist connector) */
-constexpr size_t kIOPorts = 18;
+/** Number of digital IO ports (16 on control box + 2 inside the wrist connector * 2 max wrists ) */
+constexpr size_t kIOPorts = 16 + 2 * 2;
 
-/** Max wrench feedback scaling factor for transparent teleop */
+/** Max wrench feedback scaling factor for transparent teleop under LAN */
 constexpr double kMaxWrenchFeedbackScale = 3;
 
 /** Max robot pairs */
 constexpr size_t kMaxRobotPairsNum = 2;
 
 /**
- * @struct NetworkCfg
- * @brief TCP Server and Client Configuration
- * In a teleoperation-over-WAN setup, there are one robot + one edge device on each side of the
+ * @struct NetworkCfgStd
+ * @brief TCP Server and Client Configuration TDK Standard Edition.
+ * In TDK standard edition, there are one robot + one edge device on each side of the
  * teleoperation. One edge device needs to function as a TCP server while the other device functions
  * as a TCP client. It does not matter which side is configured as TCP server or client. However,
  * while the edge device for TCP client doesn't need any additional configuration other than
@@ -47,9 +48,11 @@ constexpr size_t kMaxRobotPairsNum = 2;
  * 4. On the edge device for TCP server, open https://whatismyipaddress.com/ and note down its
  * public IPv4 address. Use this address as the [public_ipv4_address] constructor parameter for BOTH
  * sides of teleoperation.
+ * @note All messages are transmitted in plaintext over TCP and message latency is highly dependent
+ * on the quality of the user network connection.
  *
  */
-struct NetworkCfg
+struct NetworkCfgStd
 {
     /**
      * @param is_tcp_server True : the machine running this instance functions as the TCP
@@ -74,18 +77,12 @@ struct NetworkCfg
     unsigned int listening_port;
 
     /**
-     * @param lan_interface_whitelist Limit the network interface(s) that can be used to try
-     * to establish connection with the robot via ethernet cable. The whitelisted network interface
-     * is defined by its associated IPv4 address. For example, {"10.42.0.1", "192.168.2.102"}. If
-     * left empty, all available network interfaces will be tried when searching for connection.
-     */
-    std::vector<std::string> lan_interface_whitelist = {};
-
-    /**
      * @param wan_interface_whitelist Limit the network interface(s) that can be used to try
      * to establish connection with another participant. The whitelisted network interface is
-     * defined by its associated IPv4 address. For example, {"10.42.0.1", "192.168.2.102"}. If left
-     * empty, all available network interfaces will be tried when searching for connection.
+     * defined by its OS-level name(s) of the network interface(s) that connect to the internet.
+     * For example, "wlo1" for Wi-Fi and "enp3s0" for Ethernet on many Linux machines. Only the
+     * whitelisted network interfaces will be used to accept incoming connections. If empty, all
+     * available network interfaces will be tried when searching for connection.
      */
     std::vector<std::string> wan_interface_whitelist = {};
 };
