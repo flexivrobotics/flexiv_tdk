@@ -156,16 +156,6 @@ public:
         const std::vector<std::pair<bool, double>>& shaped_joint_inertia);
 
     /**
-     * @brief [Non-blocking] Robot states of all joint groups of the specified robot pair.
-     * @param[in] idx Index of the robot pair to get states for. This index is the same as the
-     * index of the constructor parameter [robot_pairs_sn].
-     * @return Robot states mapped by joint group for the first and second robot respectively.
-     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
-     */
-    const std::pair<std::map<JointGroup, RobotStates>, std::map<JointGroup, RobotStates>>
-    robot_states(unsigned int idx) const;
-
-    /**
      * @brief Joint-space degrees of freedom of both robots in the specified robot pair.
      * @param[in] idx Index of the robot pair to get DoF for. This index is the same as
      * the index of the constructor parameter [robot_pairs_sn].

@@ -50,16 +50,6 @@ public:
     virtual ~TransparentCartesianTeleopLAN();
 
     //========================================= ACCESSORS ==========================================
-    /**
-     * @brief [Non-blocking] Current states data of all joint groups of the specified robot pair.
-     * @param[in] idx Index of the robot pair to get states for. This index is the same as the
-     * index of the constructor parameter [robot_pairs_sn].
-     * @return States data of all joint groups of the first and second robot respectively in the
-     * robot pair.
-     * @throw std::invalid_argument if [idx] exceeds total number of robot pairs.
-     */
-    const std::pair<std::map<JointGroup, RobotStates>, std::map<JointGroup, RobotStates>>
-    robot_states(unsigned int idx) const;
 
     /**
      * @brief [Non-blocking] Current reading from all digital input ports (16 on the control box + 2
