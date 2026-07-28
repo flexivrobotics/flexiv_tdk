@@ -7,9 +7,12 @@ Example usage of Transparent Cartesian teleoperation under Wide Area Network,
 controlling a follower robot using a leader robot with transparent force feedback.
 Supports both keyboard and digital input engage/disengage signal reading.
 
+This program is provided only as an example. Users must adapt it to their own application
+requirements, safety procedures, and software architecture before deployment.
+
 """
 
-__copyright__ = "Copyright (C) 2016-2025 Flexiv Ltd. All Rights Reserved."
+__copyright__ = "Copyright (C) 2016-2026 Flexiv Ltd. All Rights Reserved."
 __author__ = "Flexiv"
 
 import argparse
@@ -20,8 +23,9 @@ import spdlog
 import math
 from typing import List, Optional, Dict, Callable
 
-# pip install flexivtdk
-import flexivtdk  
+# pip install flexivtdk (installs the matching flexivrdk dependency)
+import flexivrdk
+import flexivtdk
 
 # Helper to convert degree lists to radians
 def _deg2rad_list(deg_list):
@@ -36,6 +40,9 @@ kDefaultMaxContactWrench = [25.0, 25.0, 25.0, 10.0, 10.0, 10.0]
 
 # Global thread-safe stop event
 _stop_event = threading.Event()
+
+# Single-arm joint group controlled by this example
+JOINT_GROUP = flexivrdk.JointGroup.ARM_1
 
 # Logger setup
 logger = spdlog.ConsoleLogger("Example")
@@ -123,7 +130,7 @@ class WanTeleoperationController:
     def _safe_engage(self, engage: bool):
         """Safely engage or disengage teleop with error handling."""
         try:
-            self.teleop.Engage(self.index, engage)
+            self.teleop.Engage(self.index, JOINT_GROUP, engage)
             logger.info(f"Teleop {'engaged' if engage else 'disengaged'}")
         except Exception as e:
             logger.error(f"Failed to {'engage' if engage else 'disengage'} teleop: {e}")
@@ -131,7 +138,7 @@ class WanTeleoperationController:
     def _safe_set_nullspace(self, posture: List[float]):
         """Safely set nullspace posture with error handling."""
         try:
-            self.teleop.SetNullSpacePosture(self.index, posture)
+            self.teleop.SetNullSpacePosture(self.index, JOINT_GROUP, posture)
             logger.info("Nullspace posture set")
         except Exception as e:
             logger.error(f"Failed to set nullspace posture: {e}")
@@ -139,7 +146,7 @@ class WanTeleoperationController:
     def _safe_set_max_contact_wrench(self, wrench: List[float]):
         """Safely set max contact wrench with error handling."""
         try:
-            self.teleop.SetMaxContactWrench(self.index, wrench)
+            self.teleop.SetMaxContactWrench(self.index, JOINT_GROUP, wrench)
             logger.info("Max contact wrench set")
         except Exception as e:
             logger.error(f"Failed to set max contact wrench: {e}")
@@ -173,7 +180,7 @@ def read_digital_input_task(teleop: flexivtdk.TransparentCartesianTeleopWAN):
             # Use first DI port as engage/disengage signal
             if di_state and len(di_state) > 0:
                 engage_state = bool(di_state[0])
-                teleop.Engage(idx, engage_state)
+                teleop.Engage(idx, JOINT_GROUP, engage_state)
         except Exception as e:
             logger.error(f"Exception in ReadDigitalInputTask: {e}")
         time.sleep(0.01)
@@ -209,8 +216,9 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     parser.add_argument("-t", "--tcp-role", required=True, choices=["server", "client"], help="tcp role")
     parser.add_argument("-i", "--public-ip", required=True, help="public IPv4 address of TCP server")
     parser.add_argument("-p", "--port", required=True, type=int, help="listening port of TCP server")
-    parser.add_argument("-A", "--lan-ip", action="append", help="lan interface ip whitelist", default=[])
-    parser.add_argument("-W", "--wan-ip", action="append", help="wan interface ip whitelist", default=[])
+    parser.add_argument("-W", "--wan-interface", action="append",
+        help="OS network-interface name allowed for WAN traffic (for example, wlo1 or enp3s0)",
+        default=[])
     parser.add_argument("-D", "--enable-digital-input", action="store_true", help="enable digital input reading task")
     return parser.parse_args(argv)
 
@@ -237,16 +245,14 @@ def main(argv: Optional[List[str]] = None):
         role = flexivtdk.Role.WAN_TELEOP_LEADER
     
     # Network configuration
-    network_cfg = flexivtdk.NetworkCfg()
+    network_cfg = flexivtdk.NetworkCfgStd()
     network_cfg.is_tcp_server = (args.tcp_role == 'server')
     network_cfg.public_ipv4_address = args.public_ip
     network_cfg.listening_port = args.port
     
-    # Set interface whitelists if provided
-    if args.lan_ip:
-        network_cfg.lan_interface_whitelist = args.lan_ip
-    if args.wan_ip:
-        network_cfg.wan_interface_whitelist = args.wan_ip
+    # Restrict WAN traffic to the specified OS network-interface names when requested.
+    if args.wan_interface:
+        network_cfg.wan_interface_whitelist = args.wan_interface
     
     # Robot pairs
     robot_pairs = [(args.leader_sn, args.follower_sn)]
@@ -268,7 +274,7 @@ def main(argv: Optional[List[str]] = None):
         teleop.Start()
         
         # Set max contact wrench
-        teleop.SetMaxContactWrench(0, kDefaultMaxContactWrench)
+        teleop.SetMaxContactWrench(0, JOINT_GROUP, kDefaultMaxContactWrench)
         
         logger.info("WAN Teleop started.")
 

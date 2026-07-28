@@ -4,6 +4,8 @@
  * controlling a follower robot using a leader robot with transparent force feedback. Supports both
  * keyboard and digital input engage/disengage signal reading, with various axes lock modes, force
  * scaling, and max contact wrench setting, etc.
+ * @note This program is provided only as an example. Users must adapt it to their own application
+ * requirements, safety procedures, and software architecture before deployment.
  * @copyright Copyright (C) 2016-2025 Flexiv Ltd. All Rights Reserved.
  * @author Flexiv
  */
@@ -36,6 +38,9 @@ const std::array<double, flexiv::tdk::kCartDoF> kDefaultMaxContactWrench
 /** Atomic signal to stop console and DI reading tasks */
 std::atomic<bool> g_running {true};
 
+/** Single-arm joint group controlled by this example */
+constexpr auto kJointGroup = flexiv::rdk::JointGroup::ARM_1;
+
 } // namespace
 
 void PrintHelp()
@@ -44,9 +49,8 @@ void PrintHelp()
     std::cout<<"Invalid program arguments!"<<std::endl;
     std::cout<<"     -l     [necessary] serial number of leader robot."<<std::endl;
     std::cout<<"     -f     [necessary] serial number of follower robot."<<std::endl;
-    std::cout<<"     -i     [optional] The ip address of the network card connected to the robot." << std::endl;
     std::cout<<"     -D     [optional] Enable Digital Input reading task." << std::endl;
-    std::cout<<"Usage: sudo ./transparent_cartesian_teleop_lan [-l leader_robot_sn] [-f follower_robot_sn] [-i white_list_ip_of_network_interface]"<<std::endl;
+    std::cout<<"Usage: sudo ./transparent_cartesian_teleop_lan [-l leader_robot_sn] [-f follower_robot_sn] [-D]"<<std::endl;
     // clang-format on
 }
 
@@ -54,7 +58,6 @@ const struct option kLongOptions[] = {
     // clang-format off
     {"leader SN",                                       required_argument,  0, 'l'},
     {"follower SN",                                     required_argument,  0, 'f'},
-    {"ip address of whitelisted network interface",     optional_argument,  0, 'i'},
     {"enable digital input",                            no_argument,        0, 'D'},
     {0,                                                                 0,  0,  0 }
     // clang-format on
@@ -67,7 +70,7 @@ void ReadDigitalInputTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
 {
     while (g_running.load() && !teleop.any_fault()) {
         try {
-            teleop.Engage(0, teleop.digital_inputs(0).first[0]);
+            teleop.Engage(0, kJointGroup, teleop.digital_inputs(0).first[0]);
         } catch (const std::exception& e) {
             spdlog::error("Exception in ReadDigitalInputTask: {}", e.what());
         }
@@ -129,7 +132,7 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
 
     unsigned int index = 0;
     flexiv::tdk::AxisLock cmd;
-    teleop.GetAxisLockState(index, cmd);
+    teleop.GetAxisLockState(index, kJointGroup, cmd);
 
     while (g_running.load() && !teleop.any_fault()) {
 
@@ -149,112 +152,112 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
                 case 'x':
                     cmd.lock_trans_axis[0] = !cmd.lock_trans_axis[0];
                     cmd.coord = flexiv::tdk::CoordType::COORD_WORLD;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    teleop.SetAxisLockCmd(index, kJointGroup, cmd);
                     break;
                 case 'y':
                     cmd.lock_trans_axis[1] = !cmd.lock_trans_axis[1];
                     cmd.coord = flexiv::tdk::CoordType::COORD_WORLD;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    teleop.SetAxisLockCmd(index, kJointGroup, cmd);
                     break;
                 case 'z':
                     cmd.lock_trans_axis[2] = !cmd.lock_trans_axis[2];
                     cmd.coord = flexiv::tdk::CoordType::COORD_WORLD;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    teleop.SetAxisLockCmd(index, kJointGroup, cmd);
                     break;
                 case 'q':
                     cmd.lock_ori_axis[0] = !cmd.lock_ori_axis[0];
                     cmd.coord = flexiv::tdk::CoordType::COORD_WORLD;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    teleop.SetAxisLockCmd(index, kJointGroup, cmd);
                     break;
                 case 'w':
                     cmd.lock_ori_axis[1] = !cmd.lock_ori_axis[1];
                     cmd.coord = flexiv::tdk::CoordType::COORD_WORLD;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    teleop.SetAxisLockCmd(index, kJointGroup, cmd);
                     break;
                 case 'e':
                     cmd.lock_ori_axis[2] = !cmd.lock_ori_axis[2];
                     cmd.coord = flexiv::tdk::CoordType::COORD_WORLD;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    teleop.SetAxisLockCmd(index, kJointGroup, cmd);
                     break;
 
                 case 'X':
                     cmd.lock_trans_axis[0] = !cmd.lock_trans_axis[0];
                     cmd.coord = flexiv::tdk::CoordType::COORD_TCP;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    teleop.SetAxisLockCmd(index, kJointGroup, cmd);
                     break;
                 case 'Y':
                     cmd.lock_trans_axis[1] = !cmd.lock_trans_axis[1];
                     cmd.coord = flexiv::tdk::CoordType::COORD_TCP;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    teleop.SetAxisLockCmd(index, kJointGroup, cmd);
                     break;
                 case 'Z':
                     cmd.lock_trans_axis[2] = !cmd.lock_trans_axis[2];
                     cmd.coord = flexiv::tdk::CoordType::COORD_TCP;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    teleop.SetAxisLockCmd(index, kJointGroup, cmd);
                     break;
                 case 'Q':
                     cmd.lock_ori_axis[0] = !cmd.lock_ori_axis[0];
                     cmd.coord = flexiv::tdk::CoordType::COORD_TCP;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    teleop.SetAxisLockCmd(index, kJointGroup, cmd);
                     break;
                 case 'W':
                     cmd.lock_ori_axis[1] = !cmd.lock_ori_axis[1];
                     cmd.coord = flexiv::tdk::CoordType::COORD_TCP;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    teleop.SetAxisLockCmd(index, kJointGroup, cmd);
                     break;
                 case 'E':
                     cmd.lock_ori_axis[2] = !cmd.lock_ori_axis[2];
                     cmd.coord = flexiv::tdk::CoordType::COORD_TCP;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    teleop.SetAxisLockCmd(index, kJointGroup, cmd);
                     break;
 
                 case 'r':
-                    teleop.Engage(index, true);
+                    teleop.Engage(index, kJointGroup, true);
                     break;
                 case 'R':
-                    teleop.Engage(index, false);
+                    teleop.Engage(index, kJointGroup, false);
                     break;
 
                 case 't':
-                    teleop.SetWrenchFeedbackScalingFactor(index, 0.5);
+                    teleop.SetWrenchFeedbackScalingFactor(index, kJointGroup, 0.5);
                     break;
                 case 'T':
-                    teleop.SetWrenchFeedbackScalingFactor(index, 2);
+                    teleop.SetWrenchFeedbackScalingFactor(index, kJointGroup, 2);
                     break;
 
                 case 'u':
                     cmd.lock_ori_axis = {false, false, false};
                     cmd.lock_trans_axis = {false, false, false};
                     cmd.coord = flexiv::tdk::CoordType::COORD_TCP;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    teleop.SetAxisLockCmd(index, kJointGroup, cmd);
                     break;
                 case 'U':
                     cmd.lock_ori_axis = {true, true, true};
                     cmd.lock_trans_axis = {true, true, true};
                     cmd.coord = flexiv::tdk::CoordType::COORD_TCP;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    teleop.SetAxisLockCmd(index, kJointGroup, cmd);
                     break;
                 case 'i':
-                    teleop.SetLeaderNullSpacePosture(index, kPreferredJntPos);
+                    teleop.SetLeaderNullSpacePosture(index, kJointGroup, kPreferredJntPos);
                     break;
                 case 'I':
-                    teleop.SetLeaderNullSpacePosture(index, kHomeJntPos);
+                    teleop.SetLeaderNullSpacePosture(index, kJointGroup, kHomeJntPos);
                     break;
                 case 'o':
-                    teleop.SetFollowerNullSpacePosture(index, kPreferredJntPos);
+                    teleop.SetFollowerNullSpacePosture(index, kJointGroup, kPreferredJntPos);
                     break;
                 case 'O':
-                    teleop.SetFollowerNullSpacePosture(index, kHomeJntPos);
+                    teleop.SetFollowerNullSpacePosture(index, kJointGroup, kHomeJntPos);
                     break;
                 case 'p':
-                    teleop.SetFollowerMaxContactWrench(index, kDefaultMaxContactWrench);
+                    teleop.SetFollowerMaxContactWrench(index, kJointGroup, kDefaultMaxContactWrench);
                     break;
 
                 case 'a':
-                    teleop.SetRepulsiveForce(index, {5, 0, 0});
+                    teleop.SetRepulsiveForce(index, kJointGroup, {5, 0, 0});
                     break;
                 case 'A':
-                    teleop.SetRepulsiveForce(index, {-5, 0, 0});
+                    teleop.SetRepulsiveForce(index, kJointGroup, {-5, 0, 0});
                     break;
                 case 'b':
                     teleop.Stop();
@@ -264,10 +267,10 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
                     teleop.Start();
                     break;
                 case 'c':
-                    teleop.SetWrenchFeedbackScalingFactor(index, 1);
+                    teleop.SetWrenchFeedbackScalingFactor(index, kJointGroup, 1);
                     break;
                 case 'C':
-                    teleop.SetRepulsiveForce(index, {0, 0, 0});
+                    teleop.SetRepulsiveForce(index, kJointGroup, {0, 0, 0});
                     break;
                 case 's':
                     teleop.stopped(0) ? spdlog::info("Teleop pair 0 stopped")
@@ -292,23 +295,17 @@ int main(int argc, char* argv[])
 {
     std::string follower_sn {};
     std::string leader_sn {};
-    std::string whitelist_ip {};
-    std::vector<std::string> network_interface_whitelist {};
     int opt = 0;
     int longIndex = 0;
     bool enable_digital_input = false;
 
-    while ((opt = getopt_long_only(argc, argv, "f:l:i:D", kLongOptions, &longIndex)) != -1) {
+    while ((opt = getopt_long_only(argc, argv, "f:l:D", kLongOptions, &longIndex)) != -1) {
         switch (opt) {
             case 'f':
                 follower_sn = std::string(optarg);
                 break;
             case 'l':
                 leader_sn = std::string(optarg);
-                break;
-            case 'i':
-                whitelist_ip = std::string(optarg);
-                network_interface_whitelist.emplace_back(whitelist_ip);
                 break;
             case 'D':
                 enable_digital_input = true;
@@ -322,16 +319,10 @@ int main(int argc, char* argv[])
         PrintHelp();
         return 1;
     }
-    if (network_interface_whitelist.empty()) {
-        spdlog::warn(
-            "network_interface_whitelist is not provided, will search all network interfaces.");
-    }
-
     try {
 
         // Create teleop control interface
-        flexiv::tdk::TransparentCartesianTeleopLAN tctl(
-            {{leader_sn, follower_sn}}, network_interface_whitelist);
+        flexiv::tdk::TransparentCartesianTeleopLAN tctl({{leader_sn, follower_sn}});
 
         // Run initialization sequence
         tctl.Init();

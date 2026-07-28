@@ -7,19 +7,26 @@ joint_teleop_under_lan.py
 Example usage of joint-space robot-robot teleoperation under LAN (Local Area Network) connection.
 Monitors pedal input from the first robot to activate/deactivate teleoperation.
 
+This program is provided only as an example. Users must adapt it to their own application
+requirements, safety procedures, and software architecture before deployment.
+
 """
 
-__copyright__ = "Copyright (C) 2016-2025 Flexiv Ltd. All Rights Reserved."
+__copyright__ = "Copyright (C) 2016-2026 Flexiv Ltd. All Rights Reserved."
 __author__ = "Flexiv"
 
 import spdlog
 import argparse
 import time
 
-# pip install flexivtdk
+# pip install flexivtdk (installs the matching flexivrdk dependency)
+import flexivrdk
 import flexivtdk
 
 logger=spdlog.ConsoleLogger("Example")
+
+# Single-arm joint group controlled by this example
+JOINT_GROUP = flexivrdk.JointGroup.ARM_1
 
 def print_help():
     """Print usage information"""
@@ -59,7 +66,7 @@ def main():
 
         # Set 20 degrees soft limit
         logger.info("Setting soft limit...")
-        joint_teleop.SetSoftLimit(robot_pair_idx, 20.0)
+        joint_teleop.SetSoftLimit(robot_pair_idx, JOINT_GROUP, 20.0)
 
         # Sync pose, first robot stays still, second robot moves to its pose
         logger.info("Synchronizing poses...")
@@ -75,13 +82,13 @@ def main():
             else:
                 shaped_joint_inertia.append((False, 1.0))
         
-        joint_teleop.SetInertiaShaping(robot_pair_idx, shaped_joint_inertia)
+        joint_teleop.SetInertiaShaping(robot_pair_idx, JOINT_GROUP, shaped_joint_inertia)
 
         # Start control loop
         joint_teleop.Start()
 
         # Set impedance properties
-        joint_teleop.SetJointImpedance(robot_pair_idx, joint_stiffness_ratio)
+        joint_teleop.SetJointImpedance(robot_pair_idx, JOINT_GROUP, joint_stiffness_ratio)
 
         # Store last pedal input state
         last_pedal_input = False
@@ -97,7 +104,7 @@ def main():
             
             if pedal_input != last_pedal_input:
                 logger.info(f"Pedal state changed: {pedal_input}")
-                joint_teleop.Activate(robot_pair_idx, pedal_input)
+                joint_teleop.Activate(robot_pair_idx, JOINT_GROUP, pedal_input)
                 last_pedal_input = pedal_input
             
             # Sleep to prevent excessive CPU usage

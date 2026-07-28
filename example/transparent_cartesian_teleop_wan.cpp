@@ -4,6 +4,8 @@
  * controlling a follower robot using a leader robot with transparent force feedback. Supports both
  * keyboard and digital input engage/disengage signal reading, with message latency query, nullspace
  * posture tuning, and max contact wrench setting, etc.
+ * @note This program is provided only as an example. Users must adapt it to their own application
+ * requirements, safety procedures, and software architecture before deployment.
  * @copyright Copyright (C) 2016-2025 Flexiv Ltd. All Rights Reserved.
  * @author Flexiv
  */
@@ -39,6 +41,9 @@ std::atomic<bool> g_running {true};
 
 /** Teleop role */
 flexiv::tdk::Role kRole;
+
+/** Single-arm joint group controlled by this example */
+constexpr auto kJointGroup = flexiv::rdk::JointGroup::ARM_1;
 }
 
 void PrintHelp()
@@ -80,7 +85,7 @@ void ReadDigitalInputTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
 {
     while (g_running.load() && !teleop.fault(0)) {
         try {
-            teleop.Engage(0, teleop.digital_inputs(0)[0]);
+            teleop.Engage(0, kJointGroup, teleop.digital_inputs(0)[0]);
         } catch (const std::exception& e) {
             spdlog::error("Exception in ReadDigitalInputTask: {}", e.what());
         }
@@ -134,19 +139,19 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
         try {
             switch (user_input[0]) {
                 case 'r':
-                    teleop.Engage(0, true);
+                    teleop.Engage(0, kJointGroup, true);
                     break;
                 case 'R':
-                    teleop.Engage(0, false);
+                    teleop.Engage(0, kJointGroup, false);
                     break;
                 case 'i':
-                    teleop.SetNullSpacePosture(0, kPreferredJntPos);
+                    teleop.SetNullSpacePosture(0, kJointGroup, kPreferredJntPos);
                     break;
                 case 'I':
-                    teleop.SetNullSpacePosture(0, kHomeJntPos);
+                    teleop.SetNullSpacePosture(0, kJointGroup, kHomeJntPos);
                     break;
                 case 'p':
-                    teleop.SetMaxContactWrench(0, kDefaultMaxContactWrench);
+                    teleop.SetMaxContactWrench(0, kJointGroup, kDefaultMaxContactWrench);
                     break;
                 case 'u':
                     teleop.Init();
@@ -261,11 +266,10 @@ int main(int argc, char* argv[])
     }
 
     // Network configuration
-    flexiv::tdk::NetworkCfg network_cfg;
+    flexiv::tdk::NetworkCfgStd network_cfg;
     network_cfg.is_tcp_server = is_tcp_server;
     network_cfg.public_ipv4_address = public_server_ip;
     network_cfg.listening_port = server_port;
-    network_cfg.lan_interface_whitelist = lan_interface_whitelist;
     network_cfg.wan_interface_whitelist = wan_interface_whitelist;
 
     std::vector<std::pair<std::string, std::string>> robot_sn_pairs {};
@@ -282,7 +286,7 @@ int main(int argc, char* argv[])
         tctw.Start();
 
         // Set max contact wrench
-        tctw.SetMaxContactWrench(0, kDefaultMaxContactWrench);
+        tctw.SetMaxContactWrench(0, kJointGroup, kDefaultMaxContactWrench);
 
         // Start console_thread
         std::thread console_thread(std::bind(ConsoleTask, std::ref(tctw)));

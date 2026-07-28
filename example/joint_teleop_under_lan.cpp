@@ -1,6 +1,8 @@
 /**
  * @example joint_teleop_under_lan.cpp
  * @brief joint-space robot-robot teleoperation under LAN (Local Area Network) connection.
+ * @note This program is provided only as an example. Users must adapt it to their own application
+ * requirements, safety procedures, and software architecture before deployment.
  * @copyright Copyright (C) 2016-2025 Flexiv Ltd. All Rights Reserved.
  * @author Flexiv
  */
@@ -16,6 +18,7 @@
 namespace {
 const std::vector<double> kJointStiffnessRatio = {0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02};
 constexpr double kLastJointShapedInertia = 0.05;
+constexpr auto kJointGroup = flexiv::rdk::JointGroup::ARM_1;
 }
 
 void PrintHelp()
@@ -69,7 +72,7 @@ int main(int argc, char* argv[])
         joint_teleop.Init();
 
         // Set 20 degrees soft limit
-        joint_teleop.SetSoftLimit(robot_pair_idx, 20.0);
+        joint_teleop.SetSoftLimit(robot_pair_idx, kJointGroup, 20.0);
 
         // Sync pose, first robot stays still, second robot moves to its pose
         joint_teleop.SyncPose(robot_pair_idx, {});
@@ -78,13 +81,13 @@ int main(int argc, char* argv[])
         std::vector<std::pair<bool, double>> shaped_joint_inertia;
         shaped_joint_inertia.resize(joint_teleop.DoF(robot_pair_idx), {false, 1.0});
         shaped_joint_inertia.back() = {true, kLastJointShapedInertia};
-        joint_teleop.SetInertiaShaping(robot_pair_idx, shaped_joint_inertia);
+        joint_teleop.SetInertiaShaping(robot_pair_idx, kJointGroup, shaped_joint_inertia);
 
         // Start control loop
         joint_teleop.Start();
 
         // Set impedance properties
-        joint_teleop.SetJointImpedance(robot_pair_idx, kJointStiffnessRatio);
+        joint_teleop.SetJointImpedance(robot_pair_idx, kJointGroup, kJointStiffnessRatio);
 
         // Block until faulted
         bool last_pedal_input = false;
@@ -92,7 +95,7 @@ int main(int argc, char* argv[])
             // Activate by pedal
             bool pedal_input = joint_teleop.digital_inputs(robot_pair_idx).first[0];
             if (pedal_input != last_pedal_input) {
-                joint_teleop.Activate(robot_pair_idx, pedal_input);
+                joint_teleop.Activate(robot_pair_idx, kJointGroup, pedal_input);
                 last_pedal_input = pedal_input;
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
