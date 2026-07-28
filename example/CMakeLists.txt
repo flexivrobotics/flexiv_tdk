@@ -16,7 +16,6 @@ endif()
 set(EXAMPLE_LIST
   transparent_cartesian_teleop_lan
   transparent_cartesian_teleop_wan
-  joint_teleop_under_lan
 )
 
 # Find flexiv_tdk library
