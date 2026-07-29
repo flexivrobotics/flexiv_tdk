@@ -17,8 +17,8 @@ using namespace rdk;
 /**
  * @brief Teleoperation control interface that represents leader or follower robots in transparent
  * teleoperation over WAN.
- * @note In the documentation of this class, "leader robot" refers to the robot which operated by a
- * human operator during teleoperation; "follower robot" refers to the robot interacts with
+ * @note In the documentation of this class, "leader robot" refers to the robot that is operated by
+ * a human during teleoperation; "follower robot" refers to the robot that interacts with
  * workpieces.
  */
 class TransparentCartesianTeleopWAN

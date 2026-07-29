@@ -26,8 +26,8 @@ public:
      * [device-robot] can be controlled at the same time, see parameter [robot_sn_vec].
      * @param[in] robot_sn_vec Serial number of all robots to run teleoperation on. Each
      * robot can be bind to an external device. For example, provide 2 robot serial numbers to start
-     * a dual-arm teleoperation that involves 2 robots and 2 devices. The accepted formats are:
-     * "Rizon 4s-123456" and "Rizon4s-123456".
+     * a dual-arm teleoperation that involves 2 robots and 2 devices. The accepted format is:
+     * "Enlight-L-123456".
      * @throw std::invalid_argument if the format of any element in [robot_sn_vec] is invalid.
      * @throw std::runtime_error if error occurred during construction.
      * @throw std::logic_error if one of the connected robots does not have a valid TDK license; or

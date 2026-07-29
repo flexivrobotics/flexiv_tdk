@@ -56,8 +56,7 @@ void PrintHelp()
     std::cout<<"     -t     [necessary] Role in the TCP connection, can be [server] or [client]."<<std::endl;
     std::cout<<"     -i     [necessary] Public IPV4 address of the machine that functions as TCP server."<<std::endl;
     std::cout<<"     -p     [necessary] Listening port of the TCP server machine."<<std::endl;
-    std::cout<<"     -A     [optional] The ip address of the network card connected to the robot (LAN)." << std::endl;
-    std::cout<<"     -W     [optional] The ip address of the network card connected to the Internet (WAN)." << std::endl;
+    std::cout<<"     -W     [optional]  OS-level name(s) of the network interface(s) that connect to the internet." << std::endl;
     std::cout<<"     -D     [optional] Enable Digital Input reading task." << std::endl;
     std::cout<<"Usage: sudo ./transparent_cartesian_teleop_wan [-l leader_robot_serial_number] [-f follower_robot_serial_number] [-r leader/follower] [-t server/client] [-i server_public_ip] [-p server_port] [-A lan_interface_ip] [-W wan_interface_ip] [-D]"<<std::endl;
     // clang-format on
@@ -71,8 +70,7 @@ const struct option kLongOptions[] = {
     {"tcp role",                    required_argument,  0, 't'},
     {"public ipv4 address",         required_argument,  0, 'i'},
     {"port",                        required_argument,  0, 'p'},
-    {"lan whitelist ip",            optional_argument,  0, 'A'},
-    {"wan whitelist ip",            optional_argument,  0, 'W'},
+    {"wan whitelist NIC name",      optional_argument,  0, 'W'},
     {"enable digital input",        no_argument,        0, 'D'},
     {0,                             0,                  0,  0 }
     // clang-format on
@@ -187,14 +185,13 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
 
 int main(int argc, char* argv[])
 {
-    std::string follower_sn, leader_sn, teleop_role, tcp_role, public_server_ip, lan_ip, wan_ip;
+    std::string follower_sn, leader_sn, teleop_role, tcp_role, public_server_ip, nic_name;
     unsigned int server_port = 0;
-    std::vector<std::string> lan_interface_whitelist {};
     std::vector<std::string> wan_interface_whitelist {};
     bool enable_digital_input = false;
 
     int opt = 0;
-    while ((opt = getopt_long_only(argc, argv, "l:f:r:t:i:p:A:W:D", kLongOptions, nullptr)) != -1) {
+    while ((opt = getopt_long_only(argc, argv, "l:f:r:t:i:p:W:D", kLongOptions, nullptr)) != -1) {
         switch (opt) {
             case 'f':
                 follower_sn = std::string(optarg);
@@ -219,13 +216,9 @@ int main(int argc, char* argv[])
                     return 1;
                 }
                 break;
-            case 'A':
-                lan_ip = std::string(optarg);
-                lan_interface_whitelist.push_back(lan_ip);
-                break;
             case 'W':
-                wan_ip = std::string(optarg);
-                wan_interface_whitelist.push_back(wan_ip);
+                nic_name = std::string(optarg);
+                wan_interface_whitelist.push_back(nic_name);
                 break;
             case 'D':
                 enable_digital_input = true;
@@ -240,8 +233,9 @@ int main(int argc, char* argv[])
         PrintHelp();
         return 1;
     }
-    if (lan_interface_whitelist.empty() || wan_interface_whitelist.empty()) {
-        spdlog::warn("LAN or WAN whitelist is not provided, will search all network interfaces.");
+    if (wan_interface_whitelist.empty()) {
+        spdlog::warn(
+            "WAN interface whitelist is not provided, will search all network interfaces.");
     }
 
     // Whether this is a TCP server or client

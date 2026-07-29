@@ -7,7 +7,6 @@
 #include "data.hpp"
 #include <string>
 #include <memory>
-#include <map>
 
 #include <flexiv/rdk/robot.hpp>
 namespace flexiv {
@@ -18,9 +17,9 @@ using namespace rdk;
 /**
  * @brief Teleoperation control interface to run Cartesian-space teleoperation for one or more pairs
  * of robots connected to the same LAN.  It performs synchronized, force guided real-time motions
- * and provide the operator with high-fidelity haptic feedback.
- * @note In the documentation of this class, "leader robot" refers to the robot which operated by a
- * human operator during teleoperation; "follower robot" refers to the robot interacts with
+ * and provides the operator with high-fidelity haptic feedback.
+ * @note In the documentation of this class, "leader robot" refers to the robot that is operated by
+ * a human during teleoperation; "follower robot" refers to the robot that interacts with
  * workpieces.
  */
 class TransparentCartesianTeleopLAN
@@ -32,10 +31,9 @@ public:
      * @param[in] robot_pairs_sn Serial number of all robot pairs to run teleoperation on. Each pair
      * in the vector represents a pair of bilaterally teleoperated robots. For example, provide 2
      * pairs of robot serial numbers to start a dual-arm teleoperation that involves 2 pairs of
-     * robots. The accepted formats are: "Rizon 4s-123456" and "Rizon4s-123456". In each pair, the
-     * first robot is referred to as the "leader robot", which operated by human operator during
-     * teleoperation. The second robot is referred to as the "follower robot", which interacts with
-     * the workpiece.
+     * robots. The accepted format is "Enlight-L-123456". In each pair, the first robot is referred
+     * to as the "leader robot" that is operated by a human during teleoperation. The second robot
+     * is referred to as the "follower robot" that interacts with the workpiece.
      * @throw std::invalid_argument if the format of any element in [robot_pairs_sn] is invalid; or
      * the size of [robot_pairs_sn] exceeds the allowed number.
      * @throw std::runtime_error if error occurred during construction.
