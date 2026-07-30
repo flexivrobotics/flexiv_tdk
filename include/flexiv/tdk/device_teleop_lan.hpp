@@ -26,12 +26,8 @@ public:
      * [device-robot] can be controlled at the same time, see parameter [robot_sn_vec].
      * @param[in] robot_sn_vec Serial number of all robots to run teleoperation on. Each
      * robot can be bind to an external device. For example, provide 2 robot serial numbers to start
-     * a dual-arm teleoperation that involves 2 robots and 2 devices. The accepted formats are:
-     * "Rizon 4s-123456" and "Rizon4s-123456".
-     * @param[in] network_interface_whitelist Limit the network interface(s) that can be used to try
-     * to establish connection with the specified robot. The whitelisted network interface is
-     * defined by its associated IPv4 address. For example, {"10.42.0.1", "192.168.2.102"}. If left
-     * empty, all available network interfaces will be tried when searching for the specified robot.
+     * a dual-arm teleoperation that involves 2 robots and 2 devices. The accepted format is:
+     * "Enlight-L-123456".
      * @throw std::invalid_argument if the format of any element in [robot_sn_vec] is invalid.
      * @throw std::runtime_error if error occurred during construction.
      * @throw std::logic_error if one of the connected robots does not have a valid TDK license; or
@@ -40,8 +36,7 @@ public:
      * @warning This constructor blocks until the initialization sequence is successfully finished
      * and connection with all robots is established.
      */
-    DeviceTeleopLan(const std::vector<std::string>& robot_sn_vec,
-        const std::vector<std::string>& network_interface_whitelist = {});
+    DeviceTeleopLan(const std::vector<std::string>& robot_sn_vec);
     virtual ~DeviceTeleopLan();
 
     /**
@@ -80,6 +75,7 @@ public:
      * under the set values.
      * @param[in] idx Index of the robot to read from. This index is the same as the index
      * of the constructor parameter [robot_sn_vec].
+     * @param[in] group Joint group of the robot to set maximum contact wrench for.
      * @param[in] max_wrench Maximum contact wrench (force and moment): \f$ F_max \in \mathbb{R}^{6
      * \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ maximum force and \f$
      * \mathbb{R}^{3 \times 1} \f$ maximum moment: \f$ [f_x, f_y, f_z, m_x, m_y, m_z]^T \f$. Unit:
@@ -87,13 +83,15 @@ public:
      * @throw std::invalid_argument if [max_wrench] contains any negative value.
      * @throw std::logic_error if teleop is not initialized.
      */
-    void SetRobotMaxContactWrench(unsigned int idx, const std::array<double, kCartDoF>& max_wrench);
+    void SetRobotMaxContactWrench(
+        unsigned int idx, JointGroup group, const std::array<double, kCartDoF>& max_wrench);
 
     /**
      * @brief [Blocking] Set reference joint positions used in the robot's null-space posture
      * control module for the specified robot. Call this only after Start() is triggered.
      * @param[in] idx Index of the robot to set null-space posture for. This index is the same
      * as the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] group Joint group of the robot to set null-space posture for.
      * @param[in] ref_positions Reference joint positions for the null-space posture control of
      * robot: \f$ q_{ns} \in \mathbb{R}^{n \times 1} \f$. Unit: \f$ [rad] \f$.
      * @throw std::invalid_argument if [idx] exceeds total number of robots.
@@ -110,7 +108,8 @@ public:
      * try to pull the arm as close to this posture as possible without affecting the primary
      * Cartesian motion-force control task.
      */
-    void SetNullSpacePostures(unsigned int idx, const std::vector<double>& ref_positions);
+    void SetNullSpacePostures(
+        unsigned int idx, JointGroup group, const std::vector<double>& ref_positions);
 
     /**
      * @brief [Non-blocking] Fault state of the specified robot.

@@ -16,36 +16,24 @@ using namespace rdk;
 
 /**
  * @brief Teleoperation control interface that represents leader or follower robots in transparent
- * teleoperation over WAN (TCP/IP). Teleoperation is established between leader and follower
- * robots when they are controlled by an instance of this interface, with one set as
- * TCP server and the other set as TCP client via the parameter [is_tcp_server] in NetworkCfg.
- * @warning This is highly transparent Cartesian teleoperation and therefore requires the robot to
- * be configured with a flange-end FT sensor before using this class.
- * @note In the documentation of this class, "leader robot" refers to the robot which operated by a
- * human operator during teleoperation; "follower robot" refers to the robot interacts with
+ * teleoperation over WAN.
+ * @note In the documentation of this class, "leader robot" refers to the robot that is operated by
+ * a human during teleoperation; "follower robot" refers to the robot that interacts with
  * workpieces.
  */
 class TransparentCartesianTeleopWAN
 {
 public:
     /**
-     * @brief [Blocking] Create an instance of the control interface. More than one pair of
-     * teleoperated robots can be controlled at the same time, see parameter [robot_pairs_sn].
+     * @brief [Blocking] Create an instance of the control interface using TDK Standard Edition
+     * TCP peer-to-peer networking.
      * @param[in] robot_pairs_sn Serial number of all leader-follower pairs to run teleoperation on.
-     * Each pair in the vector represents a pair of bilaterally teleoperated robots. For example,
-     * provide 2 pairs of robot serial numbers to start a dual-arm teleoperation that involves 2
-     * pairs of robots. The accepted formats are: "Rizon 4s-123456" and "Rizon4s-123456". In each
-     * pair, the first robot is referred to as the "leader robot", which operated by human operator
-     * during teleoperation. The second robot is referred to as the "follower robot", which
-     * interacts with the workpiece.
-     * @param [in] role The role in transparent teleoperation over WAN. There are two types of
-     * participants in teleoperation , one is the "leader", which operated by a human during
-     * teleoperation. The other is referred to as the "follower", which interacts with
-     * the environment during teleoperation.
-     * @param[in] network_cfg Network configuration including server/client role configuration, IPv4
-     * address and listening port.
-     * @throw std::invalid_argument if the format robot_sn or any IPv4 address or listening port is
-     * invalid.
+     * Each pair in the vector represents a pair of bilaterally teleoperated robots.
+     * @param[in] role The role in transparent teleoperation over WAN.
+     * @param[in] network_cfg_std Network configuration for TDK Standard Edition. It contains the
+     * TCP server/client role, public IPv4 address, listening port, and optional WAN interface
+     * whitelist.
+     * @throw std::invalid_argument if the format robot_sn or TCP network configuration is invalid.
      * @throw std::runtime_error if error occurred during construction.
      * @throw std::logic_error if one of the connected robots does not have a valid TDK license; or
      * the version of this TDK library is incompatible with one of the connected robots; or model of
@@ -56,7 +44,8 @@ public:
      */
     TransparentCartesianTeleopWAN(
         const std::vector<std::pair<std::string, std::string>>& robot_pairs_sn,
-        flexiv::tdk::Role role, const NetworkCfg& network_cfg);
+        flexiv::tdk::Role role, const NetworkCfgStd& network_cfg_std, bool verbose = true);
+
     virtual ~TransparentCartesianTeleopWAN();
 
     //========================================= ACCESSORS ==========================================
@@ -165,20 +154,6 @@ public:
     void Stop();
 
     /**
-     * @brief [Blocking] Move all connected robots of the current role to their home posture
-     * simultaneously.
-     * @throw std::logic_error if teleoperation is currently running. Call Stop() first.
-     * @throw std::runtime_error if failed to command any of the connected robots.
-     * @note This function blocks until all connected robots of the current role have reached their
-     * home posture.
-     * @note Each role (leader or follower) homes its own robots; call this on both roles to home
-     * all robots in every pair.
-     * @warning All connected robots of the current role will move to their home posture. Make sure
-     * the workspace around every robot is clear before calling this function.
-     */
-    void HomeAll();
-
-    /**
      * @brief [Blocking] Get current role in specified pair ready for teleoperation. The
      * following actions will happen in sequence: a) enable robot if it's servo off, b) zero
      * force/torque sensors, c) stop the robot and init teleop control params.
@@ -233,19 +208,21 @@ public:
      * motion instead of simply mirroring the joint or Cartesian pose.
      * @param[in] idx Index of the robot pair to set flag for. This index is the same as the index
      * of the constructor parameter [robot_pairs_sn].
+     * @param[in] group Joint group of the robot to set flag for.
      * @param[in] engaged True to engage the teleop, false to disengage.
      * @throw std::invalid_argument if [idx] is outside the valid range.
      * @throw std::logic_error if the teleoperation control loop is not started or the instance is
      * not initialized as leader robot.
      * @note The teleoperation will keep disengaged by default.
      */
-    void Engage(unsigned int idx, bool engaged);
+    void Engage(unsigned int idx, JointGroup group, bool engaged);
 
     /**
      * @brief [Blocking] Set reference joint positions used in the robot's null-space posture
      * control module for the current role in the robot pairs.
      * @param[in] idx Index of the robot pair to set null-space posture for current role. This index
      * is the same as the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] group Joint group of the robot to set null-space posture for.
      * @param[in] ref_joint_positions Reference joint positions for the null-space posture control
      * of specified robot in the pair: \f$ q_{ns} \in \mathbb{R}^{n \times 1} \f$. Unit: \f$ [rad]
      * \f$.
@@ -263,7 +240,8 @@ public:
      * try to pull the arm as close to this posture as possible without affecting the primary
      * Cartesian motion-force control task.
      */
-    void SetNullSpacePosture(unsigned int idx, const std::vector<double>& ref_joint_positions);
+    void SetNullSpacePosture(
+        unsigned int idx, JointGroup group, const std::vector<double>& ref_joint_positions);
 
     /**
      * @brief [Non-blocking] Set maximum contact wrench for the current role in the robot pairs. The
@@ -271,6 +249,7 @@ public:
      * environment under the set values.
      * @param[in] idx Index of the robot pair to set null-space posture for current role. This index
      * is the same as the index of the constructor parameter [robot_pairs_sn].
+     * @param[in] group Joint group of the robot to set maximum contact wrench for.
      * @param[in] max_wrench Maximum contact wrench (force and moment): \f$ F_max \in \mathbb{R}^{6
      * \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ maximum force and \f$
      * \mathbb{R}^{3 \times 1} \f$ maximum moment: \f$ [f_x, f_y, f_z, m_x, m_y, m_z]^T \f$. Unit:
@@ -279,7 +258,44 @@ public:
      * @throw std::invalid_argument if [idx] is outside the valid range.
      * @throw std::logic_error if teleop is not initialized.
      */
-    void SetMaxContactWrench(unsigned int idx, const std::array<double, kCartDoF>& max_wrench);
+    void SetMaxContactWrench(
+        unsigned int idx, JointGroup group, const std::array<double, kCartDoF>& max_wrench);
+
+    /**
+     * @brief [Non-blocking] Set the leader robot axis locking command.
+     * @param[in] idx Index of the robot pair to set commands for. This index is the same as the
+     * index of the constructor parameter [robot_pairs_sn].
+     * @param[in] group Joint group of the robot to set axes lock commands for.
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @throw std::logic_error if this teleop instance is not initialized as leader robot.
+     * @param[in] cmd User input command to lock the motion of the specified axis in the reference
+     * coordinate.
+     */
+    void SetAxisLockCmd(unsigned int idx, JointGroup group, const AxisLock& cmd);
+
+    /**
+     * @brief [Non-blocking] Get the leader robot axis locking status
+     * @param[in] idx Index of the robot pair to get state for. This index is the same as the
+     * index of the constructor parameter [robot_pairs_sn].
+     * @param[in] group Joint group of the robot to get axes lock states for.
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @throw std::logic_error if this teleop instance is not initialized as leader robot.
+     * @param[out] data Current axis locking state of leader robot.
+     */
+    void GetAxisLockState(unsigned int idx, JointGroup group, AxisLock& data);
+
+    /**
+     * @brief [Non-blocking] Get the leader robot axis locking status
+     * @param[in] idx Index of the robot pair to get states for. This index is the same as the
+     * index of the constructor parameter [robot_pairs_sn].
+     * @param[in] group Joint group of the robot to get axes lock states for.
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @throw std::logic_error if this teleop instance is not initialized as leader robot.
+     * @warning This fuction is less efficient than the other overloaded one as additional runtime
+     * memory allocation and data copying are performed.
+     * @return AxisLock
+     */
+    AxisLock GetAxisLockState(unsigned int idx, JointGroup group);
 
     /**
      * @brief [Non-blocking] Set the maximum acceptable TCP message latency for teleoperation.
@@ -298,39 +314,6 @@ public:
      * @see CheckTeleopConnectionLatency()
      */
     void SetTeleopLatencyLimit(unsigned int idx, double threshold_ms = 200.0);
-
-    /**
-     * @brief [Non-blocking] Set the leader robot axis locking command.
-     * @param[in] idx Index of the robot pair to set commands for. This index is the same as the
-     * index of the constructor parameter [robot_pairs_sn].
-     * @throw std::invalid_argument if [idx] is outside the valid range.
-     * @throw std::logic_error if this teleop instance is not initialized as leader robot.
-     * @param[in] cmd User input command to lock the motion of the specified axis in the reference
-     * coordinate.
-     */
-    void SetAxisLockCmd(unsigned int idx, const AxisLock& cmd);
-
-    /**
-     * @brief [Non-blocking] Get the leader robot axis locking status
-     * @param[in] idx Index of the robot pair to get state for. This index is the same as the
-     * index of the constructor parameter [robot_pairs_sn].
-     * @throw std::invalid_argument if [idx] is outside the valid range.
-     * @throw std::logic_error if this teleop instance is not initialized as leader robot.
-     * @param[out] data Current axis locking state of leader robot.
-     */
-    void GetAxisLockState(unsigned int idx, AxisLock& data);
-
-    /**
-     * @brief [Non-blocking] Get the leader robot axis locking status
-     * @param[in] idx Index of the robot pair to get states for. This index is the same as the
-     * index of the constructor parameter [robot_pairs_sn].
-     * @throw std::invalid_argument if [idx] is outside the valid range.
-     * @throw std::logic_error if this teleop instance is not initialized as leader robot.
-     * @warning This fuction is less efficient than the other overloaded one as additional runtime
-     * memory allocation and data copying are performed.
-     * @return AxisLock
-     */
-    AxisLock GetAxisLockState(unsigned int idx);
 
     //======================================= SYSTEM CONTROL =======================================
     /**
