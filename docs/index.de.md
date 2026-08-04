@@ -34,7 +34,7 @@ Flexiv TDK wurde in die [Manipulation Net Peg-in-Hole-Bestenliste](https://manip
 ## Schnellzugriff
 
 - [Benutzerhandbuch](user-manual/overview.md)
-- [API-Referenz](api/doxygen/index.html)
+- [API-Referenz](../api/doxygen/index.html)
 - [FAQ](qa/index.md)
 - [GitHub-Repository](https://github.com/flexivrobotics/flexiv_tdk)
 

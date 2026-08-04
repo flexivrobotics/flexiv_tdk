@@ -10,7 +10,7 @@
 **答：** 使用 Chrony 同步两端的系统时钟。参见[时间同步 (WAN)](../user-manual/time-sync.md)。
 
 ## 问：API 参考在哪里？
-**答：** Doxygen API 参考发布在 GitHub Pages 的 `api/doxygen/index.html` 路径下。参见 [API 参考](../api/doxygen/index.html)。
+**答：** Doxygen API 参考发布在 GitHub Pages 的 `api/doxygen/index.html` 路径下。参见 [API 参考](../../api/doxygen/index.html)。
 
 ## 问：在哪里可以获得帮助？
 **答：** 联系你的销售经理，在 GitHub 上提交 issue，或通过 https://www.flexiv.com/contact 联系 Flexiv。

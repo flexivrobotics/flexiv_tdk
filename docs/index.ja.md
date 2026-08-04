@@ -34,7 +34,7 @@ Flexiv TDK は [Manipulation Net ペグインホールリーダーボード](htt
 ## クイックリンク
 
 - [ユーザーマニュアル](user-manual/overview.md)
-- [API リファレンス](api/doxygen/index.html)
+- [API リファレンス](../api/doxygen/index.html)
 - [よくある質問](qa/index.md)
 - [GitHub リポジトリ](https://github.com/flexivrobotics/flexiv_tdk)
 

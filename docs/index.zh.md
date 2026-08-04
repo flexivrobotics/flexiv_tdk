@@ -34,7 +34,7 @@ Flexiv TDK 已入选 [Manipulation Net 插孔装配排行榜](https://manipulati
 ## 快速链接
 
 - [用户手册](user-manual/overview.md)
-- [API 参考](api/doxygen/index.html)
+- [API 参考](../api/doxygen/index.html)
 - [常见问题](qa/index.md)
 - [GitHub 仓库](https://github.com/flexivrobotics/flexiv_tdk)
 

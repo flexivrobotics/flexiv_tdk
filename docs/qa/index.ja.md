@@ -10,7 +10,7 @@
 **A:** Chrony を使用して両端のシステムクロックを同期します。[時刻同期 (WAN)](../user-manual/time-sync.md)を参照してください。
 
 ## Q: API リファレンスはどこにありますか？
-**A:** Doxygen API リファレンスは GitHub Pages の `api/doxygen/index.html` に公開されています。[API リファレンス](../api/doxygen/index.html)を参照してください。
+**A:** Doxygen API リファレンスは GitHub Pages の `api/doxygen/index.html` に公開されています。[API リファレンス](../../api/doxygen/index.html)を参照してください。
 
 ## Q: サポートはどこで受けられますか？
 **A:** 営業担当者にご連絡いただくか、GitHub で issue を作成するか、https://www.flexiv.com/contact から Flexiv までお問い合わせください。

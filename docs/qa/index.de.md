@@ -10,7 +10,7 @@
 **A:** Verwenden Sie Chrony, um die Systemuhren beider Seiten zu synchronisieren. Siehe [Zeitsynchronisation (WAN)](../user-manual/time-sync.md).
 
 ## F: Wo finde ich die API-Referenz?
-**A:** Die Doxygen-API-Referenz ist auf GitHub Pages unter `api/doxygen/index.html` veröffentlicht. Siehe [API-Referenz](../api/doxygen/index.html).
+**A:** Die Doxygen-API-Referenz ist auf GitHub Pages unter `api/doxygen/index.html` veröffentlicht. Siehe [API-Referenz](../../api/doxygen/index.html).
 
 ## F: Wo bekomme ich Hilfe?
 **A:** Wenden Sie sich an Ihren Vertriebsmanager, öffnen Sie ein Issue auf GitHub oder kontaktieren Sie Flexiv über https://www.flexiv.com/contact.

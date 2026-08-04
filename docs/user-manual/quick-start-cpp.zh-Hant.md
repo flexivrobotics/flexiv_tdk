@@ -61,4 +61,4 @@ echo "${USER} hard memlock unlimited" | sudo tee -a /etc/security/limits.conf
 
 登出並重新登入（或重新開機）使設定生效。之後所有範例都可以在不使用 `sudo` 的情況下執行。
 
-詳情請參閱 [API 參考](../api/doxygen/index.html)。
+詳情請參閱 [API 參考](../../api/doxygen/index.html)。

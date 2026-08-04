@@ -56,5 +56,14 @@ done
 echo "==> Copying latest release (${LATEST}) to root for backward compatibility"
 cp -a "${OUT_BASE}/${LATEST}/." "${OUT_BASE}/"
 
+# 生成版本清单（最新在前），供 API 索引页的下拉菜单读取
+VERSIONS_JSON=""
+for t in $(echo "$TAGS" | sort -rV); do
+  VERSIONS_JSON="${VERSIONS_JSON:+${VERSIONS_JSON}, }\"${t}\""
+done
+printf '{"versions": [%s], "latest": "%s"}\n' "$VERSIONS_JSON" "$LATEST" \
+  > "${REPO_ROOT}/docs/api/versions.json"
+echo "==> Wrote docs/api/versions.json"
+
 echo "Done. Versions available: $(echo $TAGS | tr '\n' ' ')"
 echo "Root of docs/api/doxygen/ now mirrors ${LATEST}."
