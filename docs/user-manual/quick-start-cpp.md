@@ -47,9 +47,18 @@ cmake --build . --config Release -j 4
 
 ```bash
 cd flexiv_tdk/example/build
-LD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
+sudo ./<program_name> [arguments]
 ```
 
-> `LD_LIBRARY_PATH` specifies where shared libraries for dependencies are installed.
+To allow a regular user to create high-priority (real-time) threads without `sudo`, configure system to apply real-time and nice priority limits (only need to set it once):
 
-See [Examples](examples.md) for details on the example programs.
+```bash
+echo "${USER}    -   rtprio    99" | sudo tee -a /etc/security/limits.conf
+echo "${USER}    -   nice     -20" | sudo tee -a /etc/security/limits.conf
+echo "${USER} soft memlock unlimited" | sudo tee -a /etc/security/limits.conf
+echo "${USER} hard memlock unlimited" | sudo tee -a /etc/security/limits.conf
+```
+Log out and log back in (or reboot) for the settings to take effect. Then all the examples can be executed without `sudo`.
+
+See [API Reference](../api/doxygen/index.html) for details.
+

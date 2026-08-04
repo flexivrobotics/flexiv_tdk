@@ -12,8 +12,5 @@
 ## Q: Where is the API reference?
 **A:** The Doxygen API reference is published under `api/doxygen/index.html` on GitHub Pages. See [API Reference](../api/doxygen/index.html).
 
-## Q: What if my app cannot find shared libraries?
-**A:** Set `LD_LIBRARY_PATH=~/tdk_install/lib` before running binaries.
-
 ## Q: Where can I get help?
-**A:** Open an issue on GitHub or contact Flexiv via https://www.flexiv.com/contact.
+**A:** Contact your sales manager and open an issue on GitHub or contact Flexiv via https://www.flexiv.com/contact.

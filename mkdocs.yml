@@ -16,7 +16,6 @@ nav:
       - Quick Start (C++): user-manual/quick-start-cpp.md
       - Real-Time Kernel: user-manual/real-time-kernel.md
       - Time Sync (WAN): user-manual/time-sync.md
-      - Examples: user-manual/examples.md
       - Troubleshooting: user-manual/troubleshooting.md
   - API Reference:
       - C++ API (Doxygen): api/index.md
