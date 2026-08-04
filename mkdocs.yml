@@ -27,7 +27,6 @@ theme:
   logo: assets/flexiv_logo.png
   favicon: assets/flexiv_logo.png
   features:
-    - navigation.instant
     - navigation.tracking
     - navigation.tabs
     - navigation.sections
@@ -44,6 +43,22 @@ markdown_extensions:
 
 plugins:
   - search
+  - i18n:
+      docs_structure: suffix
+      languages:
+        - locale: en
+          default: true
+          name: English
+        - locale: zh
+          name: 简体中文
+        - locale: zh-Hant
+          name: 繁體中文
+        - locale: de
+          name: Deutsch
+        - locale: ja
+          name: 日本語
+      reconfigure_material: true
+      reconfigure_search: true
 
 extra:
   social:

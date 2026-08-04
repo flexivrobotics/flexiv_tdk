@@ -14,7 +14,8 @@ This manual guides you through installing, configuring, and using the Flexiv TDK
 ## Prerequisites
 
 ### Robot
-- At least two Enlight series robots
+- At least two Enlight series robots for TDK v2.x (Rizon series robots with FT sensor configured for TDK v1.x)
+
 ### Network Devices
 - Network devices (e.g., Ethernet switch/router) with sufficient bandwidth and latency
 - CAT 6 or CAT 7 Ethernet cables
