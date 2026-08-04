@@ -26,10 +26,10 @@ Flexiv TDK wurde in die [Manipulation Net Peg-in-Hole-Bestenliste](https://manip
 ## Hauptmerkmale
 
 - **Hochpräzises Wahrnehmungs-Feedback**: 100 % taktile Feedback-Transparenz gewährleistet die Präzision der menschlichen Bedienung.
+- **grenzüberschreitende Fernbedienung über große Entfernungen**: Flexible Netzwerkkonfigurationen für LAN und WAN.
 - **Bessere physische Mensch-Roboter-Interaktion**: Der Leader-Roboter kann jederzeit neu positioniert oder ausgerichtet werden. Beim Wiedereinkoppeln wird nur die Relativbewegung abgebildet – keine absoluten Positionsbeschränkungen.
 - **Selektive kartesische Beschränkungen**: Beschränken Sie die Bewegung auf bestimmte Richtungen für eine schnellere, präzisere Aufgabenausführung.
 - **Robuster Kraft-/Momentenschutz**: Verhindert Schäden am Roboter und Werkstück und gewährleistet intrinsische Sicherheit während des Kontakts.
-- **LAN/WAN-Unterstützung**: Flexible Netzwerkkonfigurationen für LAN und WAN.
 
 ## Schnellzugriff
 
