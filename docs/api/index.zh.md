@@ -8,4 +8,4 @@ title: C++ API 参考
 <select id="api-version-select" data-api-base="../../api/"></select>
 <script src="../../api/version-switcher.js"></script>
 
-或直接打开最新发布版：[Doxygen API](../../api/doxygen/index.html)。
+或直接打开最新发布版：<a href="../../api/doxygen/index.html" target="_blank" rel="noopener">Doxygen API</a>。

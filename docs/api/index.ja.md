@@ -8,4 +8,4 @@ API バージョンを選択：
 <select id="api-version-select" data-api-base="../../api/"></select>
 <script src="../../api/version-switcher.js"></script>
 
-または最新リリースを直接開く：[Doxygen API](../../api/doxygen/index.html)。
+または最新リリースを直接開く：<a href="../../api/doxygen/index.html" target="_blank" rel="noopener">Doxygen API</a>。

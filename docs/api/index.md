@@ -8,4 +8,4 @@ Select the API version:
 <select id="api-version-select" data-api-base="./"></select>
 <script src="./version-switcher.js"></script>
 
-Or open the latest release directly: [Doxygen API](./doxygen/index.html).
+Or open the latest release directly: <a href="./doxygen/index.html" target="_blank" rel="noopener">Doxygen API</a>.
