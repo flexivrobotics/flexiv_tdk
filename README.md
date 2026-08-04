@@ -169,14 +169,5 @@ LD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
 
 Check each example’s source code for usage details.
 
-## 📚 Generate API Documentation
-The complete and detailed API documentation of the latest release can be found at [API Reference](https://flexivrobotics.github.io/flexiv_tdk/api/doxygen/index.html).
-The API documentation of a previous release can be generated manually using Doxygen. For example, on Linux:
-```bash
-sudo apt install doxygen-latex graphviz
-cd flexiv_tdk
-git checkout <tag_name>
-doxygen docs/doxygen/Doxyfile.in
-```
-
-Open flexiv_tdk/docs/api/doxygen/index.html in your browser.
+## 📚 API Documentation
+The complete and detailed API documentation of all releases can be found at [API Reference](https://flexivrobotics.github.io/flexiv_tdk/api/). Use the version dropdown on that page to switch between releases. The latest release is always available directly at [Doxygen API (latest)](https://flexivrobotics.github.io/flexiv_tdk/api/doxygen/index.html).
