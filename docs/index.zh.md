@@ -8,16 +8,34 @@ Flexiv TDK 是一套 SDK，用于基于 Flexiv 自适应机器人构建自定义
 
 TDK 在具身智能数据采集、放射医疗、危化品实验等领域拥有广泛的应用场景。
 
-🎬 **[Flexiv's TDK | Teleoperation Made Simple](https://www.youtube.com/watch?v=H0e9FSZIa14)**
-*（点击下方图片播放）*
-<p align="center">
-  <a href="https://www.youtube.com/watch?v=H0e9FSZIa14" target="_blank">
-    <img src="https://img.youtube.com/vi/H0e9FSZIa14/hqdefault.jpg" alt="TDK Demo 1" width="350" style="margin-right:10px;" />
+## TDK 实际应用
+
+<div class="tdk-carousel" markdown="1">
+  <div class="tdk-carousel-viewport" markdown="1">
+
+![Physical AI](assets/carousel/Physical AI.png)
+
+![医疗](assets/carousel/Medical.png)
+
+![教育培训](assets/carousel/Education.png)
+
+![危险操作](assets/carousel/Hazardous.png)
+
+  </div>
+  <button class="tdk-carousel-btn tdk-carousel-prev" aria-label="Previous image">&#8249;</button>
+  <button class="tdk-carousel-btn tdk-carousel-next" aria-label="Next image">&#8250;</button>
+  <div class="tdk-carousel-dots"></div>
+</div>
+
+🎬 **[Flexiv's TDK | Teleoperation Made Simple](https://www.bilibili.com/video/BV1u5ySBAE88/)**
+<div class="tdk-videos">
+  <a class="tdk-video-card bilibili" href="https://www.bilibili.com/video/BV1u5ySBAE88/" target="_blank" rel="noopener">
+    <img src="../assets/videos/bv1u5ysbae88.jpg" alt="硬核登场！机器人遥操作开发工具包 Flexiv TDK" loading="lazy" />
   </a>
-  <a href="https://www.youtube.com/watch?v=udkddqxth5Q" target="_blank">
-    <img src="https://img.youtube.com/vi/udkddqxth5Q/hqdefault.jpg" alt="TDK Demo 2" width="350" />
+  <a class="tdk-video-card bilibili" href="https://www.bilibili.com/video/BV18yg7zkEuG/" target="_blank" rel="noopener">
+    <img src="../assets/videos/bv18yg7zkeug.jpg" alt="感知同步 · 触手可达：解锁非夕自适应机器人遥操作" loading="lazy" />
   </a>
-</p>
+</div>
 
 ## 接触作业操作基准测试
 

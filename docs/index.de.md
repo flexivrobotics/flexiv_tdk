@@ -8,16 +8,34 @@ Flexiv TDK ist ein SDK zum Erstellen benutzerdefinierter Roboter-zu-Roboter- ode
 
 TDK bietet ein breites Spektrum an Anwendungsszenarien in Bereichen wie Embodied-AI-Datenerfassung, Strahlenmedizin und Experimente mit Gefahrstoffen.
 
+## TDK in der Praxis
+
+<div class="tdk-carousel" markdown="1">
+  <div class="tdk-carousel-viewport" markdown="1">
+
+![Physical AI](assets/carousel/Physical AI.png)
+
+![Medizin](assets/carousel/Medical.png)
+
+![Bildung und Training](assets/carousel/Education.png)
+
+![Gefährliche Arbeiten](assets/carousel/Hazardous.png)
+
+  </div>
+  <button class="tdk-carousel-btn tdk-carousel-prev" aria-label="Previous image">&#8249;</button>
+  <button class="tdk-carousel-btn tdk-carousel-next" aria-label="Next image">&#8250;</button>
+  <div class="tdk-carousel-dots"></div>
+</div>
+
 🎬 **[Flexiv's TDK | Teleoperation Made Simple](https://www.youtube.com/watch?v=H0e9FSZIa14)**
-*(Zum Abspielen auf das Bild unten klicken)*
-<p align="center">
-  <a href="https://www.youtube.com/watch?v=H0e9FSZIa14" target="_blank">
-    <img src="https://img.youtube.com/vi/H0e9FSZIa14/hqdefault.jpg" alt="TDK Demo 1" width="350" style="margin-right:10px;" />
+<div class="tdk-videos">
+  <a class="tdk-video-card" href="https://www.youtube.com/watch?v=H0e9FSZIa14" target="_blank" rel="noopener">
+    <img src="https://img.youtube.com/vi/H0e9FSZIa14/hqdefault.jpg" alt="TDK Demo 1" loading="lazy" />
   </a>
-  <a href="https://www.youtube.com/watch?v=udkddqxth5Q" target="_blank">
-    <img src="https://img.youtube.com/vi/udkddqxth5Q/hqdefault.jpg" alt="TDK Demo 2" width="350" />
+  <a class="tdk-video-card" href="https://www.youtube.com/watch?v=udkddqxth5Q" target="_blank" rel="noopener">
+    <img src="https://img.youtube.com/vi/udkddqxth5Q/hqdefault.jpg" alt="TDK Demo 2" loading="lazy" />
   </a>
-</p>
+</div>
 
 ## Benchmarks für kontaktreiche Manipulation
 

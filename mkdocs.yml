@@ -40,6 +40,14 @@ markdown_extensions:
   - tables
   - def_list
   - attr_list
+  - md_in_html
+
+# carousel in the home page, automatically generate relative path based on the page depth, multi-language compatible
+extra_css:
+  - assets/carousel/carousel.css
+
+extra_javascript:
+  - assets/carousel/carousel.js
 
 plugins:
   - search

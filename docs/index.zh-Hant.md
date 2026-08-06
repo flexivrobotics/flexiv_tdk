@@ -8,16 +8,34 @@ Flexiv TDK 是一套 SDK，用於基於 Flexiv 自適應機器人建構自訂的
 
 TDK 在具身智慧資料採集、放射醫療、危化品實驗等領域擁有廣泛的應用場景。
 
+## TDK 實際應用
+
+<div class="tdk-carousel" markdown="1">
+  <div class="tdk-carousel-viewport" markdown="1">
+
+![Physical AI](assets/carousel/Physical AI.png)
+
+![醫療](assets/carousel/Medical.png)
+
+![教育培訓](assets/carousel/Education.png)
+
+![危險操作](assets/carousel/Hazardous.png)
+
+  </div>
+  <button class="tdk-carousel-btn tdk-carousel-prev" aria-label="Previous image">&#8249;</button>
+  <button class="tdk-carousel-btn tdk-carousel-next" aria-label="Next image">&#8250;</button>
+  <div class="tdk-carousel-dots"></div>
+</div>
+
 🎬 **[Flexiv's TDK | Teleoperation Made Simple](https://www.youtube.com/watch?v=H0e9FSZIa14)**
-*（點擊下方圖片播放）*
-<p align="center">
-  <a href="https://www.youtube.com/watch?v=H0e9FSZIa14" target="_blank">
-    <img src="https://img.youtube.com/vi/H0e9FSZIa14/hqdefault.jpg" alt="TDK Demo 1" width="350" style="margin-right:10px;" />
+<div class="tdk-videos">
+  <a class="tdk-video-card" href="https://www.youtube.com/watch?v=H0e9FSZIa14" target="_blank" rel="noopener">
+    <img src="https://img.youtube.com/vi/H0e9FSZIa14/hqdefault.jpg" alt="TDK Demo 1" loading="lazy" />
   </a>
-  <a href="https://www.youtube.com/watch?v=udkddqxth5Q" target="_blank">
-    <img src="https://img.youtube.com/vi/udkddqxth5Q/hqdefault.jpg" alt="TDK Demo 2" width="350" />
+  <a class="tdk-video-card" href="https://www.youtube.com/watch?v=udkddqxth5Q" target="_blank" rel="noopener">
+    <img src="https://img.youtube.com/vi/udkddqxth5Q/hqdefault.jpg" alt="TDK Demo 2" loading="lazy" />
   </a>
-</p>
+</div>
 
 ## 接觸作業操作基準測試
 

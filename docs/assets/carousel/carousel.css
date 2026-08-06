@@ -1,0 +1,166 @@
+/* 首页应用图片轮播：scroll-snap 实现，无 JS 时仍可横向滑动浏览 */
+.tdk-carousel {
+  position: relative;
+  max-width: 960px;
+  margin: 1.2em auto;
+}
+
+.tdk-carousel-viewport {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  border-radius: 0.4rem;
+  scrollbar-width: none;
+  box-shadow: 0 0.1rem 0.6rem rgba(0, 0, 0, 0.25);
+}
+
+.tdk-carousel-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.tdk-carousel-viewport > * {
+  position: relative;
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  margin: 0;
+}
+
+/* 行业标签：取图片 alt 文本，由 JS 渲染为左上角胶囊 */
+.tdk-carousel-caption {
+  position: absolute;
+  top: 0.8em;
+  left: 0.8em;
+  padding: 0.3em 0.9em;
+  border-radius: 1em;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+}
+
+.tdk-carousel-viewport img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.tdk-carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2.2em;
+  height: 2.2em;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.75;
+  transition: opacity 0.2s, background 0.2s;
+}
+
+.tdk-carousel-btn:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.tdk-carousel-prev {
+  left: 0.6em;
+}
+
+.tdk-carousel-next {
+  right: 0.6em;
+}
+
+.tdk-carousel-dots {
+  position: absolute;
+  bottom: 0.7em;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.45em;
+}
+
+.tdk-carousel-dot {
+  width: 0.6em;
+  height: 0.6em;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.tdk-carousel-dot.active {
+  background: #fff;
+}
+
+/* 首页 YouTube 视频卡片：与轮播同宽两列网格，视觉对齐 */
+.tdk-videos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1em;
+  max-width: 960px;
+  margin: 1.2em auto;
+}
+
+.tdk-video-card {
+  position: relative;
+  display: block;
+  border-radius: 0.4rem;
+  overflow: hidden;
+  box-shadow: 0 0.1rem 0.6rem rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.tdk-video-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0.2rem 1rem rgba(0, 0, 0, 0.35);
+}
+
+.tdk-video-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  margin: 0;
+}
+
+.tdk-video-card::after {
+  content: "▶";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2.6em;
+  height: 2.6em;
+  font-size: 1.1rem;
+  line-height: 2.6em;
+  text-align: center;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  pointer-events: none;
+  transition: background 0.2s;
+}
+
+.tdk-video-card:hover::after {
+  background: rgba(204, 24, 30, 0.9);
+}
+
+.tdk-video-card.bilibili:hover::after {
+  background: rgba(0, 161, 214, 0.9);
+}
+
+@media (max-width: 600px) {
+  .tdk-videos {
+    grid-template-columns: 1fr;
+  }
+}

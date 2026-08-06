@@ -8,16 +8,34 @@ Flexiv TDK は、Flexiv のアダプティブロボットを使用してカス�
 
 TDK は、エンボディド AI データ収集、放射線医学、危険な化学実験などの分野で幅広いアプリケーションシナリオを誇ります。
 
+## TDK の実応用
+
+<div class="tdk-carousel" markdown="1">
+  <div class="tdk-carousel-viewport" markdown="1">
+
+![Physical AI](assets/carousel/Physical AI.png)
+
+![医療](assets/carousel/Medical.png)
+
+![教育・研修](assets/carousel/Education.png)
+
+![危険作業](assets/carousel/Hazardous.png)
+
+  </div>
+  <button class="tdk-carousel-btn tdk-carousel-prev" aria-label="Previous image">&#8249;</button>
+  <button class="tdk-carousel-btn tdk-carousel-next" aria-label="Next image">&#8250;</button>
+  <div class="tdk-carousel-dots"></div>
+</div>
+
 🎬 **[Flexiv's TDK | Teleoperation Made Simple](https://www.youtube.com/watch?v=H0e9FSZIa14)**
-*（下の画像をクリックして再生）*
-<p align="center">
-  <a href="https://www.youtube.com/watch?v=H0e9FSZIa14" target="_blank">
-    <img src="https://img.youtube.com/vi/H0e9FSZIa14/hqdefault.jpg" alt="TDK Demo 1" width="350" style="margin-right:10px;" />
+<div class="tdk-videos">
+  <a class="tdk-video-card" href="https://www.youtube.com/watch?v=H0e9FSZIa14" target="_blank" rel="noopener">
+    <img src="https://img.youtube.com/vi/H0e9FSZIa14/hqdefault.jpg" alt="TDK Demo 1" loading="lazy" />
   </a>
-  <a href="https://www.youtube.com/watch?v=udkddqxth5Q" target="_blank">
-    <img src="https://img.youtube.com/vi/udkddqxth5Q/hqdefault.jpg" alt="TDK Demo 2" width="350" />
+  <a class="tdk-video-card" href="https://www.youtube.com/watch?v=udkddqxth5Q" target="_blank" rel="noopener">
+    <img src="https://img.youtube.com/vi/udkddqxth5Q/hqdefault.jpg" alt="TDK Demo 2" loading="lazy" />
   </a>
-</p>
+</div>
 
 ## 接触型マニピュレーションベンチマーク
 

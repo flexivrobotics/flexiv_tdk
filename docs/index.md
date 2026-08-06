@@ -8,16 +8,34 @@ Flexiv TDK is an SDK for building custom robot-to-robot or device-to-robot teleo
 
 TDK boasts a wide range of application scenarios in fields including Embodied AI Data Acquisition, radiation medicine, and hazardous chemical experiments.
 
+## TDK in Real-World Applications
+
+<div class="tdk-carousel" markdown="1">
+  <div class="tdk-carousel-viewport" markdown="1">
+
+![Physical AI](assets/carousel/Physical AI.png)
+
+![Healthcare](assets/carousel/Medical.png)
+
+![Education & Training](assets/carousel/Education.png)
+
+![Hazardous Operations](assets/carousel/Hazardous.png)
+
+  </div>
+  <button class="tdk-carousel-btn tdk-carousel-prev" aria-label="Previous image">&#8249;</button>
+  <button class="tdk-carousel-btn tdk-carousel-next" aria-label="Next image">&#8250;</button>
+  <div class="tdk-carousel-dots"></div>
+</div>
+
 🎬 **[Flexiv's TDK | Teleoperation Made Simple](https://www.youtube.com/watch?v=H0e9FSZIa14)**  
-*(Click image below to play)*  
-<p align="center">
-  <a href="https://www.youtube.com/watch?v=H0e9FSZIa14" target="_blank">
-    <img src="https://img.youtube.com/vi/H0e9FSZIa14/hqdefault.jpg" alt="TDK Demo 1" width="350" style="margin-right:10px;" />
+<div class="tdk-videos">
+  <a class="tdk-video-card" href="https://www.youtube.com/watch?v=H0e9FSZIa14" target="_blank" rel="noopener">
+    <img src="https://img.youtube.com/vi/H0e9FSZIa14/hqdefault.jpg" alt="TDK Demo 1" loading="lazy" />
   </a>
-  <a href="https://www.youtube.com/watch?v=udkddqxth5Q" target="_blank">
-    <img src="https://img.youtube.com/vi/udkddqxth5Q/hqdefault.jpg" alt="TDK Demo 2" width="350" />
+  <a class="tdk-video-card" href="https://www.youtube.com/watch?v=udkddqxth5Q" target="_blank" rel="noopener">
+    <img src="https://img.youtube.com/vi/udkddqxth5Q/hqdefault.jpg" alt="TDK Demo 2" loading="lazy" />
   </a>
-</p>
+</div>
 
 ## Contact-Rich Manipulation Benchmarks
 Flexiv TDK has been recognized on the [Manipulation Net Peg-in-Hole Leaderboard](https://manipulation-net.org/leaderboards/peg_in_hole.html). The [Manipulation Net](https://manipulation-net.org) is a public benchmark for robotic manipulation in the real world at scale with any robot at any time and anywhere. This provides external evidence for the contact-rich manipulation capability relevant to TDK use cases, including compliant insertion, alignment, and force-sensitive teleoperation workflows.
