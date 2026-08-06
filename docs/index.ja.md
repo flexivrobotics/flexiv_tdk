@@ -1,4 +1,4 @@
-# Flexiv TDK ドキュメント
+# Flexiv's TDK | Teleoperation Made Simple
 
 **Flexiv TDK（遠隔操作開発キット）** のドキュメントサイトへようこそ。このサイトでは、TDK のセットアップと統合に役立つユーザーマニュアル、API リファレンス、よくある質問を提供しています。
 

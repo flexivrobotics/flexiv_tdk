@@ -1,4 +1,4 @@
-# Flexiv TDK 文档
+# Flexiv's TDK | Teleoperation Made Simple
 
 欢迎来到 **Flexiv TDK（遥操作开发套件）** 文档站点。本站提供用户手册、API 参考和常见问题解答，帮助你搭建并集成 TDK。
 

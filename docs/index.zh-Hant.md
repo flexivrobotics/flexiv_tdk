@@ -1,4 +1,4 @@
-# Flexiv TDK 文件
+# Flexiv's TDK | Teleoperation Made Simple
 
 歡迎來到 **Flexiv TDK（遙操作開發套件）** 文件站點。本站提供使用者手冊、API 參考和常見問題解答，幫助你建構並整合 TDK。
 

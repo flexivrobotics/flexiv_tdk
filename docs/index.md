@@ -1,4 +1,4 @@
-# Flexiv TDK Documentation
+# Flexiv's TDK | Teleoperation Made Simple
 
 Welcome to the **Flexiv TDK (Teleoperation Development Kit)** documentation site. This site provides a user manual, API reference, and Q&A to help you setup and integrate TDK.
 
