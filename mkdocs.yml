@@ -16,7 +16,6 @@ nav:
       - Quick Start (C++): user-manual/quick-start-cpp.md
       - Real-Time Kernel: user-manual/real-time-kernel.md
       - Time Sync (WAN): user-manual/time-sync.md
-      - Examples: user-manual/examples.md
       - Troubleshooting: user-manual/troubleshooting.md
   - API Reference:
       - C++ API (Doxygen): api/index.md
@@ -28,7 +27,6 @@ theme:
   logo: assets/flexiv_logo.png
   favicon: assets/flexiv_logo.png
   features:
-    - navigation.instant
     - navigation.tracking
     - navigation.tabs
     - navigation.sections
@@ -42,9 +40,85 @@ markdown_extensions:
   - tables
   - def_list
   - attr_list
+  - md_in_html
+
+# carousel in the home page, automatically generate relative path based on the page depth, multi-language compatible
+extra_css:
+  - assets/carousel/carousel.css
+
+extra_javascript:
+  - assets/carousel/carousel.js
 
 plugins:
   - search
+  - i18n:
+      docs_structure: suffix
+      languages:
+        - locale: en
+          default: true
+          name: English
+        - locale: zh
+          name: 简体中文
+          nav_translations:
+            Home: 首页
+            User Manual: 用户手册
+            Overview: 概述
+            System Setup: 系统搭建
+            Quick Start (Python): 快速上手 (Python)
+            Quick Start (C++): 快速上手 (C++)
+            Real-Time Kernel: 实时内核
+            Time Sync (WAN): 时间同步 (WAN)
+            Troubleshooting: 故障排查
+            API Reference: API 参考
+            C++ API (Doxygen): C++ API (Doxygen)
+            Q&A: 常见问题
+        - locale: zh-Hant
+          name: 繁體中文
+          nav_translations:
+            Home: 首頁
+            User Manual: 使用者手冊
+            Overview: 概述
+            System Setup: 系統設定
+            Quick Start (Python): 快速上手 (Python)
+            Quick Start (C++): 快速上手 (C++)
+            Real-Time Kernel: 即時核心
+            Time Sync (WAN): 時間同步 (WAN)
+            Troubleshooting: 疑難排解
+            API Reference: API 參考
+            C++ API (Doxygen): C++ API (Doxygen)
+            Q&A: 常見問題
+        - locale: de
+          name: Deutsch
+          nav_translations:
+            Home: Startseite
+            User Manual: Benutzerhandbuch
+            Overview: Überblick
+            System Setup: Systemeinrichtung
+            Quick Start (Python): Schnellstart (Python)
+            Quick Start (C++): Schnellstart (C++)
+            Real-Time Kernel: Echtzeit-Kernel
+            Time Sync (WAN): Zeitsynchronisation (WAN)
+            Troubleshooting: Fehlerbehebung
+            API Reference: API-Referenz
+            C++ API (Doxygen): C++ API (Doxygen)
+            Q&A: FAQ
+        - locale: ja
+          name: 日本語
+          nav_translations:
+            Home: ホーム
+            User Manual: ユーザーマニュアル
+            Overview: 概要
+            System Setup: システムセットアップ
+            Quick Start (Python): クイックスタート (Python)
+            Quick Start (C++): クイックスタート (C++)
+            Real-Time Kernel: リアルタイムカーネル
+            Time Sync (WAN): 時刻同期 (WAN)
+            Troubleshooting: トラブルシューティング
+            API Reference: API リファレンス
+            C++ API (Doxygen): C++ API (Doxygen)
+            Q&A: よくある質問
+      reconfigure_material: true
+      reconfigure_search: true
 
 extra:
   social:

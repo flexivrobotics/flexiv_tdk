@@ -1,31 +1,31 @@
-# Quick Start (C++)
+# 快速上手（C++）
 
-This guide covers building and using Flexiv TDK as a CMake package.
+本指南介紹如何將 Flexiv TDK 作為 CMake 套件建構和使用。
 
-## 1) Install build dependencies
+## 1) 安裝建構依賴
 
 ```bash
 sudo apt install build-essential cmake cmake-qt-gui -y
 ```
 
-## 2) Choose an install directory
+## 2) 選擇安裝目錄
 
-Example:
+範例：
 
 ```bash
 mkdir -p ~/tdk_install
 ```
 
-## 3) Build and install third-party dependencies
+## 3) 建構並安裝第三方依賴
 
 ```bash
 cd flexiv_tdk/thirdparty
 bash build_and_install_dependencies.sh ~/tdk_install
 ```
 
-> Internet access to GitHub is required.
+> 需要能夠存取 GitHub 的網路連接。
 
-## 4) Configure and install TDK
+## 4) 配置並安裝 TDK
 
 ```bash
 cd flexiv_tdk
@@ -34,7 +34,7 @@ cmake .. -DCMAKE_INSTALL_PREFIX=~/tdk_install
 cmake --build . --target install --config Release
 ```
 
-## 5) Link TDK in your project
+## 5) 在你的專案中連結 TDK
 
 ```bash
 cd flexiv_tdk/example
@@ -43,14 +43,14 @@ cmake .. -DCMAKE_PREFIX_PATH=~/tdk_install
 cmake --build . --config Release -j 4
 ```
 
-## 6) Run examples
+## 6) 執行範例
 
 ```bash
 cd flexiv_tdk/example/build
 sudo ./<program_name> [arguments]
 ```
 
-To allow a regular user to create high-priority (real-time) threads without `sudo`, configure system to apply real-time and nice priority limits (only need to set it once):
+為允許一般使用者在不使用 `sudo` 的情況下建立高優先級（即時）執行緒，請配置系統套用即時和 nice 優先級限制（只需設定一次）：
 
 ```bash
 echo "${USER}    -   rtprio    99" | sudo tee -a /etc/security/limits.conf
@@ -58,7 +58,7 @@ echo "${USER}    -   nice     -20" | sudo tee -a /etc/security/limits.conf
 echo "${USER} soft memlock unlimited" | sudo tee -a /etc/security/limits.conf
 echo "${USER} hard memlock unlimited" | sudo tee -a /etc/security/limits.conf
 ```
-Log out and log back in (or reboot) for the settings to take effect. Then all the examples can be executed without `sudo`.
 
-See [API Reference](../api/doxygen/index.html) for details.
+登出並重新登入（或重新開機）使設定生效。之後所有範例都可以在不使用 `sudo` 的情況下執行。
 
+詳情請參閱 [API 參考](../../api/doxygen/index.html)。

@@ -13,3 +13,4 @@ release/
 log/
 .history/
 cloned/
+docs/api/versions.json
