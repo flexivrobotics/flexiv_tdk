@@ -88,6 +88,21 @@ struct NetworkCfgStd
 };
 
 /**
+ * @struct NetworkCfgPro
+ * @brief Network configuration for TDK Professional Edition (credential file from TDK Server).
+ *
+ * Extract the credential package delivered with your TDK Server deployment and set
+ * [client_config_file] to the path of `client.conf` inside that package.
+ */
+struct NetworkCfgPro
+{
+    /**
+     * @param client_config_file Path to `client.conf` from the TDK Server credential package.
+     */
+    std::string client_config_file;
+};
+
+/**
  * @enum Role
  * @brief Roles of participants in transparent cartesian teleop
  */

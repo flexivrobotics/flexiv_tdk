@@ -46,6 +46,26 @@ public:
         const std::vector<std::pair<std::string, std::string>>& robot_pairs_sn,
         flexiv::tdk::Role role, const NetworkCfgStd& network_cfg_std, bool verbose = true);
 
+    /**
+     * @brief [Blocking] Create an instance of the control interface using TDK Professional
+     * Edition networking via a TDK Server credential file.
+     * @param[in] robot_pairs_sn Serial number of all leader-follower pairs to run teleoperation on.
+     * Each pair in the vector represents a pair of bilaterally teleoperated robots.
+     * @param[in] role The role in transparent teleoperation over WAN.
+     * @param[in] network_cfg_pro Network configuration containing the path to `client.conf`.
+     * @throw std::invalid_argument if the format of robot_sn or network configuration is invalid.
+     * @throw std::runtime_error if error occurred during construction.
+     * @throw std::logic_error if one of the connected robots does not have a valid TDK license; or
+     * the version of this TDK library is incompatible with one of the connected robots; or model of
+     * any connected robot is not supported; or there are multiple instantiated TDK objects.
+     * @warning This constructor blocks until the connection with the robot is established and
+     * initialization sequence is successfully finished. It does not wait for the WAN connection to
+     * be established.
+     */
+    TransparentCartesianTeleopWAN(
+        const std::vector<std::pair<std::string, std::string>>& robot_pairs_sn,
+        flexiv::tdk::Role role, const NetworkCfgPro& network_cfg_pro, bool verbose = true);
+
     virtual ~TransparentCartesianTeleopWAN();
 
     //========================================= ACCESSORS ==========================================
@@ -114,6 +134,22 @@ public:
      * @return True: stopped; false: started.
      */
     bool stopped(unsigned int idx) const;
+
+    /**
+     * @brief [Non-blocking] Role of this teleop instance.
+     * @return Role of this instance: WAN_TELEOP_LEADER or WAN_TELEOP_FOLLOWER.
+     */
+    flexiv::tdk::Role role() const;
+
+    /**
+     * @brief [Non-blocking] Serial number pair {leader_sn, follower_sn} of the specified robot
+     * pair.
+     * @param[in] idx Index of the robot pair. This index is the same as the index of the
+     * constructor parameter [robot_pairs_sn].
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @return Serial number pair {leader_sn, follower_sn} of the specified robot pair.
+     */
+    std::pair<std::string, std::string> robot_pair_sn(unsigned int idx) const;
 
     //==================================== TELEOP LIFECYCLE ====================================
     /**
