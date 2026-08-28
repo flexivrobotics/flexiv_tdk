@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16.3)
 # ===================================================================
 #      PROJECT SETUP
 # ===================================================================
-project(flexiv_tdk VERSION 1.6.1 LANGUAGES CXX)
+project(flexiv_tdk VERSION 1.6.2 LANGUAGES CXX)
 
 # Configure build type
 if(NOT CMAKE_BUILD_TYPE)
