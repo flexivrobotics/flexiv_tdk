@@ -10,7 +10,7 @@ with various axes lock modes, force scaling, and max contact wrench setting, etc
 
 """
 
-__copyright__ = "Copyright (C) 2016-2025 Flexiv Ltd. All Rights Reserved."
+__copyright__ = "Copyright (C) 2016-2026 Flexiv Ltd. All Rights Reserved."
 __author__ = "Flexiv"
 
 import argparse
@@ -41,6 +41,31 @@ _stop_event = threading.Event()
 
 # Logger setup
 logger = spdlog.ConsoleLogger("Example")
+
+
+def print_teleop_status(idx, status):
+    """Print GetTeleopStatus() snapshot and the primary operator-facing issue."""
+    logger.info(
+        "Teleop pair {} status: initialized={} started={} engaged={} stopped={} fault={} "
+        "motion_restricted={} latency={:.1f}/{:.1f} ms".format(
+            idx, status.initialized, status.started, status.engaged, status.stopped,
+            status.fault, status.motion_restricted, status.latency_ms,
+            status.latency_threshold_ms))
+    if status.primary.code == flexivtdk.TeleopIssueCode.NONE:
+        logger.info("No teleop restriction. Safe to continue.")
+        return
+    issue = status.primary
+    logger.warn("[{}/{}] {} | {} | {}".format(
+        flexivtdk.TeleopIssueLevelStr[int(issue.level)],
+        flexivtdk.TeleopIssueSideStr[int(issue.side)], issue.title, issue.description,
+        issue.suggestion))
+    for extra in status.issues:
+        if (extra.code == issue.code and extra.side == issue.side
+                and extra.joint_index == issue.joint_index):
+            continue
+        logger.warn("  also: [{}/{}] {}".format(
+            flexivtdk.TeleopIssueCodeStr[int(extra.code)],
+            flexivtdk.TeleopIssueSideStr[int(extra.side)], extra.title))
 
 class TeleoperationController:
     """Encapsulates teleoperation functionality for better organization and maintainability."""
@@ -106,7 +131,8 @@ class TeleoperationController:
             'B': self._start_teleop,
             # Check teleop stopped state
             's': self._check_teleop_state,
-            'h': self._home_all,
+            'h': self._print_status,
+            'H': self._home_all,
             # Print action/state
             'a': self._print_action_state,
         }
@@ -147,8 +173,11 @@ class TeleoperationController:
   --- Is teleop stopped or not ---
     s        : Query if teleop stopped or not
 
+  --- Teleop status ---
+    h        : Print why teleop is restricted / paused and what to do next
+
   --- Home all robots ---
-    h        : Stop teleop and home all robots, need to confirm nothing is in the way while homing, otherwise it may cause collision
+    H        : Stop teleop and home all robots. Confirm the workspace is clear first.
 
   --- Print action/states via instance ---
     a        : Print follower action and state
@@ -242,6 +271,13 @@ class TeleoperationController:
             logger.info("Teleop pair {} {}".format(self.index, "stopped" if stopped else "started"))
         except Exception as e:
             logger.error(f"Failed to check teleop state: {e}")
+
+    def _print_status(self):
+        """Print GetTeleopStatus() for the current robot pair."""
+        try:
+            print_teleop_status(self.index, self.teleop.GetTeleopStatus(self.index))
+        except Exception as e:
+            logger.error(f"Failed to query teleop status: {e}")
     
     def _safe_engage(self, engage: bool):
         """Safely engage or disengage teleop with error handling."""
@@ -345,7 +381,8 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Transparent Cartesian Teleop LAN example")
     parser.add_argument("-l", "--leader_sn", required=True, help="serial number of leader robot")
     parser.add_argument("-f", "--follower_sn", required=True, help="serial number of follower robot")
-    parser.add_argument("-A", "--lan-ip", action="append", help="lan interface ip whitelist", default=[])
+    parser.add_argument("-A", "--lan-ip", action="append",
+                        help="LAN IPv4 address of the NIC connected to the robot", default=[])
     parser.add_argument("-D", "--enable-digital-input", action="store_true", help="enable digital input reading task")
     return parser.parse_args(argv)
 

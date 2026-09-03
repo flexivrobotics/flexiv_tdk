@@ -4,7 +4,7 @@
  * controlling a follower robot using a leader robot with transparent force feedback. Supports both
  * keyboard and digital input engage/disengage signal reading, with various axes lock modes, force
  * scaling, and max contact wrench setting, etc.
- * @copyright Copyright (C) 2016-2025 Flexiv Ltd. All Rights Reserved.
+ * @copyright Copyright (C) 2016-2026 Flexiv Ltd. All Rights Reserved.
  * @author Flexiv
  */
 
@@ -37,6 +37,33 @@ const std::array<double, flexiv::tdk::kCartDoF> kDefaultMaxContactWrench
 std::atomic<bool> g_running {true};
 
 } // namespace
+
+void PrintTeleopStatus(unsigned int idx, const flexiv::tdk::TeleopStatus& status)
+{
+    spdlog::info(
+        "Teleop pair {} status: initialized={} started={} engaged={} stopped={} fault={} "
+        "motion_restricted={} latency={:.1f}/{:.1f} ms",
+        idx, status.initialized, status.started, status.engaged, status.stopped, status.fault,
+        status.motion_restricted, status.latency_ms, status.latency_threshold_ms);
+    if (status.primary.code == flexiv::tdk::TeleopIssueCode::NONE) {
+        spdlog::info("No teleop restriction. Safe to continue.");
+        return;
+    }
+    const auto& issue = status.primary;
+    spdlog::warn("[{}/{}] {} | {} | {}",
+        flexiv::tdk::TeleopIssueLevelStr[static_cast<size_t>(issue.level)],
+        flexiv::tdk::TeleopIssueSideStr[static_cast<size_t>(issue.side)], issue.title,
+        issue.description, issue.suggestion);
+    for (const auto& extra : status.issues) {
+        if (extra.code == issue.code && extra.side == issue.side
+            && extra.joint_index == issue.joint_index) {
+            continue;
+        }
+        spdlog::warn("  also: [{}/{}] {}",
+            flexiv::tdk::TeleopIssueCodeStr[static_cast<size_t>(extra.code)],
+            flexiv::tdk::TeleopIssueSideStr[static_cast<size_t>(extra.side)], extra.title);
+    }
+}
 
 void PrintHelp()
 {
@@ -121,6 +148,12 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
 
   --- Is teleop stopped or not ---
     s        : Query if teleop stopped or not
+
+  --- Teleop status ---
+    h        : print why teleop is restricted / paused and what to do next
+
+  --- Home all robots ---
+    H        : Stop teleop and home all robots
 
   --- Help ---
     Any other key to show this help menu
@@ -272,6 +305,14 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
                 case 's':
                     teleop.stopped(0) ? spdlog::info("Teleop pair 0 stopped")
                                       : spdlog::info("Teleop pair 0 started");
+                    break;
+                case 'h':
+                    PrintTeleopStatus(0, teleop.GetTeleopStatus(0));
+                    break;
+                case 'H':
+                    teleop.Stop();
+                    teleop.HomeAll();
+                    spdlog::info("Teleop stopped for homing");
                     break;
                 default:
                     spdlog::warn("Invalid command!");
