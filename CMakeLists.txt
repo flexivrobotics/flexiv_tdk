@@ -78,6 +78,12 @@ message(STATUS "Found Threads")
 find_package(flexiv_rdk 1.9.2 REQUIRED)
 message(STATUS "Found flexiv_rdk: ${flexiv_rdk_DIR}, version: ${flexiv_rdk_VERSION}")
 
+# Zenoh
+find_package(zenohc 1.9.0 REQUIRED)
+find_package(zenohcxx 1.9.0 REQUIRED)
+message(STATUS "Found zenohc: ${zenohc_DIR}, version: ${zenohc_VERSION}")
+message(STATUS "Found zenohcxx: ${zenohcxx_DIR}, version: ${zenohcxx_VERSION}")
+
 # ===================================================================
 #      CREATE LIBRARY
 # ===================================================================
@@ -97,6 +103,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 target_link_libraries(${PROJECT_NAME} PUBLIC
   Threads::Threads
   flexiv::flexiv_rdk
+  zenohcxx::zenohc
 )
 
 # Use moderate compiler warning option 
