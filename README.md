@@ -25,15 +25,19 @@ Flexiv TDK has been recognized on the [Manipulation Net Peg-in-Hole Leaderboard]
 
 ## References
 
-[Flexiv TDK Page](https://flexivrobotics.github.io/flexiv_tdk/) is the main reference. It contains important information including user manual and API documentation. The instructions below serve as a quick reference, and you can find the full documentation at [Flexiv TDK Manual](https://flexivrobotics.github.io/flexiv_tdk/user-manual/overview/).
+The online site [flexivrobotics.github.io/flexiv_tdk](https://flexivrobotics.github.io/flexiv_tdk/) documents **TDK v2.x**. This repository tag is **TDK v1.6.x** (Flexiv software package v3.11.2). Do not use the online v2.x API pages with this release.
+
+For the v1.6.x user manual and C++ API, generate the docs locally from this tree and open them in a browser (see [Generate Documentation](#-generate-documentation)).
 
 ---
 
 ## ✅ Compatibility
 
-| OS            | Processor       | Languages   | Compiler Requirements     | Python Versions |
-| ------------- | --------------- | ----------- | ------------------------- | --------------- |
-| Ubuntu 22.04+ | x86_64, aarch64 | C++, Python | GCC ≥ 9.4, CMake ≥ 3.16.3 | 3.8, 3.10, 3.12 |
+| OS            | Processor       | Languages   | Compiler Requirements     | Python Versions | Robot software |
+| ------------- | --------------- | ----------- | ------------------------- | --------------- | -------------- |
+| Ubuntu 22.04+ | x86_64, aarch64 | C++, Python | GCC ≥ 9.4, CMake ≥ 3.16.3 | 3.8, 3.10, 3.12 | v3.11.2        |
+
+This release requires **flexiv_rdk 1.9.3** and **zenoh 1.9.0**. Both are installed by `thirdparty/build_and_install_dependencies.sh`.
 
 >💡 Need support for other platforms? [Contact Flexiv](https://www.flexiv.com/contact).
 
@@ -169,14 +173,16 @@ LD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
 
 Check each example’s source code for usage details.
 
-## 📚 Generate API Documentation
-The complete and detailed API documentation of the latest release can be found at [API Reference](https://flexivrobotics.github.io/flexiv_tdk/api/doxygen/index.html).
-The API documentation of a previous release can be generated manually using Doxygen. For example, on Linux:
+## 📚 Generate Documentation
+
+The online [GitHub Pages](https://flexivrobotics.github.io/flexiv_tdk/) site is **TDK v2.x**. For **TDK v1.6.x** (this tag), build the user manual and Doxygen API locally:
+
 ```bash
+pip install mkdocs-material
 sudo apt install doxygen-latex graphviz
 cd flexiv_tdk
-git checkout <tag_name>
 doxygen docs/doxygen/Doxyfile.in
+mkdocs serve
 ```
 
-Open flexiv_tdk/docs/api/doxygen/index.html in your browser.
+Open http://127.0.0.1:8000/ in a browser. The C++ API is at http://127.0.0.1:8000/flexiv_tdk/api/doxygen/. More detail: `docs/README.md`.

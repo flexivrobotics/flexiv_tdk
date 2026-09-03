@@ -34,5 +34,5 @@ runs:
         pwd
         cd example
         mkdir -p build && cd build
-        cmake .. -DCMAKE_INSTALL_PREFIX=~/tdk_install
+        cmake .. -DCMAKE_PREFIX_PATH=~/tdk_install
         cmake --build . --config Release -j 4
