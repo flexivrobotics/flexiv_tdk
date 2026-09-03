@@ -30,4 +30,24 @@ For LAN teleoperation, please set both robots and the user's computer to the sam
 ## Step 4: Reboot the robots and ping test
 After configuring the network and remote mode, reboot the robots. Connect the user's computer and two robots to the same ethernet switch. Ping the two control boxes to make sure all the devices are connected properly.
 
+## WAN (Standard Edition)
+
+WAN teleoperation uses `NetworkCfgStd` (TCP peer-to-peer). There is one robot and one edge computer on each side. One edge computer is the TCP server and the other is the TCP client. Either side may be the server.
+
+The TCP **client** only needs Internet access. The TCP **server** also needs:
+
+1. NAT enabled on the router that the server edge computer is connected to (usually on by default).
+2. The private IPv4 address of the server edge computer, used for a TCP port-forwarding rule. The forwarded port is `listening_port` on **both** sides.
+3. The server's **public** IPv4 address (for example from https://whatismyipaddress.com/). Both sides must set the same `public_ipv4_address`.
+
+Example flags (see `transparent_cartesian_teleop_wan`):
+
+- `-t server|client`: TCP role
+- `-i <public_ip>`: public IPv4 of the TCP server
+- `-p <port>`: forwarded listening port (same on both sides)
+- `-A <lan_ipv4>`: optional LAN IPv4 of the NIC connected to the robot
+- `-W <iface>`: optional WAN **interface name** (for example `wlo1` or `enp3s0`), not an IPv4 address. Repeatable.
+
+Both sides of a pair must use the same public IPv4 and listening port. Synchronize the two edge computers' clocks before running WAN teleop; see [Time Sync (WAN)](time-sync.md).
+
 

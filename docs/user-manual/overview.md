@@ -2,6 +2,8 @@
 
 This manual guides you through installing, configuring, and using the Flexiv TDK (Teleoperation Development Kit) to build teleoperation applications over LAN or WAN.
 
+This documentation source is **TDK v1.6.x**, compatible with **Flexiv software package v3.11.2**, **flexiv_rdk 1.9.3**, and **zenoh 1.9.0**. The online GitHub Pages site documents TDK v2.x and must not be used with this release. Generate this manual locally (see the repository README).
+
 ## Audience
 - Application developers integrating teleoperation features
 - Robotics engineers deploying Flexiv systems
