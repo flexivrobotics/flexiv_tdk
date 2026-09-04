@@ -107,6 +107,8 @@ To allow a regular user to create high-priority (real-time) threads without `sud
 ```bash
 echo "${USER}    -   rtprio    99" | sudo tee -a /etc/security/limits.conf
 echo "${USER}    -   nice     -20" | sudo tee -a /etc/security/limits.conf
+echo "${USER} soft memlock unlimited" | sudo tee -a /etc/security/limits.conf
+echo "${USER} hard memlock unlimited" | sudo tee -a /etc/security/limits.conf
 ```
 Log out and log back in (or reboot) for the settings to take effect.
 
