@@ -13,14 +13,17 @@
 #include <flexiv/tdk/data.hpp>
 #include <flexiv/tdk/transparent_cartesian_teleop_lan.hpp>
 
-#include <spdlog/spdlog.h>
-
 #include <getopt.h>
+#include <array>
 #include <atomic>
 #include <chrono>
+#include <cmath>
+#include <functional>
 #include <iostream>
-#include <thread>
 #include <optional>
+#include <string>
+#include <thread>
+#include <vector>
 
 namespace {
 /** Nullspace to a preferred posture */
@@ -40,6 +43,21 @@ std::atomic<bool> g_running {true};
 
 /** Single-arm joint group controlled by this example */
 constexpr auto kJointGroup = flexiv::rdk::JointGroup::ARM_1;
+
+void LogInfo(const std::string& msg)
+{
+    std::cout << "[info] " << msg << std::endl;
+}
+
+void LogWarn(const std::string& msg)
+{
+    std::cerr << "[warn] " << msg << std::endl;
+}
+
+void LogError(const std::string& msg)
+{
+    std::cerr << "[error] " << msg << std::endl;
+}
 
 } // namespace
 
@@ -72,11 +90,11 @@ void ReadDigitalInputTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
         try {
             teleop.Engage(0, kJointGroup, teleop.digital_inputs(0).first[0]);
         } catch (const std::exception& e) {
-            spdlog::error("Exception in ReadDigitalInputTask: {}", e.what());
+            LogError(std::string("Exception in ReadDigitalInputTask: ") + e.what());
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    spdlog::info("ReadDigitalInputTask exiting.");
+    LogInfo("ReadDigitalInputTask exiting.");
     return;
 }
 /**
@@ -142,7 +160,7 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
         std::getline(std::cin, userInput);
 
         if (userInput.empty()) {
-            spdlog::warn("Empty command!");
+            LogWarn("Empty command!");
             PrintCommandMenu();
             continue;
         }
@@ -273,21 +291,20 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
                     teleop.SetRepulsiveForce(index, kJointGroup, {0, 0, 0});
                     break;
                 case 's':
-                    teleop.stopped(0) ? spdlog::info("Teleop pair 0 stopped")
-                                      : spdlog::info("Teleop pair 0 started");
+                    LogInfo(teleop.stopped(0) ? "Teleop pair 0 stopped" : "Teleop pair 0 started");
                     break;
                 default:
-                    spdlog::warn("Invalid command!");
+                    LogWarn("Invalid command!");
                     PrintCommandMenu();
                     break;
             }
         } catch (const std::exception& e) {
-            spdlog::error("Exception in ConsoleTask: {}", e.what());
+            LogError(std::string("Exception in ConsoleTask: ") + e.what());
             g_running.store(false);
             return;
         }
     }
-    spdlog::info("Console thread exiting.");
+    LogInfo("Console thread exiting.");
     return;
 }
 
@@ -337,10 +354,10 @@ int main(int argc, char* argv[])
         std::optional<std::thread> pedal_thread;
 
         if (enable_digital_input) {
-            spdlog::info("Starting ReadDigitalInputTask thread.");
+            LogInfo("Starting ReadDigitalInputTask thread.");
             pedal_thread.emplace(ReadDigitalInputTask, std::ref(tctl));
         } else {
-            spdlog::info("ReadDigitalInputTask thread NOT started (-D flag not provided).");
+            LogInfo("ReadDigitalInputTask thread NOT started (-D flag not provided).");
         }
 
         // Wait for threads to finish
@@ -358,7 +375,7 @@ int main(int argc, char* argv[])
         tctl.Stop();
 
     } catch (const std::exception& e) {
-        spdlog::error(e.what());
+        LogError(e.what());
         return 1;
     }
 

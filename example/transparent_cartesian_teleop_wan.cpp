@@ -13,14 +13,18 @@
 #include <flexiv/tdk/data.hpp>
 #include <flexiv/tdk/transparent_cartesian_teleop_wan.hpp>
 
-#include <spdlog/spdlog.h>
-
 #include <getopt.h>
+#include <array>
 #include <atomic>
 #include <chrono>
+#include <cmath>
+#include <functional>
 #include <iostream>
-#include <thread>
 #include <optional>
+#include <string>
+#include <thread>
+#include <utility>
+#include <vector>
 
 namespace {
 
@@ -44,7 +48,23 @@ flexiv::tdk::Role kRole;
 
 /** Single-arm joint group controlled by this example */
 constexpr auto kJointGroup = flexiv::rdk::JointGroup::ARM_1;
+
+void LogInfo(const std::string& msg)
+{
+    std::cout << "[info] " << msg << std::endl;
 }
+
+void LogWarn(const std::string& msg)
+{
+    std::cerr << "[warn] " << msg << std::endl;
+}
+
+void LogError(const std::string& msg)
+{
+    std::cerr << "[error] " << msg << std::endl;
+}
+
+} // namespace
 
 void PrintHelp()
 {
@@ -85,11 +105,11 @@ void ReadDigitalInputTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
         try {
             teleop.Engage(0, kJointGroup, teleop.digital_inputs(0)[0]);
         } catch (const std::exception& e) {
-            spdlog::error("Exception in ReadDigitalInputTask: {}", e.what());
+            LogError(std::string("Exception in ReadDigitalInputTask: ") + e.what());
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    spdlog::info("ReadDigitalInputTask exiting.");
+    LogInfo("ReadDigitalInputTask exiting.");
     return;
 }
 
@@ -129,7 +149,7 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
         std::getline(std::cin, user_input);
 
         if (user_input.empty()) {
-            spdlog::warn("Empty command!");
+            LogWarn("Empty command!");
             PrintCommandMenu();
             continue;
         }
@@ -161,25 +181,25 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
                 case 'l': {
                     double latency_ms {};
                     if (teleop.CheckTeleopConnectionLatency(0, latency_ms)) {
-                        spdlog::info("Current message latency is: {}ms", latency_ms);
+                        LogInfo("Current message latency is: " + std::to_string(latency_ms) + "ms");
                     } else {
-                        spdlog::warn("WAN teleop is disconnected.");
+                        LogWarn("WAN teleop is disconnected.");
                     }
                     break;
                 }
 
                 default:
-                    spdlog::warn("Invalid command!");
+                    LogWarn("Invalid command!");
                     PrintCommandMenu();
                     break;
             }
         } catch (const std::exception& e) {
-            spdlog::error("Exception in ConsoleTask: {}", e.what());
+            LogError(std::string("Exception in ConsoleTask: ") + e.what());
             g_running.store(false);
             return;
         }
     }
-    spdlog::info("Console thread exiting.");
+    LogInfo("Console thread exiting.");
     return;
 }
 
@@ -212,7 +232,7 @@ int main(int argc, char* argv[])
                 try {
                     server_port = std::stoi(optarg);
                 } catch (...) {
-                    spdlog::error("Invalid port number: {}", optarg);
+                    LogError(std::string("Invalid port number: ") + optarg);
                     return 1;
                 }
                 break;
@@ -234,8 +254,7 @@ int main(int argc, char* argv[])
         return 1;
     }
     if (wan_interface_whitelist.empty()) {
-        spdlog::warn(
-            "WAN interface whitelist is not provided, will search all network interfaces.");
+        LogWarn("WAN interface whitelist is not provided, will search all network interfaces.");
     }
 
     // Whether this is a TCP server or client
@@ -245,7 +264,7 @@ int main(int argc, char* argv[])
     } else if (tcp_role == "client") {
         is_tcp_server = false;
     } else {
-        spdlog::error("Valid inputs for [-t] are: server, client");
+        LogError("Valid inputs for [-t] are: server, client");
         return 1;
     }
 
@@ -255,7 +274,7 @@ int main(int argc, char* argv[])
     } else if (teleop_role == "leader") {
         kRole = flexiv::tdk::Role::WAN_TELEOP_LEADER;
     } else {
-        spdlog::error("Valid inputs for [-r] are: follower, leader");
+        LogError("Valid inputs for [-r] are: follower, leader");
         return 1;
     }
 
@@ -289,14 +308,12 @@ int main(int argc, char* argv[])
         std::optional<std::thread> pedal_thread;
         // Modified condition: Start if -D is given OR if role is leader (original behavior)
         if (teleop_role == "leader" && enable_digital_input) {
-            spdlog::info(
-                "Starting ReadDigitalInputTask thread as role is 'leader' and requested by -D "
-                "flag.");
+            LogInfo("Starting ReadDigitalInputTask thread as role is 'leader' and requested by -D "
+                    "flag.");
             pedal_thread.emplace(ReadDigitalInputTask, std::ref(tctw));
         } else {
-            spdlog::info(
-                "ReadDigitalInputTask thread NOT started (role is not 'leader' or -D flag not "
-                "provided).");
+            LogInfo("ReadDigitalInputTask thread NOT started (role is not 'leader' or -D flag not "
+                    "provided).");
         }
 
         // Wait for console_thread to finish
@@ -314,7 +331,7 @@ int main(int argc, char* argv[])
         tctw.Stop();
 
     } catch (const std::exception& e) {
-        spdlog::error(e.what());
+        LogError(e.what());
         return 1;
     }
 

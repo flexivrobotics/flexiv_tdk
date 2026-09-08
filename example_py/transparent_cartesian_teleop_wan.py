@@ -19,7 +19,6 @@ import argparse
 import threading
 import time
 import sys
-import spdlog
 import math
 from typing import List, Optional, Dict, Callable
 
@@ -44,8 +43,16 @@ _stop_event = threading.Event()
 # Single-arm joint group controlled by this example
 JOINT_GROUP = flexivrdk.JointGroup.ARM_1
 
-# Logger setup
-logger = spdlog.ConsoleLogger("Example")
+def log_info(msg):
+    print(f"[info] {msg}")
+
+
+def log_warn(msg):
+    print(f"[warn] {msg}", file=sys.stderr)
+
+
+def log_error(msg):
+    print(f"[error] {msg}", file=sys.stderr)
 
 class WanTeleoperationController:
     """Encapsulates WAN teleoperation functionality for better organization and maintainability."""
@@ -103,17 +110,17 @@ class WanTeleoperationController:
         try:
             self.teleop.Init()
             self.teleop.Start()
-            logger.info("Teleop started")
+            log_info("Teleop started")
         except Exception as e:
-            logger.error(f"Failed to start teleop: {e}")
+            log_error(f"Failed to start teleop: {e}")
     
     def _stop_teleop(self):
         """Stop teleoperation and set the stop event."""
         try:
             self.teleop.Stop()
-            logger.info("Teleop stopped")
+            log_info("Teleop stopped")
         except Exception as e:
-            logger.error(f"Failed to stop teleop: {e}")
+            log_error(f"Failed to stop teleop: {e}")
             _stop_event.set()
     
     def _print_latency(self):
@@ -121,35 +128,35 @@ class WanTeleoperationController:
         try:
             ok, latency_ms= self.teleop.CheckTeleopConnectionLatency(self.index)
             if ok:
-                logger.info(f"Current message latency is: {latency_ms}ms")
+                log_info(f"Current message latency is: {latency_ms}ms")
             else:
-                logger.warn("WAN teleop is disconnected.")
+                log_warn("WAN teleop is disconnected.")
         except Exception as e:
-            logger.error("Error checking TCP latency: {}", e)
+            log_error(f"Error checking TCP latency: {e}")
     
     def _safe_engage(self, engage: bool):
         """Safely engage or disengage teleop with error handling."""
         try:
             self.teleop.Engage(self.index, JOINT_GROUP, engage)
-            logger.info(f"Teleop {'engaged' if engage else 'disengaged'}")
+            log_info(f"Teleop {'engaged' if engage else 'disengaged'}")
         except Exception as e:
-            logger.error(f"Failed to {'engage' if engage else 'disengage'} teleop: {e}")
+            log_error(f"Failed to {'engage' if engage else 'disengage'} teleop: {e}")
     
     def _safe_set_nullspace(self, posture: List[float]):
         """Safely set nullspace posture with error handling."""
         try:
             self.teleop.SetNullSpacePosture(self.index, JOINT_GROUP, posture)
-            logger.info("Nullspace posture set")
+            log_info("Nullspace posture set")
         except Exception as e:
-            logger.error(f"Failed to set nullspace posture: {e}")
+            log_error(f"Failed to set nullspace posture: {e}")
     
     def _safe_set_max_contact_wrench(self, wrench: List[float]):
         """Safely set max contact wrench with error handling."""
         try:
             self.teleop.SetMaxContactWrench(self.index, JOINT_GROUP, wrench)
-            logger.info("Max contact wrench set")
+            log_info("Max contact wrench set")
         except Exception as e:
-            logger.error(f"Failed to set max contact wrench: {e}")
+            log_error(f"Failed to set max contact wrench: {e}")
     
     def handle_command(self, user_input: str) -> bool:
         """Handle a single user command."""
@@ -163,7 +170,7 @@ class WanTeleoperationController:
                 self._command_map[ch]()
                 return True
             except Exception as e:
-                logger.error(f"Exception executing command '{ch}': {e}")
+                log_error(f"Exception executing command '{ch}': {e}")
                 return False
         else:
             print(self._menu)
@@ -182,9 +189,9 @@ def read_digital_input_task(teleop: flexivtdk.TransparentCartesianTeleopWAN):
                 engage_state = bool(di_state[0])
                 teleop.Engage(idx, JOINT_GROUP, engage_state)
         except Exception as e:
-            logger.error(f"Exception in ReadDigitalInputTask: {e}")
+            log_error(f"Exception in ReadDigitalInputTask: {e}")
         time.sleep(0.01)
-    logger.info("ReadDigitalInputTask exiting.")
+    log_info("ReadDigitalInputTask exiting.")
 
 
 # console task to read user inputs and send commands accordingly
@@ -196,7 +203,7 @@ def console_task(teleop: flexivtdk.TransparentCartesianTeleopWAN):
         try:
             user_input = input("> ").strip()
         except (EOFError, KeyboardInterrupt):
-            logger.info("Console exiting by user interrupt.")
+            log_info("Console exiting by user interrupt.")
             _stop_event.set()
             break
         
@@ -204,7 +211,7 @@ def console_task(teleop: flexivtdk.TransparentCartesianTeleopWAN):
             _stop_event.set()
             break
 
-    logger.info("Console thread exiting.")
+    log_info("Console thread exiting.")
     return
 
 
@@ -231,11 +238,11 @@ def main(argv: Optional[List[str]] = None):
     
     # Validate arguments
     if args.role not in ['leader', 'follower']:
-        logger.error("Valid inputs for --role are: leader, follower")
+        log_error("Valid inputs for --role are: leader, follower")
         sys.exit(1)
     
     if args.tcp_role not in ['server', 'client']:
-        logger.error("Valid inputs for --tcp-role are: server, client")
+        log_error("Valid inputs for --tcp-role are: server, client")
         sys.exit(1)
     
     # Determine role
@@ -276,21 +283,21 @@ def main(argv: Optional[List[str]] = None):
         # Set max contact wrench
         teleop.SetMaxContactWrench(0, JOINT_GROUP, kDefaultMaxContactWrench)
         
-        logger.info("WAN Teleop started.")
+        log_info("WAN Teleop started.")
 
         # Start console task thread
         console_thr = threading.Thread(target=console_task, args=(teleop,), daemon=True)
         console_thr.start()
-        logger.info("Console task started.")
+        log_info("Console task started.")
 
         # Start digital input reading task thread accordingly
         # Only start if role is leader and enable_di flag is provided
         if args.role == 'leader' and args.enable_digital_input:
-            logger.info("Starting ReadDigitalInputTask thread as role is 'leader' and requested by --enable-digital-input flag.")
+            log_info("Starting ReadDigitalInputTask thread as role is 'leader' and requested by --enable-digital-input flag.")
             pedal_thread = threading.Thread(target=read_digital_input_task, args=(teleop,), daemon=True)
             pedal_thread.start()
         else:
-            logger.info("ReadDigitalInputTask thread NOT started (role is not 'leader' or --enable-digital-input flag not provided).")
+            log_info("ReadDigitalInputTask thread NOT started (role is not 'leader' or --enable-digital-input flag not provided).")
 
         console_thr.join()
 
@@ -303,13 +310,13 @@ def main(argv: Optional[List[str]] = None):
         # Stop teleop process 
         if teleop:
             teleop.Stop()
-        logger.info("WAN Teleop stopped.")
+        log_info("WAN Teleop stopped.")
         
     except KeyboardInterrupt:
-        logger.info("Program interrupted by user")
+        log_info("Program interrupted by user")
         _stop_event.set()
     except Exception as e:
-        logger.error(f"Exception in main: {e}")
+        log_error(f"Exception in main: {e}")
         _stop_event.set()
         sys.exit(1)
     finally:
