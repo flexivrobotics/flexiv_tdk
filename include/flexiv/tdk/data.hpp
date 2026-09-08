@@ -21,8 +21,10 @@ constexpr size_t kCartDoF = 6;
 /** Size of pose array (3 position + 4 quaternion) */
 constexpr size_t kPoseSize = 7;
 
-/** Number of digital IO ports (16 on control box + 2 inside the wrist connector * 2 max wrists ) */
-constexpr size_t kIOPorts = 16 + 2 * 2;
+/** Number of digital IO ports. Same as flexiv::rdk::kIOPorts: 16 on the control box, then the M8
+ * connector of each wrist (2 ports * maximum 2 wrists), then the pogo pin connector of each wrist
+ * (2 ports * maximum 2 wrists). */
+constexpr size_t kIOPorts = rdk::kIOPorts;
 
 /** Max wrench feedback scaling factor for transparent teleop under LAN */
 constexpr double kMaxWrenchFeedbackScale = 3;
