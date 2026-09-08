@@ -47,8 +47,10 @@ cmake --build . --config Release -j 4
 
 ```bash
 cd flexiv_tdk/example/build
-sudo ./<program_name> [arguments]
+LD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
 ```
+
+`LD_LIBRARY_PATH` must include the directory that contains both `libflexiv_tdk.so` and `libflexiv_rdk.so`.
 
 To allow a regular user to create high-priority (real-time) threads without `sudo`, configure system to apply real-time and nice priority limits (only need to set it once):
 

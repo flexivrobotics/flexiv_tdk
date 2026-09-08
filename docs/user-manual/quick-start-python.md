@@ -5,7 +5,7 @@ This guide walks you through installing and running the Flexiv TDK Python packag
 ## 1) Install the package
 
 ```bash
-python3.x -m pip install spdlog flexivtdk
+python3.x -m pip install flexivtdk
 ```
 
 > Replace `3.x` with your Python version (e.g., 3.10).
