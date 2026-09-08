@@ -45,7 +45,7 @@ Flexiv TDK has been recognized on the [Manipulation Net Peg-in-Hole Leaderboard]
 
 On all supported platforms, the Python package of TDK and its dependencies for a specific Python version can be installed using the `pip` module:
 
-    python3.x -m pip install spdlog flexivtdk
+    python3.x -m pip install flexivtdk
 
 NOTE: replace `3.x` with a specific Python version.
 
