@@ -3,9 +3,10 @@
 """
 transparent_cartesian_teleop_wan.py
 
-Example usage of Transparent Cartesian teleoperation under Wide Area Network,
-controlling a follower robot using a leader robot with transparent force feedback.
-Supports both keyboard and digital input engage/disengage signal reading.
+Example usage of Transparent Cartesian teleoperation over WAN (TDK Standard Edition,
+peer-to-peer TCP). Controls a follower robot from a leader robot with transparent
+force feedback. Supports keyboard and digital input engage/disengage, message latency
+query, and teleop status query.
 
 This program is provided only as an example. Users must adapt it to their own application
 requirements, safety procedures, and software architecture before deployment.
@@ -26,22 +27,21 @@ from typing import List, Optional, Dict, Callable
 import flexivrdk
 import flexivtdk
 
-# Helper to convert degree lists to radians
+
 def _deg2rad_list(deg_list):
     return [math.radians(d) for d in deg_list]
 
-# Example of null-space postures
+
+# Immutable example parameters
 kPreferredJntPos = _deg2rad_list([60, -60, -85, 115, 70, 0, 0])
 kHomeJntPos = _deg2rad_list([0, -40, 0, 90, 0, 40, 0])
-
-# Example of max contact wrench setting
 kDefaultMaxContactWrench = [25.0, 25.0, 25.0, 10.0, 10.0, 10.0]
+kIdx = 0
+kJointGroup = flexivrdk.JointGroup.ARM_1
 
-# Global thread-safe stop event
-_stop_event = threading.Event()
+# Mutable process state
+g_stop_event = threading.Event()
 
-# Single-arm joint group controlled by this example
-JOINT_GROUP = flexivrdk.JointGroup.ARM_1
 
 def log_info(msg):
     print(f"[info] {msg}")
@@ -54,35 +54,52 @@ def log_warn(msg):
 def log_error(msg):
     print(f"[error] {msg}", file=sys.stderr)
 
+
+def print_teleop_status(status):
+    """Print a TeleopStatus snapshot from GetTeleopStatus()."""
+    log_info(
+        "Teleop status: initialized={} started={} engaged={} stopped={} fault={} "
+        "motion_restricted={} latency={:.1f}/{:.1f} ms".format(
+            status.initialized, status.started, status.engaged, status.stopped,
+            status.fault, status.motion_restricted, status.latency_ms,
+            status.latency_threshold_ms))
+    if status.primary.code == flexivtdk.TeleopIssueCode.NONE:
+        log_info("No teleop restriction. Safe to continue.")
+        return
+    issue = status.primary
+    level = flexivtdk.TeleopIssueLevelStr[int(issue.level)]
+    log_warn(f"[{level}] {issue.title} | {issue.description} | {issue.suggestion}")
+    for extra in status.issues:
+        if (extra.code == issue.code and extra.side == issue.side
+                and extra.joint_index == issue.joint_index):
+            continue
+        code = flexivtdk.TeleopIssueCodeStr[int(extra.code)]
+        log_warn(f"  also: [{code}] {extra.title}")
+
+
 class WanTeleoperationController:
     """Encapsulates WAN teleoperation functionality for better organization and maintainability."""
-    
+
     def __init__(self, teleop: flexivtdk.TransparentCartesianTeleopWAN):
         self.teleop = teleop
-        self.index = 0
+        self.index = kIdx
         self._command_map = self._create_command_map()
         self._menu = self._create_menu()
-    
+
     def _create_command_map(self) -> Dict[str, Callable]:
-        """Create a mapping of keyboard commands to their corresponding methods."""
         return {
-            # Teleop engage/disengage
             'r': lambda: self._safe_engage(True),
             'R': lambda: self._safe_engage(False),
-            # Null-space postures
             'i': lambda: self._safe_set_nullspace(kPreferredJntPos),
             'I': lambda: self._safe_set_nullspace(kHomeJntPos),
-            # Max contact wrench
             'p': lambda: self._safe_set_max_contact_wrench(kDefaultMaxContactWrench),
-            # Reinit and start
             'u': self._start_teleop,
             'U': self._stop_teleop,
-            # TCP message latency
             'l': self._print_latency,
+            'h': self._print_teleop_status,
         }
-    
+
     def _create_menu(self) -> str:
-        """Create the command menu string."""
         return """
   --- Teleop Engagement ---
     r        : Engage teleop
@@ -95,75 +112,77 @@ class WanTeleoperationController:
     p        : Set default max contact wrench
 
   --- Reinit and start ---
-    u        : Recall Init and Start 
+    u        : Recall Init and Start
     U        : Stop teleop
 
   --- TCP message latency ---
     l        : Print current message latency in milliseconds
 
+  --- Teleop status ---
+    h        : Print why teleop is restricted / paused and what to do next
+
   --- Help ---
     Any other key to show this help menu
     """
-    
+
     def _start_teleop(self):
-        """Initialize and start teleoperation."""
         try:
             self.teleop.Init()
             self.teleop.Start()
             log_info("Teleop started")
         except Exception as e:
             log_error(f"Failed to start teleop: {e}")
-    
+
     def _stop_teleop(self):
-        """Stop teleoperation and set the stop event."""
         try:
             self.teleop.Stop()
             log_info("Teleop stopped")
         except Exception as e:
             log_error(f"Failed to stop teleop: {e}")
-            _stop_event.set()
-    
+            g_stop_event.set()
+
     def _print_latency(self):
-        """Print current TCP message latency."""
         try:
-            ok, latency_ms= self.teleop.CheckTeleopConnectionLatency(self.index)
+            ok, latency_ms = self.teleop.CheckTeleopConnectionLatency(self.index)
             if ok:
                 log_info(f"Current message latency is: {latency_ms}ms")
             else:
                 log_warn("WAN teleop is disconnected.")
         except Exception as e:
             log_error(f"Error checking TCP latency: {e}")
-    
-    def _safe_engage(self, engage: bool):
-        """Safely engage or disengage teleop with error handling."""
+
+    def _print_teleop_status(self):
         try:
-            self.teleop.Engage(self.index, JOINT_GROUP, engage)
+            print_teleop_status(self.teleop.GetTeleopStatus(self.index, kJointGroup))
+        except Exception as e:
+            log_error(f"Failed to get teleop status: {e}")
+
+    def _safe_engage(self, engage: bool):
+        try:
+            self.teleop.Engage(self.index, kJointGroup, engage)
             log_info(f"Teleop {'engaged' if engage else 'disengaged'}")
         except Exception as e:
             log_error(f"Failed to {'engage' if engage else 'disengage'} teleop: {e}")
-    
+
     def _safe_set_nullspace(self, posture: List[float]):
-        """Safely set nullspace posture with error handling."""
         try:
-            self.teleop.SetNullSpacePosture(self.index, JOINT_GROUP, posture)
+            self.teleop.SetNullSpacePosture(self.index, kJointGroup, posture)
             log_info("Nullspace posture set")
         except Exception as e:
             log_error(f"Failed to set nullspace posture: {e}")
-    
+
     def _safe_set_max_contact_wrench(self, wrench: List[float]):
-        """Safely set max contact wrench with error handling."""
         try:
-            self.teleop.SetMaxContactWrench(self.index, JOINT_GROUP, wrench)
+            self.teleop.SetMaxContactWrench(self.index, kJointGroup, wrench)
             log_info("Max contact wrench set")
         except Exception as e:
             log_error(f"Failed to set max contact wrench: {e}")
-    
+
     def handle_command(self, user_input: str) -> bool:
-        """Handle a single user command."""
         if not user_input:
             print(self._menu)
             return True
-        
+
         ch = user_input[0]
         if ch in self._command_map:
             try:
@@ -177,46 +196,40 @@ class WanTeleoperationController:
             return True
 
 
-# read digital input and engage/disengage teleop accordingly
 def read_digital_input_task(teleop: flexivtdk.TransparentCartesianTeleopWAN):
-    idx = 0
-    while not _stop_event.is_set():
+    while not g_stop_event.is_set():
         try:
-            # Digital input for WAN returns a list of inputs
-            di_state = teleop.digital_inputs(idx)
-            # Use first DI port as engage/disengage signal
+            di_state = teleop.digital_inputs(kIdx)
             if di_state and len(di_state) > 0:
-                engage_state = bool(di_state[0])
-                teleop.Engage(idx, JOINT_GROUP, engage_state)
+                teleop.Engage(kIdx, kJointGroup, bool(di_state[0]))
         except Exception as e:
             log_error(f"Exception in ReadDigitalInputTask: {e}")
         time.sleep(0.01)
     log_info("ReadDigitalInputTask exiting.")
 
 
-# console task to read user inputs and send commands accordingly
 def console_task(teleop: flexivtdk.TransparentCartesianTeleopWAN):
     controller = WanTeleoperationController(teleop)
     print(controller._menu)
-    
-    while not _stop_event.is_set():
+
+    while not g_stop_event.is_set():
         try:
             user_input = input("> ").strip()
         except (EOFError, KeyboardInterrupt):
             log_info("Console exiting by user interrupt.")
-            _stop_event.set()
+            g_stop_event.set()
             break
-        
+
         if not controller.handle_command(user_input):
-            _stop_event.set()
+            g_stop_event.set()
             break
 
     log_info("Console thread exiting.")
-    return
 
 
 def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Transparent Cartesian Teleop WAN example (Python)")
+    parser = argparse.ArgumentParser(
+        description="Transparent Cartesian Teleop WAN example (Standard Edition)")
     parser.add_argument("-l", "--leader_sn", required=True, help="serial number of leader robot")
     parser.add_argument("-f", "--follower_sn", required=True, help="serial number of follower robot")
     parser.add_argument("-r", "--role", required=True, choices=["leader", "follower"], help="role in teleop")
@@ -226,116 +239,85 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     parser.add_argument("-W", "--wan-interface", action="append",
         help="OS network-interface name allowed for WAN traffic (for example, wlo1 or enp3s0)",
         default=[])
-    parser.add_argument("-D", "--enable-digital-input", action="store_true", help="enable digital input reading task")
+    parser.add_argument("-D", "--enable-digital-input", action="store_true",
+        help="enable digital input reading task")
     return parser.parse_args(argv)
 
 
 def main(argv: Optional[List[str]] = None):
-    # Program Setup
-    # ==============================================================================================
-    # Parse arguments
     args = parse_args(argv)
-    
-    # Validate arguments
-    if args.role not in ['leader', 'follower']:
-        log_error("Valid inputs for --role are: leader, follower")
-        sys.exit(1)
-    
-    if args.tcp_role not in ['server', 'client']:
-        log_error("Valid inputs for --tcp-role are: server, client")
-        sys.exit(1)
-    
-    # Determine role
+
     if args.role == 'follower':
         role = flexivtdk.Role.WAN_TELEOP_FOLLOWER
-    else:  # leader
+    else:
         role = flexivtdk.Role.WAN_TELEOP_LEADER
-    
-    # Network configuration
+
     network_cfg = flexivtdk.NetworkCfgStd()
     network_cfg.is_tcp_server = (args.tcp_role == 'server')
     network_cfg.public_ipv4_address = args.public_ip
     network_cfg.listening_port = args.port
-    
-    # Restrict WAN traffic to the specified OS network-interface names when requested.
     if args.wan_interface:
         network_cfg.wan_interface_whitelist = args.wan_interface
-    
-    # Robot pairs
+
     robot_pairs = [(args.leader_sn, args.follower_sn)]
-    
+
     teleop = None
     console_thr = None
     pedal_thread = None
-    
+
     try:
-        # TDK Initialization
-        # ==========================================================================================
-        # Instantiate teleop interface
         teleop = flexivtdk.TransparentCartesianTeleopWAN(robot_pairs, role, network_cfg)
 
-        # Initialize teleop, this will Clear fault, Calibrate the force sensors, initialize teleop control parameters, etc. 
-        teleop.Init()
+        pair_sn = teleop.robot_pair_sn(kIdx)
+        log_info(f"role={teleop.role()} robot_pair_sn=({pair_sn[0]}, {pair_sn[1]})")
 
-        # Start teleop process
+        teleop.Init()
         teleop.Start()
-        
-        # Set max contact wrench
-        teleop.SetMaxContactWrench(0, JOINT_GROUP, kDefaultMaxContactWrench)
-        
+        teleop.SetMaxContactWrench(kIdx, kJointGroup, kDefaultMaxContactWrench)
         log_info("WAN Teleop started.")
 
-        # Start console task thread
         console_thr = threading.Thread(target=console_task, args=(teleop,), daemon=True)
         console_thr.start()
         log_info("Console task started.")
 
-        # Start digital input reading task thread accordingly
-        # Only start if role is leader and enable_di flag is provided
         if args.role == 'leader' and args.enable_digital_input:
-            log_info("Starting ReadDigitalInputTask thread as role is 'leader' and requested by --enable-digital-input flag.")
-            pedal_thread = threading.Thread(target=read_digital_input_task, args=(teleop,), daemon=True)
+            log_info("Starting ReadDigitalInputTask thread as role is 'leader' and requested by "
+                     "--enable-digital-input flag.")
+            pedal_thread = threading.Thread(
+                target=read_digital_input_task, args=(teleop,), daemon=True)
             pedal_thread.start()
         else:
-            log_info("ReadDigitalInputTask thread NOT started (role is not 'leader' or --enable-digital-input flag not provided).")
+            log_info("ReadDigitalInputTask thread NOT started (role is not 'leader' or "
+                     "--enable-digital-input flag not provided).")
 
         console_thr.join()
+        g_stop_event.set()
 
-        # Set the stop event when console thread exits
-        _stop_event.set()  
-        
         if pedal_thread:
             pedal_thread.join(timeout=1.0)
 
-        # Stop teleop process 
         if teleop:
             teleop.Stop()
         log_info("WAN Teleop stopped.")
-        
+
     except KeyboardInterrupt:
         log_info("Program interrupted by user")
-        _stop_event.set()
+        g_stop_event.set()
     except Exception as e:
         log_error(f"Exception in main: {e}")
-        _stop_event.set()
+        g_stop_event.set()
         sys.exit(1)
     finally:
-        # Ensure threads are joined properly
         if console_thr and console_thr.is_alive():
             console_thr.join(timeout=1.0)
         if pedal_thread and pedal_thread.is_alive():
             pedal_thread.join(timeout=1.0)
-        
-        # Ensure teleop is stopped
         if teleop:
             try:
                 teleop.Stop()
-            except:
-                pass  # Ignore errors during cleanup
+            except Exception:
+                pass
 
 
 if __name__ == "__main__":
     main()
-
-
-
