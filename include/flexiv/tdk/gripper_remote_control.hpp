@@ -49,6 +49,7 @@ public:
      * @param[in] verbose Whether to print verbose logs.
      * @throw std::invalid_argument if the network configuration is invalid.
      * @throw std::runtime_error if error occurred during construction.
+     * @throw std::logic_error if the connected robot does not have a TDK professional license.
      * @warning The referenced [teleop] instance must be constructed before this interface and
      * must outlive it. This constructor does not wait for the WAN connection with the remote side
      * to be established.

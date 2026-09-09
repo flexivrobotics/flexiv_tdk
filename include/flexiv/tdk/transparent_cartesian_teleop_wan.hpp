@@ -55,9 +55,10 @@ public:
      * @param[in] network_cfg_pro Network configuration containing the path to `client.conf`.
      * @throw std::invalid_argument if the format of robot_sn or network configuration is invalid.
      * @throw std::runtime_error if error occurred during construction.
-     * @throw std::logic_error if one of the connected robots does not have a valid TDK license; or
-     * the version of this TDK library is incompatible with one of the connected robots; or model of
-     * any connected robot is not supported; or there are multiple instantiated TDK objects.
+     * @throw std::logic_error if one of the connected robots does not have a TDK professional
+     * license; or the version of this TDK library is incompatible with one of the connected robots;
+     * or model of any connected robot is not supported; or there are multiple instantiated TDK
+     * objects.
      * @warning This constructor blocks until the connection with the robot is established and
      * initialization sequence is successfully finished. It does not wait for the WAN connection to
      * be established.
@@ -94,8 +95,8 @@ public:
      * @warning
      * - Latency > 200 ms indicates poor connection quality and may cause delayed feedback
      *   or command execution.
-     * - If latency exceeds threshold_ms, teleoperation is disengaged and follower robots
-     *   hold their pose until latency returns to a valid range.
+     * - If latency exceeds threshold_ms, or is negative (clock mismatch), teleoperation is
+     *   disengaged and follower robots hold their pose until latency returns to a valid range.
      *
      * @see SetTeleopLatencyLimit()
      */
@@ -334,10 +335,43 @@ public:
     AxisLock GetAxisLockState(unsigned int idx, JointGroup group);
 
     /**
+     * @brief [Non-blocking] Query why teleoperation is restricted, paused, or stopped, and
+     * what the operator should do next.
+     *
+     * Covers joint limits, singularities, high joint velocity,
+     * high network latency (forced disengage), peer disconnect, clock mismatch
+     * (forced disengage when measured latency is negative), robot
+     * fault, and control-mode mismatch. [status.primary] is the issue the host should
+     * show first; [status.issues] lists every condition that is active right now.
+     *
+     * @param[in] idx Index of the robot pair. This index is the same as the index of the
+     * constructor parameter [robot_pairs_sn].
+     * @param[in] group Joint group of the robot pair to query.
+     * @param[out] status Snapshot of teleoperation health and operator-facing advice.
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @see TeleopStatus
+     * @see TeleopIssue
+     */
+    void GetTeleopStatus(unsigned int idx, JointGroup group, TeleopStatus& status) const;
+
+    /**
+     * @brief [Non-blocking] Query why teleoperation is restricted, paused, or stopped.
+     * @param[in] idx Index of the robot pair. This index is the same as the index of the
+     * constructor parameter [robot_pairs_sn].
+     * @param[in] group Joint group of the robot pair to query.
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @warning This overload is less efficient than the other one as additional runtime
+     * memory allocation and data copying are performed.
+     * @return TeleopStatus
+     * @see GetTeleopStatus(unsigned int, JointGroup, TeleopStatus&)
+     */
+    TeleopStatus GetTeleopStatus(unsigned int idx, JointGroup group) const;
+
+    /**
      * @brief [Non-blocking] Set the maximum acceptable TCP message latency for teleoperation.
-     * If the measured latency exceeds this threshold, teleoperation will be disengaged, and
-     * follower robots will hold their pose until incoming message latency is back within the
-     * acceptable range.
+     * If the measured latency exceeds this threshold or is negative (clock mismatch),
+     * teleoperation will be disengaged, and follower robots will hold their pose until
+     * incoming message latency is back within the acceptable range.
      * @param[in] idx Index of the robot pair. This corresponds to the index of the constructor
      * parameter [robot_pairs_sn].
      * @param[in] threshold_ms Maximum acceptable TCP message latency in milliseconds. Default is
