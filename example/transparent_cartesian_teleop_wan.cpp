@@ -17,8 +17,9 @@
 #include <atomic>
 #include <chrono>
 #include <iostream>
-#include <thread>
 #include <optional>
+#include <string>
+#include <thread>
 
 namespace {
 
@@ -105,11 +106,30 @@ const struct option kLongOptions[] = {
  */
 void ReadDigitalInputTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
 {
-    while (g_running.load() && !teleop.fault(0)) {
+    bool logged_idle = false;
+    std::string last_error;
+    while (g_running.load()) {
         try {
-            teleop.Engage(0, teleop.digital_inputs(0)[0]);
+            const auto status = teleop.GetTeleopStatus(0);
+            // Robot fault / Stop() drops teleop back to not-started. Engage() is
+            // invalid in that state and must not be polled every cycle.
+            if (!status.started || status.stopped) {
+                if (!logged_idle) {
+                    spdlog::warn(
+                        "ReadDigitalInputTask: teleop is not started, pause Engage "
+                        "(call Init + Start to resume)");
+                    logged_idle = true;
+                }
+            } else {
+                logged_idle = false;
+                teleop.Engage(0, teleop.digital_inputs(0)[0]);
+            }
+            last_error.clear();
         } catch (const std::exception& e) {
-            spdlog::error("Exception in ReadDigitalInputTask: {}", e.what());
+            if (last_error != e.what()) {
+                spdlog::error("Exception in ReadDigitalInputTask: {}", e.what());
+                last_error = e.what();
+            }
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }

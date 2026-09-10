@@ -221,16 +221,32 @@ class WanTeleoperationController:
 # read digital input and engage/disengage teleop accordingly
 def read_digital_input_task(teleop: flexivtdk.TransparentCartesianTeleopWAN):
     idx = 0
+    logged_idle = False
+    last_error = None
     while not _stop_event.is_set():
         try:
-            # Digital input for WAN returns a list of inputs
-            di_state = teleop.digital_inputs(idx)
-            # Use first DI port as engage/disengage signal
-            if di_state and len(di_state) > 0:
-                engage_state = bool(di_state[0])
-                teleop.Engage(idx, engage_state)
+            status = teleop.GetTeleopStatus(idx)
+            # Robot fault / Stop() drops teleop back to not-started. Engage() is
+            # invalid in that state and must not be polled every cycle.
+            if (not status.started) or status.stopped:
+                if not logged_idle:
+                    logger.warn(
+                        "ReadDigitalInputTask: teleop is not started, pause Engage "
+                        "(call Init + Start to resume)")
+                    logged_idle = True
+            else:
+                logged_idle = False
+                # Digital input for WAN returns a list of inputs
+                di_state = teleop.digital_inputs(idx)
+                # Use first DI port as engage/disengage signal
+                if di_state and len(di_state) > 0:
+                    teleop.Engage(idx, bool(di_state[0]))
+            last_error = None
         except Exception as e:
-            logger.error(f"Exception in ReadDigitalInputTask: {e}")
+            msg = str(e)
+            if msg != last_error:
+                logger.error(f"Exception in ReadDigitalInputTask: {e}")
+                last_error = msg
         time.sleep(0.01)
     logger.info("ReadDigitalInputTask exiting.")
 
