@@ -5,7 +5,8 @@ transparent_cartesian_teleop_wan.py
 
 Example usage of Transparent Cartesian teleoperation under Wide Area Network,
 controlling a follower robot using a leader robot with transparent force feedback.
-Supports both keyboard and digital input engage/disengage signal reading.
+Supports both keyboard and digital input engage/disengage signal reading,
+with various axes lock modes, nullspace posture, and max contact wrench setting.
 
 """
 
@@ -71,12 +72,44 @@ class WanTeleoperationController:
     def __init__(self, teleop: flexivtdk.TransparentCartesianTeleopWAN):
         self.teleop = teleop
         self.index = 0
+        self.cmd = self._get_initial_axis_lock_cmd()
         self._command_map = self._create_command_map()
         self._menu = self._create_menu()
+
+    def _get_initial_axis_lock_cmd(self):
+        """Initialize axis lock command object."""
+        try:
+            return self.teleop.GetAxisLockState(self.index)
+        except Exception as e:
+            cmd = flexivtdk.AxisLock()
+            cmd.lock_trans_axis = [False, False, False]
+            cmd.lock_ori_axis = [False, False, False]
+            cmd.coord = flexivtdk.CoordType.TCP
+            logger.warning(f"Failed to get initial axis lock state, using default: {e}")
+            return cmd
     
     def _create_command_map(self) -> Dict[str, Callable]:
         """Create a mapping of keyboard commands to their corresponding methods."""
         return {
+            # Translation locks WORLD coord
+            'x': lambda: self._toggle_axis_lock(0, 'trans', flexivtdk.CoordType.WORLD),
+            'y': lambda: self._toggle_axis_lock(1, 'trans', flexivtdk.CoordType.WORLD),
+            'z': lambda: self._toggle_axis_lock(2, 'trans', flexivtdk.CoordType.WORLD),
+            # Orientation locks WORLD coord
+            'q': lambda: self._toggle_axis_lock(0, 'ori', flexivtdk.CoordType.WORLD),
+            'w': lambda: self._toggle_axis_lock(1, 'ori', flexivtdk.CoordType.WORLD),
+            'e': lambda: self._toggle_axis_lock(2, 'ori', flexivtdk.CoordType.WORLD),
+            # Translation locks TCP coord
+            'X': lambda: self._toggle_axis_lock(0, 'trans', flexivtdk.CoordType.TCP),
+            'Y': lambda: self._toggle_axis_lock(1, 'trans', flexivtdk.CoordType.TCP),
+            'Z': lambda: self._toggle_axis_lock(2, 'trans', flexivtdk.CoordType.TCP),
+            # Orientation locks TCP coord
+            'Q': lambda: self._toggle_axis_lock(0, 'ori', flexivtdk.CoordType.TCP),
+            'W': lambda: self._toggle_axis_lock(1, 'ori', flexivtdk.CoordType.TCP),
+            'E': lambda: self._toggle_axis_lock(2, 'ori', flexivtdk.CoordType.TCP),
+            # Axis lock presets (u/U are already used for Init/Stop on WAN)
+            'a': self._unlock_all_axes,
+            'A': self._lock_all_axes,
             # Teleop engage/disengage
             'r': lambda: self._safe_engage(True),
             'R': lambda: self._safe_engage(False),
@@ -98,6 +131,14 @@ class WanTeleoperationController:
     def _create_menu(self) -> str:
         """Create the command menu string."""
         return """
+  --- Axis Lock ---
+    x/y/z    : Toggle translation lock in WORLD coord (X/Y/Z)
+    q/w/e    : Toggle orientation lock in WORLD coord (Rx/Ry/Rz)
+    X/Y/Z    : Toggle translation lock in TCP coord (X/Y/Z)
+    Q/W/E    : Toggle orientation lock in TCP coord (Rx/Ry/Rz)
+    a        : Unlock all axes (TCP coord)
+    A        : Lock all axes (TCP coord)
+
   --- Teleop Engagement ---
     r        : Engage teleop
     R        : Disengage teleop
@@ -125,6 +166,42 @@ class WanTeleoperationController:
     Any other key to show this help menu
     """
     
+    def _toggle_axis_lock(self, axis_index: int, lock_type: str, coord_type: flexivtdk.CoordType):
+        """Toggle axis lock for the specified axis and type."""
+        try:
+            attr = "lock_trans_axis" if lock_type == "trans" else "lock_ori_axis"
+            axes = list(getattr(self.cmd, attr))
+            axes[axis_index] = not axes[axis_index]
+            setattr(self.cmd, attr, axes)
+            self.cmd.coord = coord_type
+            self.teleop.SetAxisLockCmd(self.index, self.cmd)
+            logger.info(
+                f"Axis lock toggled: {lock_type}[{axis_index}] = {axes[axis_index]}, coord = {coord_type}")
+        except Exception as e:
+            logger.error(f"Failed to toggle axis lock: {e}")
+
+    def _unlock_all_axes(self):
+        """Unlock all axes in TCP coordinate system."""
+        try:
+            self.cmd.lock_ori_axis = [False, False, False]
+            self.cmd.lock_trans_axis = [False, False, False]
+            self.cmd.coord = flexivtdk.CoordType.TCP
+            self.teleop.SetAxisLockCmd(self.index, self.cmd)
+            logger.info("All axes unlocked")
+        except Exception as e:
+            logger.error(f"Failed to unlock all axes: {e}")
+
+    def _lock_all_axes(self):
+        """Lock all axes in TCP coordinate system."""
+        try:
+            self.cmd.lock_ori_axis = [True, True, True]
+            self.cmd.lock_trans_axis = [True, True, True]
+            self.cmd.coord = flexivtdk.CoordType.TCP
+            self.teleop.SetAxisLockCmd(self.index, self.cmd)
+            logger.info("All axes locked")
+        except Exception as e:
+            logger.error(f"Failed to lock all axes: {e}")
+
     def _start_teleop(self):
         """Initialize and start teleoperation."""
         try:

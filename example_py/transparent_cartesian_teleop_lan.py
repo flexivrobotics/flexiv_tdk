@@ -189,14 +189,14 @@ class TeleoperationController:
     def _toggle_axis_lock(self, axis_index: int, lock_type: str, coord_type: flexivtdk.CoordType):
         """Toggle axis lock for the specified axis and type."""
         try:
-            if lock_type == 'trans':
-                self.cmd.lock_trans_axis[axis_index] = not self.cmd.lock_trans_axis[axis_index]
-            elif lock_type == 'ori':
-                self.cmd.lock_ori_axis[axis_index] = not self.cmd.lock_ori_axis[axis_index]
-            
+            attr = "lock_trans_axis" if lock_type == "trans" else "lock_ori_axis"
+            axes = list(getattr(self.cmd, attr))
+            axes[axis_index] = not axes[axis_index]
+            setattr(self.cmd, attr, axes)
             self.cmd.coord = coord_type
             self.teleop.SetAxisLockCmd(self.index, self.cmd)
-            logger.info(f"Axis lock toggled: {lock_type}[{axis_index}] = {not (self.cmd.lock_trans_axis[axis_index] if lock_type == 'trans' else self.cmd.lock_ori_axis[axis_index])}, coord = {coord_type}")
+            logger.info(
+                f"Axis lock toggled: {lock_type}[{axis_index}] = {axes[axis_index]}, coord = {coord_type}")
         except Exception as e:
             logger.error(f"Failed to toggle axis lock: {e}")
     
