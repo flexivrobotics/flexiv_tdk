@@ -36,6 +36,14 @@ Examples include:
 - `transparent_cartesian_teleop_wan.py`
 - `joint_teleop_under_lan.py`
 
+Install **TDK v1.6.3** first. It requires **`flexivrdk==1.9.3`** (pulled in automatically):
+
+```bash
+python3.x -m pip install spdlog flexivtdk==1.6.3
+```
+
+Some console commands in examples (for example LAN `a`, which calls `instances()`) use the underlying RDK `Robot` objects and need that matching `flexivrdk` package.
+
 Run:
 
 ```bash

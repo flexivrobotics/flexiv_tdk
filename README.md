@@ -35,7 +35,7 @@ For the v1.6.x user manual and C++ API, generate the docs locally from this tree
 
 | OS            | Processor       | Languages   | Compiler Requirements     | Python Versions | Robot software |
 | ------------- | --------------- | ----------- | ------------------------- | --------------- | -------------- |
-| Ubuntu 22.04+ | x86_64, aarch64 | C++, Python | GCC ≥ 9.4, CMake ≥ 3.16.3 | 3.8, 3.10, 3.12 | v3.11.2        |
+| Ubuntu 22.04+ | x86_64, aarch64 | C++, Python | GCC ≥ 9.4, CMake ≥ 3.16.3 | 3.10, 3.12, 3.14 | v3.11.2        |
 
 This release requires **flexiv_rdk 1.9.3** and **zenoh 1.9.0**. Both are installed by `thirdparty/build_and_install_dependencies.sh`.
 
@@ -49,7 +49,9 @@ This release requires **flexiv_rdk 1.9.3** and **zenoh 1.9.0**. Both are install
 
 On all supported platforms, the Python package of TDK and its dependencies for a specific Python version can be installed using the `pip` module:
 
-    python3.x -m pip install spdlog flexivtdk
+    python3.x -m pip install spdlog flexivtdk==1.6.3
+
+This installs **TDK v1.6.3** and its hard dependency **`flexivrdk==1.9.3`**. Pin both versions if you install them separately (`python3.x -m pip install flexivrdk==1.9.3 flexivtdk==1.6.3`).
 
 NOTE: replace `3.x` with a specific Python version.
 
@@ -59,7 +61,11 @@ After the ``flexivtdk`` Python package is installed, it can be imported from any
 
     python3.x
     import flexivtdk
-    flexivtdk.__version__ 
+    flexivtdk.__version__
+    import flexivrdk
+    flexivrdk.__version__
+
+Confirm `flexivtdk` is `1.6.3` and `flexivrdk` is `1.9.3`. 
 
 ### 3.🕒 System Clock Sync 
 

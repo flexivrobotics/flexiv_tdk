@@ -1,7 +1,13 @@
 # Q&A
 
 ## Q: Which platforms are supported?
-**A:** Ubuntu 22.04+ on x86_64 and aarch64. C++ and Python are supported with GCC ≥ 9.4 and CMake ≥ 3.16.3. TDK v1.6.3 requires flexiv_rdk 1.9.3 and zenoh 1.9.0, and is compatible with Flexiv software package v3.11.2.
+**A:** Ubuntu 22.04+ on x86_64 and aarch64. C++ and Python are supported with GCC ≥ 9.4, CMake ≥ 3.16.3, and Python 3.10/3.12/3.14.
+
+| TDK | RDK (C++ / Python) | zenoh | Robot software |
+| --- | ------------------ | ----- | -------------- |
+| **v1.6.3** (`flexivtdk==1.6.3`) | **v1.9.3** (`flexiv_rdk` 1.9.3 / `flexivrdk==1.9.3`) | 1.9.0 | v3.11.2 |
+
+`pip install flexivtdk==1.6.3` installs `flexivrdk==1.9.3` automatically. Do not mix TDK 1.6.3 with another `flexivrdk` version.
 
 ## Q: Do I need a real-time kernel?
 **A:** Not strictly, but a low-latency or RT kernel improves responsiveness and stability for teleoperation. See [Real-Time Kernel](../user-manual/real-time-kernel.md).
