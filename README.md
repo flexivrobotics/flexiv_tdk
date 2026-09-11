@@ -25,7 +25,7 @@ Flexiv TDK has been recognized on the [Manipulation Net Peg-in-Hole Leaderboard]
 
 ## References
 
-The online site [flexivrobotics.github.io/flexiv_tdk](https://flexivrobotics.github.io/flexiv_tdk/) documents **TDK v2.x**. This repository tag is **TDK v1.6.x** (Flexiv software package v3.11.2). Do not use the online v2.x API pages with this release.
+The online site [flexivrobotics.github.io/flexiv_tdk](https://flexivrobotics.github.io/flexiv_tdk/) documents **TDK v2.x**. This repository tag is **TDK v1.6.x**. Do not use the online v2.x API pages with this release.
 
 For the v1.6.x user manual and C++ API, generate the docs locally from this tree and open them in a browser (see [Generate Documentation](#-generate-documentation)).
 
@@ -33,11 +33,11 @@ For the v1.6.x user manual and C++ API, generate the docs locally from this tree
 
 ## ✅ Compatibility
 
-| OS            | Processor       | Languages   | Compiler Requirements     | Python Versions | Robot software |
-| ------------- | --------------- | ----------- | ------------------------- | --------------- | -------------- |
-| Ubuntu 22.04+ | x86_64, aarch64 | C++, Python | GCC ≥ 9.4, CMake ≥ 3.16.3 | 3.10, 3.12, 3.14 | v3.11.2        |
+| OS            | Processor       | Languages   | Compiler Requirements     | Python Versions |
+| ------------- | --------------- | ----------- | ------------------------- | --------------- |
+| Ubuntu 22.04+ | x86_64, aarch64 | C++, Python | GCC ≥ 9.4, CMake ≥ 3.16.3 | 3.10, 3.12, 3.14 |
 
-This release requires **flexiv_rdk 1.9.3** and **zenoh 1.9.0**. Both are installed by `thirdparty/build_and_install_dependencies.sh`.
+This release (**TDK v1.6.3**) is compatible with **flexiv_rdk 1.9.3** (`flexivrdk==1.9.3`). It also requires **zenoh 1.9.0**. Both are installed by `thirdparty/build_and_install_dependencies.sh`.
 
 >💡 Need support for other platforms? [Contact Flexiv](https://www.flexiv.com/contact).
 
