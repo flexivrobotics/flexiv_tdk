@@ -144,7 +144,7 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
 {
     auto PrintCommandMenu = []() {
         std::cout << R"(
-  --- Axis Lock ---
+  --- Axis Lock (leader only) ---
     x/y/z    : Toggle translation lock in WORLD coord (X/Y/Z)
     q/w/e    : Toggle orientation lock in WORLD coord (Rx/Ry/Rz)
     X/Y/Z    : Toggle translation lock in TCP coord (X/Y/Z)
@@ -181,8 +181,19 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
     };
 
     unsigned int index = 0;
+    const bool is_leader = (teleop.role() == flexiv::tdk::Role::WAN_TELEOP_LEADER);
     flexiv::tdk::AxisLock cmd;
-    teleop.GetAxisLockState(index, cmd);
+    if (is_leader) {
+        teleop.GetAxisLockState(index, cmd);
+    }
+
+    auto apply_axis_lock = [&]() {
+        if (!is_leader) {
+            spdlog::warn("Axis lock is only available on the leader");
+            return;
+        }
+        teleop.SetAxisLockCmd(index, cmd);
+    };
 
     while (g_running.load() && !teleop.fault(0)) {
 
@@ -201,74 +212,74 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
                 case 'x':
                     cmd.lock_trans_axis[0] = !cmd.lock_trans_axis[0];
                     cmd.coord = flexiv::tdk::CoordType::COORD_WORLD;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    apply_axis_lock();
                     break;
                 case 'y':
                     cmd.lock_trans_axis[1] = !cmd.lock_trans_axis[1];
                     cmd.coord = flexiv::tdk::CoordType::COORD_WORLD;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    apply_axis_lock();
                     break;
                 case 'z':
                     cmd.lock_trans_axis[2] = !cmd.lock_trans_axis[2];
                     cmd.coord = flexiv::tdk::CoordType::COORD_WORLD;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    apply_axis_lock();
                     break;
                 case 'q':
                     cmd.lock_ori_axis[0] = !cmd.lock_ori_axis[0];
                     cmd.coord = flexiv::tdk::CoordType::COORD_WORLD;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    apply_axis_lock();
                     break;
                 case 'w':
                     cmd.lock_ori_axis[1] = !cmd.lock_ori_axis[1];
                     cmd.coord = flexiv::tdk::CoordType::COORD_WORLD;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    apply_axis_lock();
                     break;
                 case 'e':
                     cmd.lock_ori_axis[2] = !cmd.lock_ori_axis[2];
                     cmd.coord = flexiv::tdk::CoordType::COORD_WORLD;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    apply_axis_lock();
                     break;
                 case 'X':
                     cmd.lock_trans_axis[0] = !cmd.lock_trans_axis[0];
                     cmd.coord = flexiv::tdk::CoordType::COORD_TCP;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    apply_axis_lock();
                     break;
                 case 'Y':
                     cmd.lock_trans_axis[1] = !cmd.lock_trans_axis[1];
                     cmd.coord = flexiv::tdk::CoordType::COORD_TCP;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    apply_axis_lock();
                     break;
                 case 'Z':
                     cmd.lock_trans_axis[2] = !cmd.lock_trans_axis[2];
                     cmd.coord = flexiv::tdk::CoordType::COORD_TCP;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    apply_axis_lock();
                     break;
                 case 'Q':
                     cmd.lock_ori_axis[0] = !cmd.lock_ori_axis[0];
                     cmd.coord = flexiv::tdk::CoordType::COORD_TCP;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    apply_axis_lock();
                     break;
                 case 'W':
                     cmd.lock_ori_axis[1] = !cmd.lock_ori_axis[1];
                     cmd.coord = flexiv::tdk::CoordType::COORD_TCP;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    apply_axis_lock();
                     break;
                 case 'E':
                     cmd.lock_ori_axis[2] = !cmd.lock_ori_axis[2];
                     cmd.coord = flexiv::tdk::CoordType::COORD_TCP;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    apply_axis_lock();
                     break;
                 case 'a':
                     cmd.lock_ori_axis = {false, false, false};
                     cmd.lock_trans_axis = {false, false, false};
                     cmd.coord = flexiv::tdk::CoordType::COORD_TCP;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    apply_axis_lock();
                     break;
                 case 'A':
                     cmd.lock_ori_axis = {true, true, true};
                     cmd.lock_trans_axis = {true, true, true};
                     cmd.coord = flexiv::tdk::CoordType::COORD_TCP;
-                    teleop.SetAxisLockCmd(index, cmd);
+                    apply_axis_lock();
                     break;
                 case 'r':
                     teleop.Engage(0, true);

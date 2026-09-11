@@ -76,17 +76,25 @@ class WanTeleoperationController:
         self._command_map = self._create_command_map()
         self._menu = self._create_menu()
 
+    def _is_leader(self) -> bool:
+        return self.teleop.role() == flexivtdk.Role.WAN_TELEOP_LEADER
+
+    def _default_axis_lock_cmd(self):
+        cmd = flexivtdk.AxisLock()
+        cmd.lock_trans_axis = [False, False, False]
+        cmd.lock_ori_axis = [False, False, False]
+        cmd.coord = flexivtdk.CoordType.TCP
+        return cmd
+
     def _get_initial_axis_lock_cmd(self):
-        """Initialize axis lock command object."""
+        """Initialize axis lock command. GetAxisLockState is leader-only on WAN."""
+        if not self._is_leader():
+            return self._default_axis_lock_cmd()
         try:
             return self.teleop.GetAxisLockState(self.index)
         except Exception as e:
-            cmd = flexivtdk.AxisLock()
-            cmd.lock_trans_axis = [False, False, False]
-            cmd.lock_ori_axis = [False, False, False]
-            cmd.coord = flexivtdk.CoordType.TCP
             logger.warning(f"Failed to get initial axis lock state, using default: {e}")
-            return cmd
+            return self._default_axis_lock_cmd()
     
     def _create_command_map(self) -> Dict[str, Callable]:
         """Create a mapping of keyboard commands to their corresponding methods."""
@@ -131,7 +139,7 @@ class WanTeleoperationController:
     def _create_menu(self) -> str:
         """Create the command menu string."""
         return """
-  --- Axis Lock ---
+  --- Axis Lock (leader only) ---
     x/y/z    : Toggle translation lock in WORLD coord (X/Y/Z)
     q/w/e    : Toggle orientation lock in WORLD coord (Rx/Ry/Rz)
     X/Y/Z    : Toggle translation lock in TCP coord (X/Y/Z)
@@ -168,6 +176,9 @@ class WanTeleoperationController:
     
     def _toggle_axis_lock(self, axis_index: int, lock_type: str, coord_type: flexivtdk.CoordType):
         """Toggle axis lock for the specified axis and type."""
+        if not self._is_leader():
+            logger.warn("Axis lock is only available on the leader")
+            return
         try:
             attr = "lock_trans_axis" if lock_type == "trans" else "lock_ori_axis"
             axes = list(getattr(self.cmd, attr))
@@ -182,6 +193,9 @@ class WanTeleoperationController:
 
     def _unlock_all_axes(self):
         """Unlock all axes in TCP coordinate system."""
+        if not self._is_leader():
+            logger.warn("Axis lock is only available on the leader")
+            return
         try:
             self.cmd.lock_ori_axis = [False, False, False]
             self.cmd.lock_trans_axis = [False, False, False]
@@ -193,6 +207,9 @@ class WanTeleoperationController:
 
     def _lock_all_axes(self):
         """Lock all axes in TCP coordinate system."""
+        if not self._is_leader():
+            logger.warn("Axis lock is only available on the leader")
+            return
         try:
             self.cmd.lock_ori_axis = [True, True, True]
             self.cmd.lock_trans_axis = [True, True, True]
