@@ -1,7 +1,7 @@
 # Flexiv TDK
 
 [![CMake](https://github.com/flexivrobotics/flexiv_tdk/actions/workflows/cmake.yml/badge.svg)](https://github.com/flexivrobotics/flexiv_tdk/actions/workflows/cmake.yml)
-[![Version](https://img.shields.io/badge/version-1.6.2-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.6.3-blue.svg)]()
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 **Flexiv TDK (Teleoperation Development Kit)** is an SDK for building custom robot-to-robot or device-to-robot teleoperation applications with Flexiv's adaptive robots. It enables synchronized, force-guided motion using **high-fidelity perceptual feedback** and supports both **LAN** (Local Area Network) and **WAN** (Internet) connections.
@@ -25,7 +25,9 @@ Flexiv TDK has been recognized on the [Manipulation Net Peg-in-Hole Leaderboard]
 
 ## References
 
-[Flexiv TDK Page](https://flexivrobotics.github.io/flexiv_tdk/) is the main reference. It contains important information including user manual and API documentation. The instructions below serve as a quick reference, and you can find the full documentation at [Flexiv TDK Manual](https://flexivrobotics.github.io/flexiv_tdk/user-manual/overview/).
+The online site [flexivrobotics.github.io/flexiv_tdk](https://flexivrobotics.github.io/flexiv_tdk/) documents **TDK v2.x**. This repository tag is **TDK v1.6.x**. Do not use the online v2.x API pages with this release.
+
+For the v1.6.x user manual and C++ API, generate the docs locally from this tree and open them in a browser (see [Generate Documentation](#-generate-documentation)).
 
 ---
 
@@ -33,7 +35,9 @@ Flexiv TDK has been recognized on the [Manipulation Net Peg-in-Hole Leaderboard]
 
 | OS            | Processor       | Languages   | Compiler Requirements     | Python Versions |
 | ------------- | --------------- | ----------- | ------------------------- | --------------- |
-| Ubuntu 22.04+ | x86_64, aarch64 | C++, Python | GCC ≥ 9.4, CMake ≥ 3.16.3 | 3.8, 3.10, 3.12 |
+| Ubuntu 22.04+ | x86_64, aarch64 | C++, Python | GCC ≥ 9.4, CMake ≥ 3.16.3 | 3.10, 3.12, 3.14 |
+
+This release (**TDK v1.6.3**) is compatible with **flexiv_rdk 1.9.3** (`flexivrdk==1.9.3`). It also requires **zenoh 1.9.0**. Both are installed by `thirdparty/build_and_install_dependencies.sh`.
 
 >💡 Need support for other platforms? [Contact Flexiv](https://www.flexiv.com/contact).
 
@@ -45,7 +49,9 @@ Flexiv TDK has been recognized on the [Manipulation Net Peg-in-Hole Leaderboard]
 
 On all supported platforms, the Python package of TDK and its dependencies for a specific Python version can be installed using the `pip` module:
 
-    python3.x -m pip install spdlog flexivtdk
+    python3.x -m pip install spdlog flexivtdk==1.6.3
+
+This installs **TDK v1.6.3** and its hard dependency **`flexivrdk==1.9.3`**. Pin both versions if you install them separately (`python3.x -m pip install flexivrdk==1.9.3 flexivtdk==1.6.3`).
 
 NOTE: replace `3.x` with a specific Python version.
 
@@ -55,7 +61,11 @@ After the ``flexivtdk`` Python package is installed, it can be imported from any
 
     python3.x
     import flexivtdk
-    flexivtdk.__version__ 
+    flexivtdk.__version__
+    import flexivrdk
+    flexivrdk.__version__
+
+Confirm `flexivtdk` is `1.6.3` and `flexivrdk` is `1.9.3`. 
 
 ### 3.🕒 System Clock Sync 
 
@@ -103,6 +113,8 @@ To allow a regular user to create high-priority (real-time) threads without `sud
 ```bash
 echo "${USER}    -   rtprio    99" | sudo tee -a /etc/security/limits.conf
 echo "${USER}    -   nice     -20" | sudo tee -a /etc/security/limits.conf
+echo "${USER} soft memlock unlimited" | sudo tee -a /etc/security/limits.conf
+echo "${USER} hard memlock unlimited" | sudo tee -a /etc/security/limits.conf
 ```
 Log out and log back in (or reboot) for the settings to take effect.
 
@@ -169,14 +181,16 @@ LD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
 
 Check each example’s source code for usage details.
 
-## 📚 Generate API Documentation
-The complete and detailed API documentation of the latest release can be found at [API Reference](https://flexivrobotics.github.io/flexiv_tdk/api/doxygen/index.html).
-The API documentation of a previous release can be generated manually using Doxygen. For example, on Linux:
+## 📚 Generate Documentation
+
+The online [GitHub Pages](https://flexivrobotics.github.io/flexiv_tdk/) site is **TDK v2.x**. For **TDK v1.6.x** (this tag), build the user manual and Doxygen API locally:
+
 ```bash
+pip install mkdocs-material
 sudo apt install doxygen-latex graphviz
 cd flexiv_tdk
-git checkout <tag_name>
 doxygen docs/doxygen/Doxyfile.in
+mkdocs serve
 ```
 
-Open flexiv_tdk/docs/api/doxygen/index.html in your browser.
+Open http://127.0.0.1:8000/ in a browser. The C++ API is at http://127.0.0.1:8000/flexiv_tdk/api/doxygen/. More detail: `docs/README.md`.

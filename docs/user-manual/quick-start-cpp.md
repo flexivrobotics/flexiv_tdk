@@ -2,6 +2,8 @@
 
 This guide covers building and using Flexiv TDK as a CMake package.
 
+**Version mapping:** TDK **v1.6.3** requires C++ **flexiv_rdk 1.9.3** and zenoh 1.9.0. `thirdparty/build_and_install_dependencies.sh` installs these exact versions.
+
 ## 1) Install build dependencies
 
 ```bash

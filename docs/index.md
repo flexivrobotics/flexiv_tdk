@@ -2,6 +2,8 @@
 
 Welcome to the **Flexiv TDK (Teleoperation Development Kit)** documentation site. This site provides a user manual, API reference, and Q&A to help you integrate and operate Flexiv's teleoperation SDK.
 
+This source tree is **TDK v1.6.3**. It requires **flexiv_rdk / flexivrdk 1.9.3**, zenoh 1.9.0, and Flexiv software package v3.11.2. The hosted GitHub Pages site is TDK v2.x; preview these pages locally with `mkdocs serve`.
+
 ## What is Flexiv TDK?
 Flexiv TDK is an SDK for building custom robot-to-robot or device-to-robot teleoperation applications with Flexiv's adaptive robots. It enables synchronized, force-guided motion using **high-fidelity perceptual feedback** and supports both **LAN** (Local Area Network) and **WAN** (Internet) connections.
 

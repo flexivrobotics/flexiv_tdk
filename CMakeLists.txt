@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16.3)
 # ===================================================================
 #      PROJECT SETUP
 # ===================================================================
-project(flexiv_tdk VERSION 1.6.2 LANGUAGES CXX)
+project(flexiv_tdk VERSION 1.6.3 LANGUAGES CXX)
 
 # Configure build type
 if(NOT CMAKE_BUILD_TYPE)
@@ -75,8 +75,14 @@ find_package(Threads REQUIRED)
 message(STATUS "Found Threads")
 
 # Flexiv RDK
-find_package(flexiv_rdk 1.9.2 REQUIRED)
+find_package(flexiv_rdk 1.9.3 REQUIRED)
 message(STATUS "Found flexiv_rdk: ${flexiv_rdk_DIR}, version: ${flexiv_rdk_VERSION}")
+
+# Zenoh
+find_package(zenohc 1.9.0 REQUIRED)
+find_package(zenohcxx 1.9.0 REQUIRED)
+message(STATUS "Found zenohc: ${zenohc_DIR}, version: ${zenohc_VERSION}")
+message(STATUS "Found zenohcxx: ${zenohcxx_DIR}, version: ${zenohcxx_VERSION}")
 
 # ===================================================================
 #      CREATE LIBRARY
@@ -97,6 +103,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 target_link_libraries(${PROJECT_NAME} PUBLIC
   Threads::Threads
   flexiv::flexiv_rdk
+  zenohcxx::zenohc
 )
 
 # Use moderate compiler warning option 

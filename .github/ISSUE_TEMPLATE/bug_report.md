@@ -8,9 +8,9 @@ assignees: pzhu-flexiv, ZhipengZhang-flexiv
 ---
 
 **Version information**
-- TDK: [e.g. v1.5]
-- Robot software: [e.g. v3.10]
-- OS: [e.g. Ubuntu 20.04 - x86_64]
+- TDK: [e.g. v1.6.3]
+- Robot software: [e.g. v3.11.2]
+- OS: [e.g. Ubuntu 22.04 - x86_64]
 
 ## How urgent is this bug? Have you found any workarounds?
 

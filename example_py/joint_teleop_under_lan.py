@@ -9,7 +9,7 @@ Monitors pedal input from the first robot to activate/deactivate teleoperation.
 
 """
 
-__copyright__ = "Copyright (C) 2016-2025 Flexiv Ltd. All Rights Reserved."
+__copyright__ = "Copyright (C) 2016-2026 Flexiv Ltd. All Rights Reserved."
 __author__ = "Flexiv"
 
 import spdlog

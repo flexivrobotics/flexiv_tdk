@@ -85,5 +85,6 @@ mkdir -p cloned && cd cloned
 
 # Build and install all dependencies to INSTALL_DIR
 bash $SCRIPTPATH/scripts/install_flexiv_rdk.sh $INSTALL_DIR $NUM_JOBS
+bash $SCRIPTPATH/scripts/install_zenoh.sh $INSTALL_DIR $NUM_JOBS
 
 echo ">>>>>>>>>> Finished <<<<<<<<<<"

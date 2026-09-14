@@ -1,7 +1,7 @@
 /**
  * @example joint_teleop_under_lan.cpp
  * @brief joint-space robot-robot teleoperation under LAN (Local Area Network) connection.
- * @copyright Copyright (C) 2016-2025 Flexiv Ltd. All Rights Reserved.
+ * @copyright Copyright (C) 2016-2026 Flexiv Ltd. All Rights Reserved.
  * @author Flexiv
  */
 

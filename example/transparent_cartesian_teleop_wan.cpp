@@ -2,9 +2,9 @@
  * @example transparent_cartesian_teleop_wan.cpp
  * @brief Example usage of Transparent Cartesian teleoperation cross Wide Area Network for
  * controlling a follower robot using a leader robot with transparent force feedback. Supports both
- * keyboard and digital input engage/disengage signal reading, with message latency query, nullspace
- * posture tuning, and max contact wrench setting, etc.
- * @copyright Copyright (C) 2016-2025 Flexiv Ltd. All Rights Reserved.
+ * keyboard and digital input engage/disengage signal reading, with axis lock, message latency
+ * query, nullspace posture tuning, and max contact wrench setting, etc.
+ * @copyright Copyright (C) 2016-2026 Flexiv Ltd. All Rights Reserved.
  * @author Flexiv
  */
 
@@ -17,8 +17,9 @@
 #include <atomic>
 #include <chrono>
 #include <iostream>
-#include <thread>
 #include <optional>
+#include <string>
+#include <thread>
 
 namespace {
 
@@ -41,6 +42,33 @@ std::atomic<bool> g_running {true};
 flexiv::tdk::Role kRole;
 }
 
+void PrintTeleopStatus(unsigned int idx, const flexiv::tdk::TeleopStatus& status)
+{
+    spdlog::info(
+        "Teleop pair {} status: initialized={} started={} engaged={} stopped={} fault={} "
+        "motion_restricted={} latency={:.1f}/{:.1f} ms",
+        idx, status.initialized, status.started, status.engaged, status.stopped, status.fault,
+        status.motion_restricted, status.latency_ms, status.latency_threshold_ms);
+    if (status.primary.code == flexiv::tdk::TeleopIssueCode::NONE) {
+        spdlog::info("No teleop restriction. Safe to continue.");
+        return;
+    }
+    const auto& issue = status.primary;
+    spdlog::warn("[{}/{}] {} | {} | {}",
+        flexiv::tdk::TeleopIssueLevelStr[static_cast<size_t>(issue.level)],
+        flexiv::tdk::TeleopIssueSideStr[static_cast<size_t>(issue.side)], issue.title,
+        issue.description, issue.suggestion);
+    for (const auto& extra : status.issues) {
+        if (extra.code == issue.code && extra.side == issue.side
+            && extra.joint_index == issue.joint_index) {
+            continue;
+        }
+        spdlog::warn("  also: [{}/{}] {}",
+            flexiv::tdk::TeleopIssueCodeStr[static_cast<size_t>(extra.code)],
+            flexiv::tdk::TeleopIssueSideStr[static_cast<size_t>(extra.side)], extra.title);
+    }
+}
+
 void PrintHelp()
 {
     // clang-format off
@@ -51,10 +79,10 @@ void PrintHelp()
     std::cout<<"     -t     [necessary] Role in the TCP connection, can be [server] or [client]."<<std::endl;
     std::cout<<"     -i     [necessary] Public IPV4 address of the machine that functions as TCP server."<<std::endl;
     std::cout<<"     -p     [necessary] Listening port of the TCP server machine."<<std::endl;
-    std::cout<<"     -A     [optional] The ip address of the network card connected to the robot (LAN)." << std::endl;
-    std::cout<<"     -W     [optional] The ip address of the network card connected to the Internet (WAN)." << std::endl;
+    std::cout<<"     -A     [optional] LAN IPv4 address of the NIC connected to the robot." << std::endl;
+    std::cout<<"     -W     [optional] WAN interface name, e.g. wlo1 or enp3s0. Repeatable." << std::endl;
     std::cout<<"     -D     [optional] Enable Digital Input reading task." << std::endl;
-    std::cout<<"Usage: sudo ./transparent_cartesian_teleop_wan [-l leader_robot_serial_number] [-f follower_robot_serial_number] [-r leader/follower] [-t server/client] [-i server_public_ip] [-p server_port] [-A lan_interface_ip] [-W wan_interface_ip] [-D]"<<std::endl;
+    std::cout<<"Usage: sudo ./transparent_cartesian_teleop_wan -l <leader_sn> -f <follower_sn> -r leader|follower -t server|client -i <public_ip> -p <port> [-A <lan_ipv4>] [-W <iface>] [-D]"<<std::endl;
     // clang-format on
 }
 
@@ -66,8 +94,8 @@ const struct option kLongOptions[] = {
     {"tcp role",                    required_argument,  0, 't'},
     {"public ipv4 address",         required_argument,  0, 'i'},
     {"port",                        required_argument,  0, 'p'},
-    {"lan whitelist ip",            optional_argument,  0, 'A'},
-    {"wan whitelist ip",            optional_argument,  0, 'W'},
+    {"lan whitelist ip",            required_argument,  0, 'A'},
+    {"wan interface name",          required_argument,  0, 'W'},
     {"enable digital input",        no_argument,        0, 'D'},
     {0,                             0,                  0,  0 }
     // clang-format on
@@ -78,11 +106,30 @@ const struct option kLongOptions[] = {
  */
 void ReadDigitalInputTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
 {
-    while (g_running.load() && !teleop.fault(0)) {
+    bool logged_idle = false;
+    std::string last_error;
+    while (g_running.load()) {
         try {
-            teleop.Engage(0, teleop.digital_inputs(0)[0]);
+            const auto status = teleop.GetTeleopStatus(0);
+            // Robot fault / Stop() drops teleop back to not-started. Engage() is
+            // invalid in that state and must not be polled every cycle.
+            if (!status.started || status.stopped) {
+                if (!logged_idle) {
+                    spdlog::warn(
+                        "ReadDigitalInputTask: teleop is not started, pause Engage "
+                        "(call Init + Start to resume)");
+                    logged_idle = true;
+                }
+            } else {
+                logged_idle = false;
+                teleop.Engage(0, teleop.digital_inputs(0)[0]);
+            }
+            last_error.clear();
         } catch (const std::exception& e) {
-            spdlog::error("Exception in ReadDigitalInputTask: {}", e.what());
+            if (last_error != e.what()) {
+                spdlog::error("Exception in ReadDigitalInputTask: {}", e.what());
+                last_error = e.what();
+            }
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -97,6 +144,14 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
 {
     auto PrintCommandMenu = []() {
         std::cout << R"(
+  --- Axis Lock (leader only) ---
+    x/y/z    : Toggle translation lock in WORLD coord (X/Y/Z)
+    q/w/e    : Toggle orientation lock in WORLD coord (Rx/Ry/Rz)
+    X/Y/Z    : Toggle translation lock in TCP coord (X/Y/Z)
+    Q/W/E    : Toggle orientation lock in TCP coord (Rx/Ry/Rz)
+    a        : Unlock all axes (TCP coord)
+    A        : Lock all axes (TCP coord)
+
   --- Teleop Engagement ---
     r        : Engage teleop
     R        : Disengage teleop
@@ -112,11 +167,32 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
     U        : Stop teleop
 
   --- Tcp message latency ---
-    l       : print current message latency in milliseconds
+    l        : print current message latency (disconnected / clock mismatch / over limit)
+
+  --- Teleop status ---
+    h        : print why teleop is restricted / paused and what to do next
+
+  --- Identity ---
+    n        : print role() and robot_pair_sn()
 
   --- Help ---
     Any other key to show this help menu
         )" << std::endl;
+    };
+
+    unsigned int index = 0;
+    const bool is_leader = (teleop.role() == flexiv::tdk::Role::WAN_TELEOP_LEADER);
+    flexiv::tdk::AxisLock cmd;
+    if (is_leader) {
+        teleop.GetAxisLockState(index, cmd);
+    }
+
+    auto apply_axis_lock = [&]() {
+        if (!is_leader) {
+            spdlog::warn("Axis lock is only available on the leader");
+            return;
+        }
+        teleop.SetAxisLockCmd(index, cmd);
     };
 
     while (g_running.load() && !teleop.fault(0)) {
@@ -133,6 +209,78 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
 
         try {
             switch (user_input[0]) {
+                case 'x':
+                    cmd.lock_trans_axis[0] = !cmd.lock_trans_axis[0];
+                    cmd.coord = flexiv::tdk::CoordType::COORD_WORLD;
+                    apply_axis_lock();
+                    break;
+                case 'y':
+                    cmd.lock_trans_axis[1] = !cmd.lock_trans_axis[1];
+                    cmd.coord = flexiv::tdk::CoordType::COORD_WORLD;
+                    apply_axis_lock();
+                    break;
+                case 'z':
+                    cmd.lock_trans_axis[2] = !cmd.lock_trans_axis[2];
+                    cmd.coord = flexiv::tdk::CoordType::COORD_WORLD;
+                    apply_axis_lock();
+                    break;
+                case 'q':
+                    cmd.lock_ori_axis[0] = !cmd.lock_ori_axis[0];
+                    cmd.coord = flexiv::tdk::CoordType::COORD_WORLD;
+                    apply_axis_lock();
+                    break;
+                case 'w':
+                    cmd.lock_ori_axis[1] = !cmd.lock_ori_axis[1];
+                    cmd.coord = flexiv::tdk::CoordType::COORD_WORLD;
+                    apply_axis_lock();
+                    break;
+                case 'e':
+                    cmd.lock_ori_axis[2] = !cmd.lock_ori_axis[2];
+                    cmd.coord = flexiv::tdk::CoordType::COORD_WORLD;
+                    apply_axis_lock();
+                    break;
+                case 'X':
+                    cmd.lock_trans_axis[0] = !cmd.lock_trans_axis[0];
+                    cmd.coord = flexiv::tdk::CoordType::COORD_TCP;
+                    apply_axis_lock();
+                    break;
+                case 'Y':
+                    cmd.lock_trans_axis[1] = !cmd.lock_trans_axis[1];
+                    cmd.coord = flexiv::tdk::CoordType::COORD_TCP;
+                    apply_axis_lock();
+                    break;
+                case 'Z':
+                    cmd.lock_trans_axis[2] = !cmd.lock_trans_axis[2];
+                    cmd.coord = flexiv::tdk::CoordType::COORD_TCP;
+                    apply_axis_lock();
+                    break;
+                case 'Q':
+                    cmd.lock_ori_axis[0] = !cmd.lock_ori_axis[0];
+                    cmd.coord = flexiv::tdk::CoordType::COORD_TCP;
+                    apply_axis_lock();
+                    break;
+                case 'W':
+                    cmd.lock_ori_axis[1] = !cmd.lock_ori_axis[1];
+                    cmd.coord = flexiv::tdk::CoordType::COORD_TCP;
+                    apply_axis_lock();
+                    break;
+                case 'E':
+                    cmd.lock_ori_axis[2] = !cmd.lock_ori_axis[2];
+                    cmd.coord = flexiv::tdk::CoordType::COORD_TCP;
+                    apply_axis_lock();
+                    break;
+                case 'a':
+                    cmd.lock_ori_axis = {false, false, false};
+                    cmd.lock_trans_axis = {false, false, false};
+                    cmd.coord = flexiv::tdk::CoordType::COORD_TCP;
+                    apply_axis_lock();
+                    break;
+                case 'A':
+                    cmd.lock_ori_axis = {true, true, true};
+                    cmd.lock_trans_axis = {true, true, true};
+                    cmd.coord = flexiv::tdk::CoordType::COORD_TCP;
+                    apply_axis_lock();
+                    break;
                 case 'r':
                     teleop.Engage(0, true);
                     break;
@@ -157,11 +305,26 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
                     break;
                 case 'l': {
                     double latency_ms {};
-                    if (teleop.CheckTeleopConnectionLatency(0, latency_ms)) {
-                        spdlog::info("Current message latency is: {}ms", latency_ms);
+                    const bool ok = teleop.CheckTeleopConnectionLatency(0, latency_ms);
+                    if (ok) {
+                        spdlog::info("pair 0 message latency: {} ms (within limit)", latency_ms);
+                    } else if (latency_ms < 0.0) {
+                        spdlog::warn("pair 0 clock mismatch: latency {} ms", latency_ms);
+                    } else if (latency_ms > 1.0e12) {
+                        spdlog::warn("pair 0 disconnected: latency {} ms", latency_ms);
                     } else {
-                        spdlog::warn("WAN teleop is disconnected.");
+                        spdlog::warn("pair 0 latency over limit: {} ms", latency_ms);
                     }
+                    break;
+                }
+                case 'h':
+                    PrintTeleopStatus(0, teleop.GetTeleopStatus(0));
+                    break;
+                case 'n': {
+                    const auto pair = teleop.robot_pair_sn(0);
+                    spdlog::info("pair 0 role={} leader_sn={} follower_sn={}",
+                        flexiv::tdk::RoleTypeStr[static_cast<size_t>(teleop.role())], pair.first,
+                        pair.second);
                     break;
                 }
 
@@ -182,7 +345,7 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
 
 int main(int argc, char* argv[])
 {
-    std::string follower_sn, leader_sn, teleop_role, tcp_role, public_server_ip, lan_ip, wan_ip;
+    std::string follower_sn, leader_sn, teleop_role, tcp_role, public_server_ip, lan_ip, wan_iface;
     unsigned int server_port = 0;
     std::vector<std::string> lan_interface_whitelist {};
     std::vector<std::string> wan_interface_whitelist {};
@@ -219,8 +382,8 @@ int main(int argc, char* argv[])
                 lan_interface_whitelist.push_back(lan_ip);
                 break;
             case 'W':
-                wan_ip = std::string(optarg);
-                wan_interface_whitelist.push_back(wan_ip);
+                wan_iface = std::string(optarg);
+                wan_interface_whitelist.push_back(wan_iface);
                 break;
             case 'D':
                 enable_digital_input = true;
@@ -235,8 +398,12 @@ int main(int argc, char* argv[])
         PrintHelp();
         return 1;
     }
-    if (lan_interface_whitelist.empty() || wan_interface_whitelist.empty()) {
-        spdlog::warn("LAN or WAN whitelist is not provided, will search all network interfaces.");
+    if (lan_interface_whitelist.empty()) {
+        spdlog::warn("LAN whitelist is not provided, will search all network interfaces.");
+    }
+    if (wan_interface_whitelist.empty()) {
+        spdlog::warn(
+            "WAN interface whitelist is not provided, will search all network interfaces.");
     }
 
     // Whether this is a TCP server or client
@@ -261,7 +428,7 @@ int main(int argc, char* argv[])
     }
 
     // Network configuration
-    flexiv::tdk::NetworkCfg network_cfg;
+    flexiv::tdk::NetworkCfgStd network_cfg;
     network_cfg.is_tcp_server = is_tcp_server;
     network_cfg.public_ipv4_address = public_server_ip;
     network_cfg.listening_port = server_port;
@@ -272,8 +439,12 @@ int main(int argc, char* argv[])
     robot_sn_pairs.push_back({leader_sn, follower_sn});
     try {
 
-        // Allocate tdk object
+        // Allocate tdk object (Standard Edition TCP peer-to-peer)
         flexiv::tdk::TransparentCartesianTeleopWAN tctw(robot_sn_pairs, kRole, network_cfg);
+        const auto pair_sn = tctw.robot_pair_sn(0);
+        spdlog::info("This instance role={} leader_sn={} follower_sn={}",
+            flexiv::tdk::RoleTypeStr[static_cast<size_t>(tctw.role())], pair_sn.first,
+            pair_sn.second);
 
         // Init high transparency teleop
         tctw.Init();

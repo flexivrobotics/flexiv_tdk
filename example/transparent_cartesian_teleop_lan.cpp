@@ -4,7 +4,7 @@
  * controlling a follower robot using a leader robot with transparent force feedback. Supports both
  * keyboard and digital input engage/disengage signal reading, with various axes lock modes, force
  * scaling, and max contact wrench setting, etc.
- * @copyright Copyright (C) 2016-2025 Flexiv Ltd. All Rights Reserved.
+ * @copyright Copyright (C) 2016-2026 Flexiv Ltd. All Rights Reserved.
  * @author Flexiv
  */
 
@@ -17,8 +17,9 @@
 #include <atomic>
 #include <chrono>
 #include <iostream>
-#include <thread>
 #include <optional>
+#include <string>
+#include <thread>
 
 namespace {
 /** Nullspace to a preferred posture */
@@ -37,6 +38,33 @@ const std::array<double, flexiv::tdk::kCartDoF> kDefaultMaxContactWrench
 std::atomic<bool> g_running {true};
 
 } // namespace
+
+void PrintTeleopStatus(unsigned int idx, const flexiv::tdk::TeleopStatus& status)
+{
+    spdlog::info(
+        "Teleop pair {} status: initialized={} started={} engaged={} stopped={} fault={} "
+        "motion_restricted={} latency={:.1f}/{:.1f} ms",
+        idx, status.initialized, status.started, status.engaged, status.stopped, status.fault,
+        status.motion_restricted, status.latency_ms, status.latency_threshold_ms);
+    if (status.primary.code == flexiv::tdk::TeleopIssueCode::NONE) {
+        spdlog::info("No teleop restriction. Safe to continue.");
+        return;
+    }
+    const auto& issue = status.primary;
+    spdlog::warn("[{}/{}] {} | {} | {}",
+        flexiv::tdk::TeleopIssueLevelStr[static_cast<size_t>(issue.level)],
+        flexiv::tdk::TeleopIssueSideStr[static_cast<size_t>(issue.side)], issue.title,
+        issue.description, issue.suggestion);
+    for (const auto& extra : status.issues) {
+        if (extra.code == issue.code && extra.side == issue.side
+            && extra.joint_index == issue.joint_index) {
+            continue;
+        }
+        spdlog::warn("  also: [{}/{}] {}",
+            flexiv::tdk::TeleopIssueCodeStr[static_cast<size_t>(extra.code)],
+            flexiv::tdk::TeleopIssueSideStr[static_cast<size_t>(extra.side)], extra.title);
+    }
+}
 
 void PrintHelp()
 {
@@ -65,11 +93,30 @@ const struct option kLongOptions[] = {
  */
 void ReadDigitalInputTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
 {
-    while (g_running.load() && !teleop.any_fault()) {
+    bool logged_idle = false;
+    std::string last_error;
+    while (g_running.load()) {
         try {
-            teleop.Engage(0, teleop.digital_inputs(0).first[0]);
+            const auto status = teleop.GetTeleopStatus(0);
+            // Robot fault / Stop() drops teleop back to not-started. Engage() is
+            // invalid in that state and must not be polled every cycle.
+            if (!status.started || status.stopped) {
+                if (!logged_idle) {
+                    spdlog::warn(
+                        "ReadDigitalInputTask: teleop is not started, pause Engage "
+                        "(call Init + Start to resume)");
+                    logged_idle = true;
+                }
+            } else {
+                logged_idle = false;
+                teleop.Engage(0, teleop.digital_inputs(0).first[0]);
+            }
+            last_error.clear();
         } catch (const std::exception& e) {
-            spdlog::error("Exception in ReadDigitalInputTask: {}", e.what());
+            if (last_error != e.what()) {
+                spdlog::error("Exception in ReadDigitalInputTask: {}", e.what());
+                last_error = e.what();
+            }
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -121,6 +168,12 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
 
   --- Is teleop stopped or not ---
     s        : Query if teleop stopped or not
+
+  --- Teleop status ---
+    h        : print why teleop is restricted / paused and what to do next
+
+  --- Home all robots ---
+    H        : Stop teleop and home all robots
 
   --- Help ---
     Any other key to show this help menu
@@ -272,6 +325,14 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
                 case 's':
                     teleop.stopped(0) ? spdlog::info("Teleop pair 0 stopped")
                                       : spdlog::info("Teleop pair 0 started");
+                    break;
+                case 'h':
+                    PrintTeleopStatus(0, teleop.GetTeleopStatus(0));
+                    break;
+                case 'H':
+                    teleop.Stop();
+                    teleop.HomeAll();
+                    spdlog::info("Teleop stopped for homing");
                     break;
                 default:
                     spdlog::warn("Invalid command!");

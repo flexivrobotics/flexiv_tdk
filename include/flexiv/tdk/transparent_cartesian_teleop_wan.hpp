@@ -16,9 +16,7 @@ using namespace rdk;
 
 /**
  * @brief Teleoperation control interface that represents leader or follower robots in transparent
- * teleoperation over WAN (TCP/IP). Teleoperation is established between leader and follower
- * robots when they are controlled by an instance of this interface, with one set as
- * TCP server and the other set as TCP client via the parameter [is_tcp_server] in NetworkCfg.
+ * teleoperation over WAN. Use [NetworkCfgStd] for Standard Edition TCP peer-to-peer.
  * @warning This is highly transparent Cartesian teleoperation and therefore requires the robot to
  * be configured with a flange-end FT sensor before using this class.
  * @note In the documentation of this class, "leader robot" refers to the robot which operated by a
@@ -42,10 +40,13 @@ public:
      * participants in teleoperation , one is the "leader", which operated by a human during
      * teleoperation. The other is referred to as the "follower", which interacts with
      * the environment during teleoperation.
-     * @param[in] network_cfg Network configuration including server/client role configuration, IPv4
-     * address and listening port.
-     * @throw std::invalid_argument if the format robot_sn or any IPv4 address or listening port is
-     * invalid.
+     * @param[in] network_cfg_std Network configuration for TDK Standard Edition. It contains the
+     * TCP server/client role, public IPv4 address, listening port, LAN IPv4 whitelist, and WAN
+     * interface names.
+     * @param[in] verbose If true, periodically print WAN connection and latency warnings. Default
+     * true.
+     * @throw std::invalid_argument if the format of robot_sn, public IPv4 address, LAN IPv4
+     * whitelist, WAN interface name, or listening port is invalid.
      * @throw std::runtime_error if error occurred during construction.
      * @throw std::logic_error if one of the connected robots does not have a valid TDK license; or
      * the version of this TDK library is incompatible with one of the connected robots; or model of
@@ -56,7 +57,8 @@ public:
      */
     TransparentCartesianTeleopWAN(
         const std::vector<std::pair<std::string, std::string>>& robot_pairs_sn,
-        flexiv::tdk::Role role, const NetworkCfg& network_cfg);
+        flexiv::tdk::Role role, const NetworkCfgStd& network_cfg_std, bool verbose = true);
+
     virtual ~TransparentCartesianTeleopWAN();
 
     //========================================= ACCESSORS ==========================================
@@ -85,8 +87,8 @@ public:
      * @warning
      * - Latency > 200 ms indicates poor connection quality and may cause delayed feedback
      *   or command execution.
-     * - If latency exceeds threshold_ms, teleoperation is disengaged and follower robots
-     *   hold their pose until latency returns to a valid range.
+     * - If latency exceeds threshold_ms, or is negative (clock mismatch), teleoperation is
+     *   disengaged and follower robots hold their pose until latency returns to a valid range.
      *
      * @see SetTeleopLatencyLimit()
      */
@@ -125,6 +127,22 @@ public:
      * @return True: stopped; false: started.
      */
     bool stopped(unsigned int idx) const;
+
+    /**
+     * @brief [Non-blocking] Role of this teleop instance.
+     * @return Role of this instance: WAN_TELEOP_LEADER or WAN_TELEOP_FOLLOWER.
+     */
+    flexiv::tdk::Role role() const;
+
+    /**
+     * @brief [Non-blocking] Serial number pair {leader_sn, follower_sn} of the specified robot
+     * pair.
+     * @param[in] idx Index of the robot pair. This index is the same as the index of the
+     * constructor parameter [robot_pairs_sn].
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @return Serial number pair {leader_sn, follower_sn} of the specified robot pair.
+     */
+    std::pair<std::string, std::string> robot_pair_sn(unsigned int idx) const;
 
     //==================================== TELEOP LIFECYCLE ====================================
     /**
@@ -283,9 +301,9 @@ public:
 
     /**
      * @brief [Non-blocking] Set the maximum acceptable TCP message latency for teleoperation.
-     * If the measured latency exceeds this threshold, teleoperation will be disengaged, and
-     * follower robots will hold their pose until incoming message latency is back within the
-     * acceptable range.
+     * If the measured latency exceeds this threshold or is negative (clock mismatch),
+     * teleoperation will be disengaged, and follower robots will hold their pose until
+     * incoming message latency is back within the acceptable range.
      * @param[in] idx Index of the robot pair. This corresponds to the index of the constructor
      * parameter [robot_pairs_sn].
      * @param[in] threshold_ms Maximum acceptable TCP message latency in milliseconds. Default is
@@ -331,6 +349,37 @@ public:
      * @return AxisLock
      */
     AxisLock GetAxisLockState(unsigned int idx);
+
+    /**
+     * @brief [Non-blocking] Query why teleoperation is restricted, paused, or stopped, and
+     * what the operator should do next.
+     *
+     * Covers joint limits, singularities, and high joint velocity on both the
+     * local and peer robots, high network latency (forced disengage), peer disconnect,
+     * clock mismatch (forced disengage when measured latency is negative), robot
+     * fault, and control-mode mismatch. [status.primary] is the issue the host should
+     * show first; [status.issues] lists every condition that is active right now.
+     *
+     * @param[in] idx Index of the robot pair. This index is the same as the index of the
+     * constructor parameter [robot_pairs_sn].
+     * @param[out] status Snapshot of teleoperation health and operator-facing advice.
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @see TeleopStatus
+     * @see TeleopIssue
+     */
+    void GetTeleopStatus(unsigned int idx, TeleopStatus& status) const;
+
+    /**
+     * @brief [Non-blocking] Query why teleoperation is restricted, paused, or stopped.
+     * @param[in] idx Index of the robot pair. This index is the same as the index of the
+     * constructor parameter [robot_pairs_sn].
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @warning This overload is less efficient than the other one as additional runtime
+     * memory allocation and data copying are performed.
+     * @return TeleopStatus
+     * @see GetTeleopStatus(unsigned int, TeleopStatus&)
+     */
+    TeleopStatus GetTeleopStatus(unsigned int idx) const;
 
     //======================================= SYSTEM CONTROL =======================================
     /**

@@ -2,6 +2,14 @@
 
 This manual guides you through installing, configuring, and using the Flexiv TDK (Teleoperation Development Kit) to build teleoperation applications over LAN or WAN.
 
+This documentation source is **TDK v1.6.3**. Version mapping for this release:
+
+| TDK | RDK (C++ / Python) | zenoh | Robot software |
+| --- | ------------------ | ----- | -------------- |
+| **v1.6.3** (`flexivtdk==1.6.3`) | **v1.9.3** (`flexiv_rdk` 1.9.3 / `flexivrdk==1.9.3`) | 1.9.0 | v3.11.2 |
+
+The online GitHub Pages site documents TDK v2.x and must not be used with this release. Generate this manual locally (see the repository README).
+
 ## Audience
 - Application developers integrating teleoperation features
 - Robotics engineers deploying Flexiv systems
@@ -17,7 +25,7 @@ This manual guides you through installing, configuring, and using the Flexiv TDK
 ### User PC
 - Ubuntu 22.04+ (x86_64 or aarch64)
 - C++ toolchain: GCC ≥ 9.4, CMake ≥ 3.16.3
-- Python 3.8/3.10/3.12 (for Python SDK usage)
+- Python 3.10/3.12/3.14 (for Python SDK usage)
 - Network access to the robot and (for WAN) reliable time synchronization
 
 ## Repository Layout

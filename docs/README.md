@@ -1,6 +1,6 @@
-# GitHub Pages Docs
+# Documentation (TDK v1.6.x)
 
-This directory contains the documentation site source for GitHub Pages.
+This directory is the user-manual source for **TDK v1.6.x**. The online GitHub Pages site is **TDK v2.x**; preview this tree locally instead of using https://flexivrobotics.github.io/flexiv_tdk/.
 
 ## Local preview
 
