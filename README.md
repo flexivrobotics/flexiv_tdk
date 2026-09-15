@@ -1,7 +1,7 @@
 # Flexiv TDK
 
 [![CMake](https://github.com/flexivrobotics/flexiv_tdk/actions/workflows/cmake.yml/badge.svg)](https://github.com/flexivrobotics/flexiv_tdk/actions/workflows/cmake.yml)
-[![Version](https://img.shields.io/badge/version-1.6.3-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.6.4-blue.svg)]()
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 **Flexiv TDK (Teleoperation Development Kit)** is an SDK for building custom robot-to-robot or device-to-robot teleoperation applications with Flexiv's adaptive robots. It enables synchronized, force-guided motion using **high-fidelity perceptual feedback** and supports both **LAN** (Local Area Network) and **WAN** (Internet) connections.
@@ -37,7 +37,7 @@ For the v1.6.x user manual and C++ API, generate the docs locally from this tree
 | ------------- | --------------- | ----------- | ------------------------- | --------------- |
 | Ubuntu 22.04+ | x86_64, aarch64 | C++, Python | GCC ≥ 9.4, CMake ≥ 3.16.3 | 3.10, 3.12, 3.14 |
 
-This release (**TDK v1.6.3**) is compatible with **flexiv_rdk 1.9.3** (`flexivrdk==1.9.3`). It also requires **zenoh 1.9.0**. Both are installed by `thirdparty/build_and_install_dependencies.sh`.
+This release (**TDK v1.6.4**) is compatible with **flexiv_rdk 1.9.3** (`flexivrdk==1.9.3`). It also requires **zenoh 1.9.0**. Both are installed by `thirdparty/build_and_install_dependencies.sh`.
 
 >💡 Need support for other platforms? [Contact Flexiv](https://www.flexiv.com/contact).
 
@@ -49,9 +49,9 @@ This release (**TDK v1.6.3**) is compatible with **flexiv_rdk 1.9.3** (`flexivrd
 
 On all supported platforms, the Python package of TDK and its dependencies for a specific Python version can be installed using the `pip` module:
 
-    python3.x -m pip install spdlog flexivtdk==1.6.3
+    python3.x -m pip install spdlog flexivtdk==1.6.4
 
-This installs **TDK v1.6.3** and its hard dependency **`flexivrdk==1.9.3`**. Pin both versions if you install them separately (`python3.x -m pip install flexivrdk==1.9.3 flexivtdk==1.6.3`).
+This installs **TDK v1.6.4** and its hard dependency **`flexivrdk==1.9.3`**. Pin both versions if you install them separately (`python3.x -m pip install flexivrdk==1.9.3 flexivtdk==1.6.4`).
 
 NOTE: replace `3.x` with a specific Python version.
 
@@ -65,7 +65,7 @@ After the ``flexivtdk`` Python package is installed, it can be imported from any
     import flexivrdk
     flexivrdk.__version__
 
-Confirm `flexivtdk` is `1.6.3` and `flexivrdk` is `1.9.3`. 
+Confirm `flexivtdk` is `1.6.4` and `flexivrdk` is `1.9.3`. 
 
 ### 3.🕒 System Clock Sync 
 

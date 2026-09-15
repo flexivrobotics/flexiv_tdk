@@ -2,15 +2,15 @@
 
 This guide walks you through installing and running the Flexiv TDK Python package.
 
-**Version mapping:** TDK **v1.6.3** (`flexivtdk==1.6.3`) requires RDK **v1.9.3** (`flexivrdk==1.9.3`). Do not mix this TDK release with another `flexivrdk` version.
+**Version mapping:** TDK **v1.6.4** (`flexivtdk==1.6.4`) requires RDK **v1.9.3** (`flexivrdk==1.9.3`). Do not mix this TDK release with another `flexivrdk` version.
 
 ## 1) Install the package
 
 ```bash
-python3.x -m pip install spdlog flexivtdk==1.6.3
+python3.x -m pip install spdlog flexivtdk==1.6.4
 ```
 
-`flexivtdk==1.6.3` declares a hard dependency on `flexivrdk==1.9.3`, so pip installs that RDK wheel automatically.
+`flexivtdk==1.6.4` declares a hard dependency on `flexivrdk==1.9.3`, so pip installs that RDK wheel automatically.
 
 > Replace `3.x` with your Python version (3.10, 3.12, or 3.14).
 
@@ -24,7 +24,7 @@ python3.x
 >>> flexivrdk.__version__
 ```
 
-Confirm `flexivtdk` is `1.6.3` and `flexivrdk` is `1.9.3`.
+Confirm `flexivtdk` is `1.6.4` and `flexivrdk` is `1.9.3`.
 
 ## 3) Run Python examples from this repo
 

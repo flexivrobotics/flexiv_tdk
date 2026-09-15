@@ -5,9 +5,9 @@
 
 | TDK | RDK (C++ / Python) | zenoh | Robot software |
 | --- | ------------------ | ----- | -------------- |
-| **v1.6.3** (`flexivtdk==1.6.3`) | **v1.9.3** (`flexiv_rdk` 1.9.3 / `flexivrdk==1.9.3`) | 1.9.0 | v3.11.2 |
+| **v1.6.4** (`flexivtdk==1.6.4`) | **v1.9.3** (`flexiv_rdk` 1.9.3 / `flexivrdk==1.9.3`) | 1.9.0 | v3.11.2 |
 
-`pip install flexivtdk==1.6.3` installs `flexivrdk==1.9.3` automatically. Do not mix TDK 1.6.3 with another `flexivrdk` version.
+`pip install flexivtdk==1.6.4` installs `flexivrdk==1.9.3` automatically. Do not mix TDK 1.6.4 with another `flexivrdk` version.
 
 ## Q: Do I need a real-time kernel?
 **A:** Not strictly, but a low-latency or RT kernel improves responsiveness and stability for teleoperation. See [Real-Time Kernel](../user-manual/real-time-kernel.md).

@@ -4,7 +4,7 @@ The repository includes example applications for both C++ and Python.
 
 This release uses `NetworkCfgStd` for WAN Standard Edition TCP peer-to-peer. The WAN `-W` / `--wan-iface` argument is an OS interface name (for example `wlo1` or `enp3s0`), not an IPv4 address. `-A` / `--lan-ip` remains the LAN IPv4 address of the NIC connected to the robot.
 
-Console commands added in v1.6.3:
+Console commands added in v1.6.4:
 
 - `h`: print `GetTeleopStatus()` (why teleop is restricted or paused, and what to do next)
 - WAN `n`: print `role()` and `robot_pair_sn()`
@@ -36,10 +36,10 @@ Examples include:
 - `transparent_cartesian_teleop_wan.py`
 - `joint_teleop_under_lan.py`
 
-Install **TDK v1.6.3** first. It requires **`flexivrdk==1.9.3`** (pulled in automatically):
+Install **TDK v1.6.4** first. It requires **`flexivrdk==1.9.3`** (pulled in automatically):
 
 ```bash
-python3.x -m pip install spdlog flexivtdk==1.6.3
+python3.x -m pip install spdlog flexivtdk==1.6.4
 ```
 
 Some console commands in examples (for example LAN `a`, which calls `instances()`) use the underlying RDK `Robot` objects and need that matching `flexivrdk` package.
