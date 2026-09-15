@@ -16,7 +16,8 @@ using namespace rdk;
 
 /**
  * @brief Teleoperation control interface that represents leader or follower robots in transparent
- * teleoperation over WAN. Use [NetworkCfgStd] for Standard Edition TCP peer-to-peer.
+ * teleoperation over WAN. Use [NetworkCfgStd] for Standard Edition TCP peer-to-peer; use
+ * [NetworkCfgPro] for Professional Edition via a TDK Server credential.
  * @warning This is highly transparent Cartesian teleoperation and therefore requires the robot to
  * be configured with a flange-end FT sensor before using this class.
  * @note In the documentation of this class, "leader robot" refers to the robot which operated by a
@@ -58,6 +59,38 @@ public:
     TransparentCartesianTeleopWAN(
         const std::vector<std::pair<std::string, std::string>>& robot_pairs_sn,
         flexiv::tdk::Role role, const NetworkCfgStd& network_cfg_std, bool verbose = true);
+
+    /**
+     * @brief [Blocking] Create an instance of the control interface using TDK Professional
+     * Edition networking via a TDK Server credential file.
+     * @param[in] robot_pairs_sn Serial number of all leader-follower pairs to run teleoperation on.
+     * Each pair in the vector represents a pair of bilaterally teleoperated robots. For example,
+     * provide 2 pairs of robot serial numbers to start a dual-arm teleoperation that involves 2
+     * pairs of robots. The accepted formats are: "Rizon 4s-123456" and "Rizon4s-123456". In each
+     * pair, the first robot is referred to as the "leader robot", which operated by human operator
+     * during teleoperation. The second robot is referred to as the "follower robot", which
+     * interacts with the workpiece.
+     * @param[in] role The role in transparent teleoperation over WAN. There are two types of
+     * participants in teleoperation , one is the "leader", which operated by a human during
+     * teleoperation. The other is referred to as the "follower", which interacts with
+     * the environment during teleoperation.
+     * @param[in] network_cfg_pro Network configuration for TDK Professional Edition. It contains
+     * the path to `client.conf` from the TDK Server credential package, and an optional LAN IPv4
+     * whitelist.
+     * @param[in] verbose If true, periodically print WAN connection and latency warnings. Default
+     * true.
+     * @throw std::invalid_argument if the format of robot_sn or network configuration is invalid.
+     * @throw std::runtime_error if error occurred during construction.
+     * @throw std::logic_error if one of the connected robots does not have a valid TDK license; or
+     * the version of this TDK library is incompatible with one of the connected robots; or model of
+     * any connected robot is not supported; or there are multiple instantiated TDK objects.
+     * @warning This constructor blocks until the connection with the robot is established and
+     * initialization sequence is successfully finished. It does not wait for the WAN connection to
+     * be established.
+     */
+    TransparentCartesianTeleopWAN(
+        const std::vector<std::pair<std::string, std::string>>& robot_pairs_sn,
+        flexiv::tdk::Role role, const NetworkCfgPro& network_cfg_pro, bool verbose = true);
 
     virtual ~TransparentCartesianTeleopWAN();
 
