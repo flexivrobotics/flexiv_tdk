@@ -7,7 +7,7 @@
 
 ## 執行時問題
 
-- **找不到共享函式庫**：執行二進位檔案前設定 `LD_LIBRARY_PATH=~/tdk_install/lib`。
+- **找不到共享函式庫**：範例已將安裝目錄的 `lib` 寫入 rpath。請用安裝 TDK 和 RDK 時同一個前綴重新編譯（`-DCMAKE_PREFIX_PATH`），不要安裝到原始碼的 `lib/` 目錄。備用：Linux 設定 `LD_LIBRARY_PATH=~/tdk_install/lib`，macOS 設定 `DYLD_LIBRARY_PATH=~/tdk_install/lib`。
 - **即時優先級權限問題**：在 `/etc/security/limits.conf` 中為你的使用者新增 `rtprio` 和 `nice` 配置。
 
 ## WAN 遙操作
