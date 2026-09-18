@@ -21,8 +21,10 @@ constexpr size_t kCartDoF = 6;
 /** Size of pose array (3 position + 4 quaternion) */
 constexpr size_t kPoseSize = 7;
 
-/** Number of digital IO ports (16 on control box + 2 inside the wrist connector * 2 max wrists ) */
-constexpr size_t kIOPorts = 16 + 2 * 2;
+/** Number of digital IO ports. Same as flexiv::rdk::kIOPorts: 16 on the control box, then the M8
+ * connector of each wrist (2 ports * maximum 2 wrists), then the pogo pin connector of each wrist
+ * (2 ports * maximum 2 wrists). */
+constexpr size_t kIOPorts = rdk::kIOPorts;
 
 /** Max wrench feedback scaling factor for transparent teleop under LAN */
 constexpr double kMaxWrenchFeedbackScale = 3;
@@ -85,6 +87,21 @@ struct NetworkCfgStd
      * available network interfaces will be tried when searching for connection.
      */
     std::vector<std::string> wan_interface_whitelist = {};
+};
+
+/**
+ * @struct NetworkCfgPro
+ * @brief Network configuration for TDK Professional Edition (credential file from TDK Server).
+ *
+ * Extract the credential package delivered with your TDK Server deployment and set
+ * [client_config_file] to the path of `client.conf` inside that package.
+ */
+struct NetworkCfgPro
+{
+    /**
+     * @param client_config_file Path to `client.conf` from the TDK Server credential package.
+     */
+    std::string client_config_file;
 };
 
 /**
@@ -249,6 +266,171 @@ enum class ZeroFTSensor
     Enable,
     Disable
 };
+
+/**
+ * @enum TeleopIssueCode
+ * @brief Issue code and possible reasons for a teleoperation restriction or interruption.
+ * @note Host applications should switch on this code for localization. The English
+ * title/description/suggestion in TeleopIssue are defaults for logs and simple UIs.
+ */
+enum class TeleopIssueCode
+{
+    NONE = 0,              ///< No issue.
+    JOINT_LIMIT,           ///< A joint is near its position limit.
+    SINGULARITY,           ///< Arm is near a kinematic singularity.
+    HIGH_JOINT_VELOCITY,   ///< Joint velocity is close to the safety limit.
+    HIGH_LATENCY,          ///< Network latency exceeded the configured threshold; teleop is force-disengaged.
+    NETWORK_DISCONNECTED,  ///< Connection to the peer is not established.
+    CLOCK_MISMATCH,        ///< Clocks disagree (negative latency); teleop is force-disengaged.
+    ROBOT_FAULT,           ///< Robot is in fault state.
+    ROBOT_NOT_OPERATIONAL, ///< Robot is not operational (E-Stop, disabled, or link lost).
+    CONTROL_MODE_MISMATCH, ///< Robot left real-time Cartesian motion-force mode.
+};
+
+static const std::string TeleopIssueCodeStr[] = {"NONE", "JOINT_LIMIT", "SINGULARITY",
+    "HIGH_JOINT_VELOCITY", "HIGH_LATENCY", "NETWORK_DISCONNECTED", "CLOCK_MISMATCH", "ROBOT_FAULT",
+    "ROBOT_NOT_OPERATIONAL", "CONTROL_MODE_MISMATCH"};
+
+/**
+ * @enum TeleopIssueLevel
+ * @brief How urgently a teleop issue should be presented to the operator.
+ */
+enum class TeleopIssueLevel
+{
+    INFO = 0, ///< Advisory. Motion is still possible.
+    WARNING,  ///< Motion is restricted.
+    ERROR,    ///< Teleop was disengaged, stopped, or the robot needs recovery.
+};
+
+static const std::string TeleopIssueLevelStr[] = {"INFO", "WARNING", "ERROR"};
+
+/**
+ * @enum TeleopIssueSide
+ * @brief Which participant the issue belongs to.
+ */
+enum class TeleopIssueSide
+{
+    NONE = 0,
+    LEADER,   ///< Leader / operator-side robot.
+    FOLLOWER, ///< Follower / remote-environment robot.
+    NETWORK,  ///< Link between the two sides, not a specific robot.
+};
+
+static const std::string TeleopIssueSideStr[] = {"NONE", "LEADER", "FOLLOWER", "NETWORK"};
+
+/**
+ * @struct TeleopIssue
+ * @brief One restriction or interruption that the operator should understand.
+ *
+ * Typical host usage: show [title] as a banner, [description] as the explanation, and
+ * [suggestion] as the next action. Use [code] if the UI needs a localized string table.
+ */
+struct TeleopIssue
+{
+    /** Machine-readable reason. */
+    TeleopIssueCode code = TeleopIssueCode::NONE;
+
+    /** Presentation urgency. */
+    TeleopIssueLevel level = TeleopIssueLevel::INFO;
+
+    /** Which robot or the network this issue belongs to. */
+    TeleopIssueSide side = TeleopIssueSide::NONE;
+
+    /**
+     * 1-based joint index (A1 = 1). 0 if the issue is not joint-specific.
+     */
+    int joint_index = 0;
+
+    /**
+     * True if this issue is happening now. False if it is the last remembered event
+     * after the condition has already cleared.
+     */
+    bool active = false;
+
+    /** True if the controller froze motion to stop the condition from getting worse. */
+    bool motion_locked = false;
+
+    /** True if teleoperation was force-disengaged because of this issue. */
+    bool forced_disengage = false;
+
+    /**
+     * Measured quantity associated with the issue. Unit depends on [code]:
+     * latency in ms, joint position in rad, joint velocity in rad/s.
+     */
+    double value = 0.0;
+
+    /** Limit that [value] was compared against. Same unit as [value]. */
+    double threshold = 0.0;
+
+    /** Short operator-facing title, English. */
+    std::string title;
+
+    /** What happened, English, for a non-expert operator. */
+    std::string description;
+
+    /** What the operator should do next, English. */
+    std::string suggestion;
+};
+
+/**
+ * @struct TeleopStatus
+ * @brief Snapshot of teleoperation health for one robot pair / joint group.
+ *
+ * [primary] is the issue the host should show first: the highest-level active
+ * issue, or the last significant event if nothing is active. [issues] lists every
+ * condition that is active right now.
+ */
+struct TeleopStatus
+{
+    bool initialized = false;
+    bool started = false;
+    /**
+     * False if the operator has not engaged, or if the controller force-disengaged
+     * (high latency, disconnect, or clock mismatch). Check [issues] / [primary]
+     * for CLOCK_MISMATCH when [latency_ms] is negative.
+     */
+    bool engaged = false;
+    bool stopped = true;
+    bool fault = false;
+
+    /** True if the robot currently holds pose to avoid a limit or singularity. */
+    bool motion_restricted = false;
+
+    /**
+     * Estimated one-way message latency in milliseconds. WAN only; 0 on LAN.
+     * Negative means clock mismatch. A very large value means not connected.
+     */
+    double latency_ms = 0.0;
+
+    /** Configured latency threshold in milliseconds. WAN only. */
+    double latency_threshold_ms = 0.0;
+
+    /** Highest-priority issue to display. [primary.code] is NONE when nothing is wrong. */
+    TeleopIssue primary;
+
+    /** All currently active issues. Empty when the system is healthy. */
+    std::vector<TeleopIssue> issues;
+};
+
+/**
+ * @brief Default level for a teleop issue code.
+ */
+inline TeleopIssueLevel GetTeleopIssueLevel(TeleopIssueCode code)
+{
+    switch (code) {
+        case TeleopIssueCode::HIGH_LATENCY:
+        case TeleopIssueCode::NETWORK_DISCONNECTED:
+        case TeleopIssueCode::CLOCK_MISMATCH:
+        case TeleopIssueCode::ROBOT_FAULT:
+        case TeleopIssueCode::ROBOT_NOT_OPERATIONAL:
+        case TeleopIssueCode::CONTROL_MODE_MISMATCH:
+            return TeleopIssueLevel::ERROR;
+        case TeleopIssueCode::NONE:
+            return TeleopIssueLevel::INFO;
+        default:
+            return TeleopIssueLevel::WARNING;
+    }
+}
 
 } // namespace tdk
 } // namespace flexiv

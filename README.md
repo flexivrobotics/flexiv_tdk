@@ -1,14 +1,14 @@
 # Flexiv TDK
 
 [![CMake](https://github.com/flexivrobotics/flexiv_tdk/actions/workflows/cmake.yml/badge.svg)](https://github.com/flexivrobotics/flexiv_tdk/actions/workflows/cmake.yml)
-[![Version](https://img.shields.io/badge/version-2.1-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-2.2-blue.svg)]()
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 **Flexiv TDK (Teleoperation Development Kit)** is an SDK for building custom robot-to-robot or device-to-robot teleoperation applications with Flexiv's adaptive robots. It enables synchronized, force-guided motion using **high-fidelity perceptual feedback** and supports both **LAN** (Local Area Network) and **WAN** (Internet) connections.
 
 ## Contact-Rich Manipulation Benchmarks
-Flexiv TDK has been recognized on the [Manipulation Net Peg-in-Hole Leaderboard](https://manipulation-net.org/leaderboards/peg_in_hole.html). The [Manipulation Net](https://manipulation-net.org) is a public benchmark for robotic manipulation in the real world at scale with any robot at any time and anywhere. This provides external evidence for the contact-rich manipulation capability relevant to TDK use cases, including compliant insertion, alignment, and force-sensitive teleoperation workflows.
 
+Flexiv TDK has been recognized on the [Manipulation Net Peg-in-Hole Leaderboard](https://manipulation-net.org/leaderboards/peg_in_hole.html). The [Manipulation Net](https://manipulation-net.org) is a public benchmark for robotic manipulation in the real world at scale with any robot at any time and anywhere. This provides external evidence for the contact-rich manipulation capability relevant to TDK use cases, including compliant insertion, alignment, and force-sensitive teleoperation workflows.
 
 🎬 **[Flexiv's TDK | Teleoperation Made Simple](https://www.youtube.com/watch?v=H0e9FSZIa14)**  
 *(Click image below to play)*  
@@ -29,13 +29,18 @@ Flexiv TDK has been recognized on the [Manipulation Net Peg-in-Hole Leaderboard]
 
 ---
 
+
+
 ## ✅ Compatibility
 
-| OS            | Processor       | Languages   | Compiler Requirements     | Python Versions  |
-| ------------- | --------------- | ----------- | ------------------------- | ---------------- |
-| Ubuntu 22.04+ | x86_64, aarch64 | C++, Python | GCC ≥ 9.4, CMake ≥ 3.16.3 | 3.10, 3.12, 3.14 |
 
->💡 Need support for other platforms? [Contact Flexiv](https://www.flexiv.com/contact).
+| OS            | Processor       | Languages   | Compiler Requirements            | Python Versions  |
+| ------------- | --------------- | ----------- | -------------------------------- | ---------------- |
+| Ubuntu 22.04+ | x86_64, aarch64 | C++, Python | GCC ≥ 9.4, CMake ≥ 3.16.3        | 3.10, 3.12, 3.14 |
+| macOS 12+     | arm64           | C++, Python | Apple Clang ≥ 15, CMake ≥ 3.16.3 | 3.10, 3.12       |
+
+
+> 💡 Need support for other platforms? [Contact Flexiv](https://www.flexiv.com/contact).
 
 ---
 
@@ -45,25 +50,32 @@ Flexiv TDK has been recognized on the [Manipulation Net Peg-in-Hole Leaderboard]
 
 On all supported platforms, the Python package of TDK and its dependencies for a specific Python version can be installed using the `pip` module:
 
-    python3.x -m pip install spdlog flexivtdk
+```
+python3.x -m pip install flexivtdk==2.2.0
+```
 
 NOTE: replace `3.x` with a specific Python version.
 
 ### 2. Use the installed Python package
 
-After the ``flexivtdk`` Python package is installed, it can be imported from any Python script. Test with the following commands in a new Terminal, which should start Flexiv TDK:
+After the `flexivtdk` Python package is installed, it can be imported from any Python script. Test with the following commands in a new Terminal, which should start Flexiv TDK:
 
-    python3.x
-    import flexivtdk
-    flexivtdk.__version__ 
+```
+python3.x
+import flexivtdk
+flexivtdk.__version__ 
+```
 
-### 3.🕒 System Clock Sync 
+
+
+### 3.🕒 System Clock Sync
 
 Accurate time sync is critical for teleop over the internet. For WAN teleop, there are two edge computers, one acting as a server and the other as a client, and the system time of these two computers needs to be calibrated. 
 
 Note: This is only required for **WAN** Teleoperation, users can skip this section if only using LAN teleoperation.
 
 1. Install & Start chrony
+
 ```bash
 sudo apt install chrony -y
 systemctl status chrony  # Should show "active (running)"
@@ -77,6 +89,7 @@ System time: the instantaneous offset between local system clock and NTP referen
 
 RMS offset: the long-term average offset (root mean square) over time
 
+
 | Network Condition | Good (ms) | Acceptable (ms) | Poor (ms) |
 | ----------------- | --------- | --------------- | --------- |
 | System time       | < 1       | 1 - 10          | > 10      |
@@ -88,7 +101,9 @@ RMS offset: the long-term average offset (root mean square) over time
 sudo chronyc burst 4/4
 sudo chronyc makestep
 ```
+
 🔄 After network changes (e.g., Wi-Fi → Ethernet), restart:
+
 ```bash
 sudo systemctl restart chronyd
 sleep 5
@@ -104,6 +119,7 @@ To allow a regular user to create high-priority (real-time) threads without `sud
 echo "${USER}    -   rtprio    99" | sudo tee -a /etc/security/limits.conf
 echo "${USER}    -   nice     -20" | sudo tee -a /etc/security/limits.conf
 ```
+
 Log out and log back in (or reboot) for the settings to take effect.
 
 ### 5. Run example Python scripts
@@ -156,18 +172,33 @@ cmake .. -DCMAKE_PREFIX_PATH=~/tdk_install
 cmake --build . --config Release -j 4
 ```
 
-NOTE: ``-D`` followed by ``CMAKE_INSTALL_PREFIX`` tells the user project's CMake where to find the installed TDK library. 
-
-
+NOTE: `-D` followed by `CMAKE_INSTALL_PREFIX` tells the user project's CMake where to find the installed TDK library. 
 
 ### 6. Run Examples
+
+CMake records the install `lib` directory in the example's rpath at link time, so Linux and macOS can run the binary directly:
+
 ```bash
 cd flexiv_tdk/example/build
-LD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
+./<program_name> [arguments]
 ```
-``LD_LIBRARY_PATH`` is used to specify where the shared libraries of the dependencies are installed.
+
+`LD_LIBRARY_PATH` / `DYLD_LIBRARY_PATH` is not required in this setup. TDK also looks up `libflexiv_rdk` next to itself (`$ORIGIN` / `@loader_path`).
+
+If the loader still cannot find `libflexiv_tdk` or `libflexiv_rdk`, rebuild the examples with `-DCMAKE_PREFIX_PATH` pointing at the **same** prefix used to install TDK and RDK (do not install into the source `lib/` folder). As a fallback:
+
+```bash
+# Linux
+LD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
+
+# macOS
+DYLD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
+```
+
+The install `lib` directory must contain both `libflexiv_tdk` and `libflexiv_rdk` (`.so` on Linux, `.dylib` on macOS). 
 
 Check each example’s source code for usage details.
 
 ## 📚 API Documentation
+
 The complete and detailed API documentation of all releases can be found at [API Reference](https://flexivrobotics.github.io/flexiv_tdk/api/). Use the version dropdown on that page to switch between releases. The latest release is always available directly at [Doxygen API (latest)](https://flexivrobotics.github.io/flexiv_tdk/api/doxygen/index.html).

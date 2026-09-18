@@ -5,7 +5,7 @@
 ## 1) 安裝套件
 
 ```bash
-python3.x -m pip install spdlog flexivtdk
+python3.x -m pip install flexivtdk
 ```
 
 > 將 `3.x` 替換為你的 Python 版本（例如 3.10）。
