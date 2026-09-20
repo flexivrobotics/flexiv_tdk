@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.16.3)
 
+# Must be set before project() so the toolchain picks it up on macOS
+if(APPLE AND NOT CMAKE_OSX_DEPLOYMENT_TARGET)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "12.0" CACHE STRING "Minimum macOS version")
+endif()
+
 # ===================================================================
 #      PROJECT SETUP
 # ===================================================================
@@ -11,36 +16,26 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Debug" "RelWithDebInfo" "MinSizeRel")
 
-# Set static library according to platform
+# TDK is shipped as a self-contained shared library. The only public runtime
+# dependency is libflexiv_rdk.
 message(STATUS "OS: ${CMAKE_SYSTEM_NAME}")
 message(STATUS "Processor: ${CMAKE_SYSTEM_PROCESSOR}")
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64")
-    set(TDK_LIB "libflexiv_tdk.x86_64-linux-gnu.a")
+    set(TDK_LIB "libflexiv_tdk.x86_64-linux-gnu.so")
   elseif(${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64")
-    set(TDK_LIB "libflexiv_tdk.aarch64-linux-gnu.a")
+    set(TDK_LIB "libflexiv_tdk.aarch64-linux-gnu.so")
   else()
     message(FATAL_ERROR "Linux with ${CMAKE_SYSTEM_PROCESSOR} processor is currently not supported.")
   endif()
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm64")
+    set(TDK_LIB "libflexiv_tdk.arm64-darwin.dylib")
+  else()
+    message(FATAL_ERROR "macOS with ${CMAKE_SYSTEM_PROCESSOR} processor is currently not supported. Only arm64 is supported.")
+  endif()
 else()
   message(FATAL_ERROR "${CMAKE_SYSTEM_NAME} is currently not supported.")
-endif()
-
-# Option to support ROS2 Jazzy
-option(TDK_SUPPORT_ROS2_JAZZY "Use TDK library compatible with ROS2 Jazzy" OFF)
-if(TDK_SUPPORT_ROS2_JAZZY)
-  if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64")
-      set(TDK_LIB "libflexiv_tdk.x86_64-linux-gnu.ros2-jazzy.a")
-    elseif(${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64")
-      set(TDK_LIB "libflexiv_tdk.aarch64-linux-gnu.ros2-jazzy.a")
-    else()
-      message(FATAL_ERROR 
-        "Compatibility with ROS2 Jazzy is currently not supported on Linux with ${CMAKE_SYSTEM_PROCESSOR} processor.")
-    endif()
-  else()
-    message(FATAL_ERROR "Compatibility with ROS2 Jazzy is currently not supported on ${CMAKE_SYSTEM_NAME}.")
-  endif()
 endif()
 
 # Read expected SHA256 hash
@@ -52,43 +47,31 @@ if(NOT HASH_LEN EQUAL 64)
 endif()
 
 # Download the library file from GitHub 
-set(TDK_LIB_URL https://github.com/flexivrobotics/flexiv_tdk/releases/download/v${PROJECT_VERSION}/${TDK_LIB})
-message(STATUS "Downloading ${TDK_LIB_URL} ...")
+  set(TDK_LIB_URL https://github.com/flexivrobotics/flexiv_tdk/releases/download/v${PROJECT_VERSION}/${TDK_LIB})
+  message(STATUS "Downloading ${TDK_LIB_URL} ...")
 file(DOWNLOAD ${TDK_LIB_URL} ${CMAKE_CURRENT_BINARY_DIR}/${TDK_LIB}
-     SHOW_PROGRESS
-     TLS_VERIFY ON
-     EXPECTED_HASH SHA256=${EXPECTED_HASH}
-     STATUS status)
-list(GET status 0 code)
-if(code EQUAL 0)
-  message(STATUS "Download finished")
-else()
-  message(FATAL_ERROR "Download failed: ${status}")
+       SHOW_PROGRESS
+       TLS_VERIFY ON
+       EXPECTED_HASH SHA256=${EXPECTED_HASH}
+       STATUS status)
+  list(GET status 0 code)
+  if(code EQUAL 0)
+    message(STATUS "Download finished")
+  else()
+    message(FATAL_ERROR "Download failed: ${status}")
 endif()
 
 # ===================================================================
 #      DEPENDENCIES
 # ===================================================================
-# Threads
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
-message(STATUS "Found Threads")
-
-# Flexiv RDK
-find_package(flexiv_rdk 1.9.3 REQUIRED)
+find_package(flexiv_rdk 1.9.4 EXACT REQUIRED)
 message(STATUS "Found flexiv_rdk: ${flexiv_rdk_DIR}, version: ${flexiv_rdk_VERSION}")
-
-# Zenoh
-find_package(zenohc 1.9.0 REQUIRED)
-find_package(zenohcxx 1.9.0 REQUIRED)
-message(STATUS "Found zenohc: ${zenohc_DIR}, version: ${zenohc_VERSION}")
-message(STATUS "Found zenohcxx: ${zenohcxx_DIR}, version: ${zenohcxx_VERSION}")
 
 # ===================================================================
 #      CREATE LIBRARY
 # ===================================================================
-# Create static library target with dummy source
-add_library(${PROJECT_NAME} STATIC ${CMAKE_CURRENT_SOURCE_DIR}/lib/dummy.cpp)
+# Dummy shared target; replaced at install time by the downloaded library.
+add_library(${PROJECT_NAME} SHARED ${CMAKE_CURRENT_SOURCE_DIR}/lib/dummy.cpp)
 
 # Create an alias of the target with flexiv namespace
 add_library(flexiv::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
@@ -99,14 +82,24 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 
-# Link to dependencies
+# Only flexiv_rdk is a public runtime dependency.
 target_link_libraries(${PROJECT_NAME} PUBLIC
-  Threads::Threads
   flexiv::flexiv_rdk
-  zenohcxx::zenohc
 )
 
-# Use moderate compiler warning option 
+# Consumers find libflexiv_rdk next to this library.
+if(APPLE)
+  set_target_properties(${PROJECT_NAME} PROPERTIES
+    BUILD_RPATH_USE_ORIGIN ON
+    INSTALL_RPATH "@loader_path"
+    INSTALL_NAME_DIR "@rpath")
+else()
+  set_target_properties(${PROJECT_NAME} PROPERTIES
+    BUILD_RPATH_USE_ORIGIN ON
+    INSTALL_RPATH "$ORIGIN")
+endif()
+
+# Use moderate compiler warning option
 if(CMAKE_HOST_UNIX)
   target_compile_options(${PROJECT_NAME} PUBLIC -Wall -Wextra)
 else()
