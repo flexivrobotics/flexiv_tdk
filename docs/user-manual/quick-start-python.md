@@ -8,7 +8,7 @@ This guide walks you through installing and running the Flexiv TDK Python packag
 python3.x -m pip install flexivtdk
 ```
 
-> Replace `3.x` with your Python version (e.g., 3.10).
+> Replace `3.x` with your Python version. Linux supports 3.10, 3.12, and 3.14; macOS supports 3.10 and 3.12.
 
 ## 2) Verify installation
 

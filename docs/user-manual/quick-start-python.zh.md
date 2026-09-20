@@ -8,7 +8,7 @@
 python3.x -m pip install flexivtdk
 ```
 
-> 将 `3.x` 替换为你的 Python 版本（例如 3.10）。
+> 将 `3.x` 替换为你的 Python 版本。Linux 支持 3.10、3.12 和 3.14；macOS 支持 3.10 和 3.12。
 
 ## 2) 验证安装
 
