@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.16.3)
+if(APPLE)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "14.0" CACHE STRING "Minimum macOS version" FORCE)
+endif()
 project(flexiv_tdk-examples)
 
 # Show verbose build info

@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.16.3)
 
+# Must be set before project(). TDK supports macOS 14+ (arm64).
+if(APPLE)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "14.0" CACHE STRING "Minimum macOS version" FORCE)
+endif()
+
 # ===================================================================
 #      PROJECT SETUP
 # ===================================================================

@@ -37,7 +37,7 @@ Flexiv TDK has been recognized on the [Manipulation Net Peg-in-Hole Leaderboard]
 | OS            | Processor       | Languages   | Compiler Requirements            | Python Versions  |
 | ------------- | --------------- | ----------- | -------------------------------- | ---------------- |
 | Ubuntu 22.04+ | x86_64, aarch64 | C++, Python | GCC ≥ 9.4, CMake ≥ 3.16.3        | 3.10, 3.12, 3.14 |
-| macOS 12+     | arm64           | C++, Python | Apple Clang ≥ 15, CMake ≥ 3.16.3 | 3.10, 3.12       |
+| macOS 14+     | arm64           | C++, Python | Apple Clang ≥ 15, CMake ≥ 3.16.3 | 3.10, 3.12       |
 
 
 > 💡 Need support for other platforms? [Contact Flexiv](https://www.flexiv.com/contact).
@@ -198,6 +198,15 @@ DYLD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
 The install `lib` directory must contain both `libflexiv_tdk` and `libflexiv_rdk` (`.so` on Linux, `.dylib` on macOS). 
 
 Check each example’s source code for usage details.
+
+## License
+
+Flexiv TDK is licensed under the [Apache License 2.0](LICENSE).
+
+The prebuilt `libflexiv_tdk` library statically embeds spdlog and fmt
+(MIT) and Eclipse Zenoh. Upstream Zenoh is dual-licensed Apache-2.0 OR
+EPL-2.0; **this SDK redistributes Zenoh under Apache-2.0 only**. Notices
+and license texts: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## 📚 API Documentation
 
