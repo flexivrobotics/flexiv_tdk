@@ -1,14 +1,13 @@
 #!/bin/sh
 # This script builds from source and installs all dependencies of flexiv_tdk.
 
-# Absolute path of this script
-SCRIPTPATH="$(dirname $(readlink -f $0))"
+# Absolute path of this script. BSD readlink (macOS) has no -f.
+SCRIPTPATH="$(cd "$(dirname "$0")" && pwd)"
 set -e
 
 # Initialize variables
 INSTALL_DIR=""
 NUM_JOBS=4
-BUILD_FOR_JAZZY=""
 
 # Function to print usage
 print_usage() {
@@ -20,11 +19,10 @@ print_usage() {
     echo ""
     echo "Options:"
     echo "  -j, --jobs <num>          Number of parallel build jobs (default: 4)."
-    echo "  --ros2-jazzy              Set BUILD_FOR_JAZZY=1 for ROS2 Jazzy environment."
     echo "  -h, --help                Show this help message."
     echo ""
     echo "Example:"
-    echo "  $0 /opt/flexiv --ros2-jazzy -j 8"
+    echo "  $0 ~/tdk_install_dir -j 8"
 }
 
 # Parse arguments
@@ -33,11 +31,6 @@ while [ "$#" -gt 0 ]; do
         -h|--help)
             print_usage
             exit 0
-            ;;
-        --ros2-jazzy)
-            export BUILD_FOR_JAZZY=1
-            echo "Detected --ros2-jazzy flag: BUILD_FOR_JAZZY set to 1"
-            shift
             ;;
         -j|--jobs)
             if [ -z "$2" ] || [ "${2#-}" != "$2" ]; then
@@ -76,15 +69,11 @@ fi
 
 echo "Dependencies will be installed to: $INSTALL_DIR"
 echo "Number of parallel build jobs: $NUM_JOBS"
-if [ -n "$BUILD_FOR_JAZZY" ]; then
-    echo "ROS2 Jazzy mode enabled (BUILD_FOR_JAZZY=1)"
-fi
 
 # Clone all dependencies in a subfolder
 mkdir -p cloned && cd cloned
 
 # Build and install all dependencies to INSTALL_DIR
 bash $SCRIPTPATH/scripts/install_flexiv_rdk.sh $INSTALL_DIR $NUM_JOBS
-bash $SCRIPTPATH/scripts/install_zenoh.sh $INSTALL_DIR $NUM_JOBS
 
 echo ">>>>>>>>>> Finished <<<<<<<<<<"
