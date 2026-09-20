@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.16.3)
 
 # Must be set before project() so the toolchain picks it up on macOS
-if(APPLE AND NOT CMAKE_OSX_DEPLOYMENT_TARGET)
-  set(CMAKE_OSX_DEPLOYMENT_TARGET "12.0" CACHE STRING "Minimum macOS version")
+if(APPLE)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "14.0" CACHE STRING "Minimum macOS version" FORCE)
 endif()
 
 # ===================================================================

@@ -23,9 +23,9 @@ The online GitHub Pages site documents TDK v2.x and must not be used with this r
 - Network devices (e.g., Ethernet switch/router) with sufficient bandwidth and latency
 - CAT 6 or CAT 7 Ethernet cables
 ### User PC
-- Ubuntu 22.04+ (x86_64 or aarch64), or macOS 12+ (arm64, C++ only)
+- Ubuntu 22.04+ (x86_64 or aarch64): C++ and Python 3.10/3.12/3.14
+- macOS 14+ (arm64): C++ and Python 3.10/3.12
 - C++ toolchain: GCC ≥ 9.4 (Linux) or Apple Clang ≥ 15 (macOS), CMake ≥ 3.16.3
-- Python 3.10/3.12/3.14 (Linux, for Python SDK usage)
 - Network access to the robot and (for WAN) reliable time synchronization
 
 ## Repository Layout

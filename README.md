@@ -36,7 +36,7 @@ For the v1.6.x user manual and C++ API, generate the docs locally from this tree
 | OS            | Processor       | Languages   | Compiler Requirements            | Python Versions |
 | ------------- | --------------- | ----------- | -------------------------------- | --------------- |
 | Ubuntu 22.04+ | x86_64, aarch64 | C++, Python | GCC ≥ 9.4, CMake ≥ 3.16.3        | 3.10, 3.12, 3.14 |
-| macOS 12+     | arm64           | C++         | Apple Clang ≥ 15, CMake ≥ 3.16.3 | —               |
+| macOS 14+     | arm64           | C++, Python | Apple Clang ≥ 15, CMake ≥ 3.16.3 | 3.10, 3.12       |
 
 
 

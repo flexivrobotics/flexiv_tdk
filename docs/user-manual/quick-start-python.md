@@ -12,7 +12,7 @@ python3.x -m pip install spdlog flexivtdk==1.6.4
 
 `flexivtdk==1.6.4` declares a hard dependency on `flexivrdk==1.9.3`, so pip installs that RDK wheel automatically.
 
-> Replace `3.x` with your Python version (3.10, 3.12, or 3.14).
+> Replace `3.x` with your Python version. Linux supports 3.10, 3.12, and 3.14; macOS supports 3.10 and 3.12.
 
 ## 2) Verify installation
 

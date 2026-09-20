@@ -1,7 +1,7 @@
 # Q&A
 
 ## Q: Which platforms are supported?
-**A:** Ubuntu 22.04+ on x86_64 and aarch64 (C++ and Python). macOS 12+ on arm64 (C++ only). Toolchain: GCC ≥ 9.4 or Apple Clang ≥ 15, CMake ≥ 3.16.3, and Python 3.10/3.12/3.14 on Linux.
+**A:** Ubuntu 22.04+ on x86_64 and aarch64 (C++ and Python 3.10/3.12/3.14). macOS 14+ on arm64 (C++ and Python 3.10/3.12). Toolchain: GCC ≥ 9.4 (Linux) or Apple Clang ≥ 15 (macOS), CMake ≥ 3.16.3.
 
 | TDK | C++ RDK | Python RDK |
 | --- | ------- | ---------- |
