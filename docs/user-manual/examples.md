@@ -49,7 +49,7 @@ Examples include:
 Install **TDK v1.6.4** first. It requires **`flexivrdk==1.9.3`** (pulled in automatically):
 
 ```bash
-python3.x -m pip install spdlog flexivtdk==1.6.4
+python3.x -m pip install flexivtdk==1.6.4
 ```
 
 Some console commands in examples (for example LAN `a`, which calls `instances()`) use the underlying RDK `Robot` objects and need that matching `flexivrdk` package.

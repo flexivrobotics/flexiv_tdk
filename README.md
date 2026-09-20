@@ -50,7 +50,7 @@ For the v1.6.x user manual and C++ API, generate the docs locally from this tree
 
 On all supported platforms, the Python package of TDK and its dependencies for a specific Python version can be installed using the `pip` module:
 
-    python3.x -m pip install spdlog flexivtdk==1.6.4
+    python3.x -m pip install flexivtdk==1.6.4
 
 This installs **TDK v1.6.4** and its hard dependency **`flexivrdk==1.9.4`**. Pin both versions if you install them separately (`python3.x -m pip install flexivrdk==1.9.4 flexivtdk==1.6.4`).
 

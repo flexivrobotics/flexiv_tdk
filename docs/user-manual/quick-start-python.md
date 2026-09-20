@@ -7,7 +7,7 @@ This guide walks you through installing and running the Flexiv TDK Python packag
 ## 1) Install the package
 
 ```bash
-python3.x -m pip install spdlog flexivtdk==1.6.4
+python3.x -m pip install flexivtdk==1.6.4
 ```
 
 `flexivtdk==1.6.4` declares a hard dependency on `flexivrdk==1.9.3`, so pip installs that RDK wheel automatically.
