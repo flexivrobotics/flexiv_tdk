@@ -17,7 +17,6 @@ import argparse
 import threading
 import time
 import sys
-import spdlog
 import math
 from typing import List, Optional, Dict, Callable
 
@@ -38,23 +37,31 @@ kDefaultMaxContactWrench = [25.0, 25.0, 25.0, 10.0, 10.0, 10.0]
 # Global thread-safe stop event
 _stop_event = threading.Event()
 
-# Logger setup
-logger = spdlog.ConsoleLogger("Example")
+def log_info(msg):
+    print("[info] {}".format(msg))
+
+
+def log_warn(msg):
+    print("[warn] {}".format(msg), file=sys.stderr)
+
+
+def log_error(msg):
+    print("[error] {}".format(msg), file=sys.stderr)
 
 
 def print_teleop_status(idx, status):
     """Print GetTeleopStatus() snapshot and the primary operator-facing issue."""
-    logger.info(
+    log_info(
         "Teleop pair {} status: initialized={} started={} engaged={} stopped={} fault={} "
         "motion_restricted={} latency={:.1f}/{:.1f} ms".format(
             idx, status.initialized, status.started, status.engaged, status.stopped,
             status.fault, status.motion_restricted, status.latency_ms,
             status.latency_threshold_ms))
     if status.primary.code == flexivtdk.TeleopIssueCode.NONE:
-        logger.info("No teleop restriction. Safe to continue.")
+        log_info("No teleop restriction. Safe to continue.")
         return
     issue = status.primary
-    logger.warn("[{}/{}] {} | {} | {}".format(
+    log_warn("[{}/{}] {} | {} | {}".format(
         flexivtdk.TeleopIssueLevelStr[int(issue.level)],
         flexivtdk.TeleopIssueSideStr[int(issue.side)], issue.title, issue.description,
         issue.suggestion))
@@ -62,7 +69,7 @@ def print_teleop_status(idx, status):
         if (extra.code == issue.code and extra.side == issue.side
                 and extra.joint_index == issue.joint_index):
             continue
-        logger.warn("  also: [{}/{}] {}".format(
+        log_warn("  also: [{}/{}] {}".format(
             flexivtdk.TeleopIssueCodeStr[int(extra.code)],
             flexivtdk.TeleopIssueSideStr[int(extra.side)], extra.title))
 
@@ -93,7 +100,7 @@ class WanTeleoperationController:
         try:
             return self.teleop.GetAxisLockState(self.index)
         except Exception as e:
-            logger.warning(f"Failed to get initial axis lock state, using default: {e}")
+            log_warn(f"Failed to get initial axis lock state, using default: {e}")
             return self._default_axis_lock_cmd()
     
     def _create_command_map(self) -> Dict[str, Callable]:
@@ -177,7 +184,7 @@ class WanTeleoperationController:
     def _toggle_axis_lock(self, axis_index: int, lock_type: str, coord_type: flexivtdk.CoordType):
         """Toggle axis lock for the specified axis and type."""
         if not self._is_leader():
-            logger.warn("Axis lock is only available on the leader")
+            log_warn("Axis lock is only available on the leader")
             return
         try:
             attr = "lock_trans_axis" if lock_type == "trans" else "lock_ori_axis"
@@ -186,55 +193,55 @@ class WanTeleoperationController:
             setattr(self.cmd, attr, axes)
             self.cmd.coord = coord_type
             self.teleop.SetAxisLockCmd(self.index, self.cmd)
-            logger.info(
+            log_info(
                 f"Axis lock toggled: {lock_type}[{axis_index}] = {axes[axis_index]}, coord = {coord_type}")
         except Exception as e:
-            logger.error(f"Failed to toggle axis lock: {e}")
+            log_error(f"Failed to toggle axis lock: {e}")
 
     def _unlock_all_axes(self):
         """Unlock all axes in TCP coordinate system."""
         if not self._is_leader():
-            logger.warn("Axis lock is only available on the leader")
+            log_warn("Axis lock is only available on the leader")
             return
         try:
             self.cmd.lock_ori_axis = [False, False, False]
             self.cmd.lock_trans_axis = [False, False, False]
             self.cmd.coord = flexivtdk.CoordType.TCP
             self.teleop.SetAxisLockCmd(self.index, self.cmd)
-            logger.info("All axes unlocked")
+            log_info("All axes unlocked")
         except Exception as e:
-            logger.error(f"Failed to unlock all axes: {e}")
+            log_error(f"Failed to unlock all axes: {e}")
 
     def _lock_all_axes(self):
         """Lock all axes in TCP coordinate system."""
         if not self._is_leader():
-            logger.warn("Axis lock is only available on the leader")
+            log_warn("Axis lock is only available on the leader")
             return
         try:
             self.cmd.lock_ori_axis = [True, True, True]
             self.cmd.lock_trans_axis = [True, True, True]
             self.cmd.coord = flexivtdk.CoordType.TCP
             self.teleop.SetAxisLockCmd(self.index, self.cmd)
-            logger.info("All axes locked")
+            log_info("All axes locked")
         except Exception as e:
-            logger.error(f"Failed to lock all axes: {e}")
+            log_error(f"Failed to lock all axes: {e}")
 
     def _start_teleop(self):
         """Initialize and start teleoperation."""
         try:
             self.teleop.Init()
             self.teleop.Start()
-            logger.info("Teleop started")
+            log_info("Teleop started")
         except Exception as e:
-            logger.error(f"Failed to start teleop: {e}")
+            log_error(f"Failed to start teleop: {e}")
     
     def _stop_teleop(self):
         """Stop teleoperation and set the stop event."""
         try:
             self.teleop.Stop()
-            logger.info("Teleop stopped")
+            log_info("Teleop stopped")
         except Exception as e:
-            logger.error(f"Failed to stop teleop: {e}")
+            log_error(f"Failed to stop teleop: {e}")
             _stop_event.set()
     
     def _print_latency(self):
@@ -242,56 +249,56 @@ class WanTeleoperationController:
         try:
             ok, latency_ms = self.teleop.CheckTeleopConnectionLatency(self.index)
             if ok:
-                logger.info(f"pair {self.index} message latency: {latency_ms} ms (within limit)")
+                log_info(f"pair {self.index} message latency: {latency_ms} ms (within limit)")
             elif latency_ms < 0.0:
-                logger.warn(f"pair {self.index} clock mismatch: latency {latency_ms} ms")
+                log_warn(f"pair {self.index} clock mismatch: latency {latency_ms} ms")
             elif latency_ms > 1.0e12:
-                logger.warn(f"pair {self.index} disconnected: latency {latency_ms} ms")
+                log_warn(f"pair {self.index} disconnected: latency {latency_ms} ms")
             else:
-                logger.warn(f"pair {self.index} latency over limit: {latency_ms} ms")
+                log_warn(f"pair {self.index} latency over limit: {latency_ms} ms")
         except Exception as e:
-            logger.error(f"Error checking TCP latency: {e}")
+            log_error(f"Error checking TCP latency: {e}")
 
     def _print_status(self):
         """Print GetTeleopStatus() for the current robot pair."""
         try:
             print_teleop_status(self.index, self.teleop.GetTeleopStatus(self.index))
         except Exception as e:
-            logger.error(f"Failed to query teleop status: {e}")
+            log_error(f"Failed to query teleop status: {e}")
 
     def _print_identity(self):
         """Print role() and robot_pair_sn()."""
         try:
             leader_sn, follower_sn = self.teleop.robot_pair_sn(self.index)
-            logger.info(
+            log_info(
                 f"pair {self.index} role={self.teleop.role()} "
                 f"leader_sn={leader_sn} follower_sn={follower_sn}")
         except Exception as e:
-            logger.error(f"Failed to query role / robot pair SN: {e}")
+            log_error(f"Failed to query role / robot pair SN: {e}")
     
     def _safe_engage(self, engage: bool):
         """Safely engage or disengage teleop with error handling."""
         try:
             self.teleop.Engage(self.index, engage)
-            logger.info(f"Teleop {'engaged' if engage else 'disengaged'}")
+            log_info(f"Teleop {'engaged' if engage else 'disengaged'}")
         except Exception as e:
-            logger.error(f"Failed to {'engage' if engage else 'disengage'} teleop: {e}")
+            log_error(f"Failed to {'engage' if engage else 'disengage'} teleop: {e}")
     
     def _safe_set_nullspace(self, posture: List[float]):
         """Safely set nullspace posture with error handling."""
         try:
             self.teleop.SetNullSpacePosture(self.index, posture)
-            logger.info("Nullspace posture set")
+            log_info("Nullspace posture set")
         except Exception as e:
-            logger.error(f"Failed to set nullspace posture: {e}")
+            log_error(f"Failed to set nullspace posture: {e}")
     
     def _safe_set_max_contact_wrench(self, wrench: List[float]):
         """Safely set max contact wrench with error handling."""
         try:
             self.teleop.SetMaxContactWrench(self.index, wrench)
-            logger.info("Max contact wrench set")
+            log_info("Max contact wrench set")
         except Exception as e:
-            logger.error(f"Failed to set max contact wrench: {e}")
+            log_error(f"Failed to set max contact wrench: {e}")
     
     def handle_command(self, user_input: str) -> bool:
         """Handle a single user command."""
@@ -305,7 +312,7 @@ class WanTeleoperationController:
                 self._command_map[ch]()
                 return True
             except Exception as e:
-                logger.error(f"Exception executing command '{ch}': {e}")
+                log_error(f"Exception executing command '{ch}': {e}")
                 return False
         else:
             print(self._menu)
@@ -324,7 +331,7 @@ def read_digital_input_task(teleop: flexivtdk.TransparentCartesianTeleopWAN):
             # invalid in that state and must not be polled every cycle.
             if (not status.started) or status.stopped:
                 if not logged_idle:
-                    logger.warn(
+                    log_warn(
                         "ReadDigitalInputTask: teleop is not started, pause Engage "
                         "(call Init + Start to resume)")
                     logged_idle = True
@@ -339,10 +346,10 @@ def read_digital_input_task(teleop: flexivtdk.TransparentCartesianTeleopWAN):
         except Exception as e:
             msg = str(e)
             if msg != last_error:
-                logger.error(f"Exception in ReadDigitalInputTask: {e}")
+                log_error(f"Exception in ReadDigitalInputTask: {e}")
                 last_error = msg
         time.sleep(0.01)
-    logger.info("ReadDigitalInputTask exiting.")
+    log_info("ReadDigitalInputTask exiting.")
 
 
 # console task to read user inputs and send commands accordingly
@@ -354,7 +361,7 @@ def console_task(teleop: flexivtdk.TransparentCartesianTeleopWAN):
         try:
             user_input = input("> ").strip()
         except (EOFError, KeyboardInterrupt):
-            logger.info("Console exiting by user interrupt.")
+            log_info("Console exiting by user interrupt.")
             _stop_event.set()
             break
         
@@ -362,7 +369,7 @@ def console_task(teleop: flexivtdk.TransparentCartesianTeleopWAN):
             _stop_event.set()
             break
 
-    logger.info("Console thread exiting.")
+    log_info("Console thread exiting.")
     return
 
 
@@ -390,11 +397,11 @@ def main(argv: Optional[List[str]] = None):
     
     # Validate arguments
     if args.role not in ['leader', 'follower']:
-        logger.error("Valid inputs for --role are: leader, follower")
+        log_error("Valid inputs for --role are: leader, follower")
         sys.exit(1)
     
     if args.tcp_role not in ['server', 'client']:
-        logger.error("Valid inputs for --tcp-role are: server, client")
+        log_error("Valid inputs for --tcp-role are: server, client")
         sys.exit(1)
     
     # Determine role
@@ -426,7 +433,7 @@ def main(argv: Optional[List[str]] = None):
         # Instantiate teleop interface
         teleop = flexivtdk.TransparentCartesianTeleopWAN(robot_pairs, role, network_cfg)
         leader_sn, follower_sn = teleop.robot_pair_sn(0)
-        logger.info(
+        log_info(
             f"This instance role={teleop.role()} leader_sn={leader_sn} follower_sn={follower_sn}")
 
         # Initialize teleop, this will Clear fault, Calibrate the force sensors, initialize teleop control parameters, etc. 
@@ -438,21 +445,21 @@ def main(argv: Optional[List[str]] = None):
         # Set max contact wrench
         teleop.SetMaxContactWrench(0, kDefaultMaxContactWrench)
         
-        logger.info("WAN Teleop started.")
+        log_info("WAN Teleop started.")
 
         # Start console task thread
         console_thr = threading.Thread(target=console_task, args=(teleop,), daemon=True)
         console_thr.start()
-        logger.info("Console task started.")
+        log_info("Console task started.")
 
         # Start digital input reading task thread accordingly
         # Only start if role is leader and enable_di flag is provided
         if args.role == 'leader' and args.enable_digital_input:
-            logger.info("Starting ReadDigitalInputTask thread as role is 'leader' and requested by --enable-digital-input flag.")
+            log_info("Starting ReadDigitalInputTask thread as role is 'leader' and requested by --enable-digital-input flag.")
             pedal_thread = threading.Thread(target=read_digital_input_task, args=(teleop,), daemon=True)
             pedal_thread.start()
         else:
-            logger.info("ReadDigitalInputTask thread NOT started (role is not 'leader' or --enable-digital-input flag not provided).")
+            log_info("ReadDigitalInputTask thread NOT started (role is not 'leader' or --enable-digital-input flag not provided).")
 
         console_thr.join()
 
@@ -465,13 +472,13 @@ def main(argv: Optional[List[str]] = None):
         # Stop teleop process 
         if teleop:
             teleop.Stop()
-        logger.info("WAN Teleop stopped.")
+        log_info("WAN Teleop stopped.")
         
     except KeyboardInterrupt:
-        logger.info("Program interrupted by user")
+        log_info("Program interrupted by user")
         _stop_event.set()
     except Exception as e:
-        logger.error(f"Exception in main: {e}")
+        log_error(f"Exception in main: {e}")
         _stop_event.set()
         sys.exit(1)
     finally:

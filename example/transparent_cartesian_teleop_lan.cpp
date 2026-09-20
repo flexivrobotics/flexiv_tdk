@@ -11,13 +11,15 @@
 #include <flexiv/tdk/data.hpp>
 #include <flexiv/tdk/transparent_cartesian_teleop_lan.hpp>
 
-#include <spdlog/spdlog.h>
-
 #include <getopt.h>
+#include <array>
 #include <atomic>
 #include <chrono>
+#include <cmath>
+#include <iomanip>
 #include <iostream>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <thread>
 
@@ -37,32 +39,62 @@ const std::array<double, flexiv::tdk::kCartDoF> kDefaultMaxContactWrench
 /** Atomic signal to stop console and DI reading tasks */
 std::atomic<bool> g_running {true};
 
+std::string BoolStr(bool v)
+{
+    return v ? "true" : "false";
+}
+
+std::string FmtFixed(double v, int prec)
+{
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(prec) << v;
+    return oss.str();
+}
+
+void LogInfo(const std::string& msg)
+{
+    std::cout << "[info] " << msg << std::endl;
+}
+
+void LogWarn(const std::string& msg)
+{
+    std::cerr << "[warn] " << msg << std::endl;
+}
+
+void LogError(const std::string& msg)
+{
+    std::cerr << "[error] " << msg << std::endl;
+}
+
 } // namespace
 
 void PrintTeleopStatus(unsigned int idx, const flexiv::tdk::TeleopStatus& status)
 {
-    spdlog::info(
-        "Teleop pair {} status: initialized={} started={} engaged={} stopped={} fault={} "
-        "motion_restricted={} latency={:.1f}/{:.1f} ms",
-        idx, status.initialized, status.started, status.engaged, status.stopped, status.fault,
-        status.motion_restricted, status.latency_ms, status.latency_threshold_ms);
+    LogInfo("Teleop pair " + std::to_string(idx) + " status: initialized="
+            + BoolStr(status.initialized) + " started=" + BoolStr(status.started)
+            + " engaged=" + BoolStr(status.engaged) + " stopped=" + BoolStr(status.stopped)
+            + " fault=" + BoolStr(status.fault)
+            + " motion_restricted=" + BoolStr(status.motion_restricted) + " latency="
+            + FmtFixed(status.latency_ms, 1) + "/" + FmtFixed(status.latency_threshold_ms, 1)
+            + " ms");
     if (status.primary.code == flexiv::tdk::TeleopIssueCode::NONE) {
-        spdlog::info("No teleop restriction. Safe to continue.");
+        LogInfo("No teleop restriction. Safe to continue.");
         return;
     }
     const auto& issue = status.primary;
-    spdlog::warn("[{}/{}] {} | {} | {}",
-        flexiv::tdk::TeleopIssueLevelStr[static_cast<size_t>(issue.level)],
-        flexiv::tdk::TeleopIssueSideStr[static_cast<size_t>(issue.side)], issue.title,
-        issue.description, issue.suggestion);
+    LogWarn(std::string("[")
+            + flexiv::tdk::TeleopIssueLevelStr[static_cast<size_t>(issue.level)] + "/"
+            + flexiv::tdk::TeleopIssueSideStr[static_cast<size_t>(issue.side)] + "] "
+            + issue.title + " | " + issue.description + " | " + issue.suggestion);
     for (const auto& extra : status.issues) {
         if (extra.code == issue.code && extra.side == issue.side
             && extra.joint_index == issue.joint_index) {
             continue;
         }
-        spdlog::warn("  also: [{}/{}] {}",
-            flexiv::tdk::TeleopIssueCodeStr[static_cast<size_t>(extra.code)],
-            flexiv::tdk::TeleopIssueSideStr[static_cast<size_t>(extra.side)], extra.title);
+        LogWarn(std::string("  also: [")
+                + flexiv::tdk::TeleopIssueCodeStr[static_cast<size_t>(extra.code)] + "/"
+                + flexiv::tdk::TeleopIssueSideStr[static_cast<size_t>(extra.side)] + "] "
+                + extra.title);
     }
 }
 
@@ -102,7 +134,7 @@ void ReadDigitalInputTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
             // invalid in that state and must not be polled every cycle.
             if (!status.started || status.stopped) {
                 if (!logged_idle) {
-                    spdlog::warn(
+                    LogWarn(
                         "ReadDigitalInputTask: teleop is not started, pause Engage "
                         "(call Init + Start to resume)");
                     logged_idle = true;
@@ -114,13 +146,13 @@ void ReadDigitalInputTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
             last_error.clear();
         } catch (const std::exception& e) {
             if (last_error != e.what()) {
-                spdlog::error("Exception in ReadDigitalInputTask: {}", e.what());
+                LogError(std::string("Exception in ReadDigitalInputTask: ") + e.what());
                 last_error = e.what();
             }
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    spdlog::info("ReadDigitalInputTask exiting.");
+    LogInfo("ReadDigitalInputTask exiting.");
     return;
 }
 /**
@@ -192,7 +224,7 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
         std::getline(std::cin, userInput);
 
         if (userInput.empty()) {
-            spdlog::warn("Empty command!");
+            LogWarn("Empty command!");
             PrintCommandMenu();
             continue;
         }
@@ -323,8 +355,7 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
                     teleop.SetRepulsiveForce(index, {0, 0, 0});
                     break;
                 case 's':
-                    teleop.stopped(0) ? spdlog::info("Teleop pair 0 stopped")
-                                      : spdlog::info("Teleop pair 0 started");
+                    LogInfo(teleop.stopped(0) ? "Teleop pair 0 stopped" : "Teleop pair 0 started");
                     break;
                 case 'h':
                     PrintTeleopStatus(0, teleop.GetTeleopStatus(0));
@@ -332,20 +363,20 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
                 case 'H':
                     teleop.Stop();
                     teleop.HomeAll();
-                    spdlog::info("Teleop stopped for homing");
+                    LogInfo("Teleop stopped for homing");
                     break;
                 default:
-                    spdlog::warn("Invalid command!");
+                    LogWarn("Invalid command!");
                     PrintCommandMenu();
                     break;
             }
         } catch (const std::exception& e) {
-            spdlog::error("Exception in ConsoleTask: {}", e.what());
+            LogError(std::string("Exception in ConsoleTask: ") + e.what());
             g_running.store(false);
             return;
         }
     }
-    spdlog::info("Console thread exiting.");
+    LogInfo("Console thread exiting.");
     return;
 }
 
@@ -384,7 +415,7 @@ int main(int argc, char* argv[])
         return 1;
     }
     if (network_interface_whitelist.empty()) {
-        spdlog::warn(
+        LogWarn(
             "network_interface_whitelist is not provided, will search all network interfaces.");
     }
 
@@ -407,10 +438,10 @@ int main(int argc, char* argv[])
         std::optional<std::thread> pedal_thread;
 
         if (enable_digital_input) {
-            spdlog::info("Starting ReadDigitalInputTask thread.");
+            LogInfo("Starting ReadDigitalInputTask thread.");
             pedal_thread.emplace(ReadDigitalInputTask, std::ref(tctl));
         } else {
-            spdlog::info("ReadDigitalInputTask thread NOT started (-D flag not provided).");
+            LogInfo("ReadDigitalInputTask thread NOT started (-D flag not provided).");
         }
 
         // Wait for threads to finish
@@ -428,7 +459,7 @@ int main(int argc, char* argv[])
         tctl.Stop();
 
     } catch (const std::exception& e) {
-        spdlog::error(e.what());
+        LogError(e.what());
         return 1;
     }
 

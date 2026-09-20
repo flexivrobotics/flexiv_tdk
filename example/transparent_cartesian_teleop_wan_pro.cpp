@@ -15,8 +15,6 @@
 #include <flexiv/tdk/gripper_remote_control.hpp>
 #include <flexiv/tdk/transparent_cartesian_teleop_wan.hpp>
 
-#include <spdlog/spdlog.h>
-
 #include <getopt.h>
 #include <algorithm>
 #include <array>
@@ -24,8 +22,10 @@
 #include <chrono>
 #include <cmath>
 #include <functional>
+#include <iomanip>
 #include <iostream>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <thread>
 #include <utility>
@@ -59,30 +59,60 @@ std::string g_gripper_name;
 
 }
 
+std::string BoolStr(bool v)
+{
+    return v ? "true" : "false";
+}
+
+std::string FmtFixed(double v, int prec)
+{
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(prec) << v;
+    return oss.str();
+}
+
+void LogInfo(const std::string& msg)
+{
+    std::cout << "[info] " << msg << std::endl;
+}
+
+void LogWarn(const std::string& msg)
+{
+    std::cerr << "[warn] " << msg << std::endl;
+}
+
+void LogError(const std::string& msg)
+{
+    std::cerr << "[error] " << msg << std::endl;
+}
+
 void PrintTeleopStatus(unsigned int idx, const flexiv::tdk::TeleopStatus& status)
 {
-    spdlog::info(
-        "Teleop pair {} status: initialized={} started={} engaged={} stopped={} fault={} "
-        "motion_restricted={} latency={:.1f}/{:.1f} ms",
-        idx, status.initialized, status.started, status.engaged, status.stopped, status.fault,
-        status.motion_restricted, status.latency_ms, status.latency_threshold_ms);
+    LogInfo("Teleop pair " + std::to_string(idx) + " status: initialized="
+            + BoolStr(status.initialized) + " started=" + BoolStr(status.started)
+            + " engaged=" + BoolStr(status.engaged) + " stopped=" + BoolStr(status.stopped)
+            + " fault=" + BoolStr(status.fault)
+            + " motion_restricted=" + BoolStr(status.motion_restricted) + " latency="
+            + FmtFixed(status.latency_ms, 1) + "/" + FmtFixed(status.latency_threshold_ms, 1)
+            + " ms");
     if (status.primary.code == flexiv::tdk::TeleopIssueCode::NONE) {
-        spdlog::info("No teleop restriction. Safe to continue.");
+        LogInfo("No teleop restriction. Safe to continue.");
         return;
     }
     const auto& issue = status.primary;
-    spdlog::warn("[{}/{}] {} | {} | {}",
-        flexiv::tdk::TeleopIssueLevelStr[static_cast<size_t>(issue.level)],
-        flexiv::tdk::TeleopIssueSideStr[static_cast<size_t>(issue.side)], issue.title,
-        issue.description, issue.suggestion);
+    LogWarn(std::string("[")
+            + flexiv::tdk::TeleopIssueLevelStr[static_cast<size_t>(issue.level)] + "/"
+            + flexiv::tdk::TeleopIssueSideStr[static_cast<size_t>(issue.side)] + "] "
+            + issue.title + " | " + issue.description + " | " + issue.suggestion);
     for (const auto& extra : status.issues) {
         if (extra.code == issue.code && extra.side == issue.side
             && extra.joint_index == issue.joint_index) {
             continue;
         }
-        spdlog::warn("  also: [{}/{}] {}",
-            flexiv::tdk::TeleopIssueCodeStr[static_cast<size_t>(extra.code)],
-            flexiv::tdk::TeleopIssueSideStr[static_cast<size_t>(extra.side)], extra.title);
+        LogWarn(std::string("  also: [")
+                + flexiv::tdk::TeleopIssueCodeStr[static_cast<size_t>(extra.code)] + "/"
+                + flexiv::tdk::TeleopIssueSideStr[static_cast<size_t>(extra.side)] + "] "
+                + extra.title);
     }
 }
 
@@ -90,10 +120,10 @@ void PrintGripperStates(flexiv::tdk::GripperRemoteControl& gripper)
 {
     try {
         auto states = gripper.states(kIdx);
-        spdlog::info("Gripper states: width = {:.4f} m, force = {:.2f} N, is_moving = {}",
-            states.width, states.force, states.is_moving);
+        LogInfo("Gripper states: width = " + FmtFixed(states.width, 4) + " m, force = "
+                + FmtFixed(states.force, 2) + " N, is_moving = " + BoolStr(states.is_moving));
     } catch (const std::exception& e) {
-        spdlog::warn("Gripper states not available yet: {}", e.what());
+        LogWarn(std::string("Gripper states not available yet: ") + e.what());
     }
 }
 
@@ -148,7 +178,7 @@ void ReadDigitalInputTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop,
             // invalid in that state and must not be polled every cycle.
             if (!status.started || status.stopped) {
                 if (!logged_idle) {
-                    spdlog::warn(
+                    LogWarn(
                         "ReadDigitalInputTask: teleop is not started, pause Engage "
                         "(call Init + Start to resume)");
                     logged_idle = true;
@@ -176,20 +206,18 @@ void ReadDigitalInputTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop,
                                             0.5 * params.max_force, params.min_force, params.max_force);
                                         gripper->Move(kIdx, width, velocity, force_limit);
                                         gripper_opened = true;
-                                        spdlog::info(
-                                            "DI1 pressed: opening gripper to width = {:.4f} m",
-                                            width);
+                                        LogInfo("DI1 pressed: opening gripper to width = "
+                                                + FmtFixed(width, 4) + " m");
                                     } else {
                                         double force
                                             = std::clamp(40.0, params.min_force, params.max_force);
                                         gripper->Grasp(kIdx, force);
                                         gripper_opened = false;
-                                        spdlog::info(
-                                            "DI1 pressed: closing gripper with force = {:.2f} N",
-                                            force);
+                                        LogInfo("DI1 pressed: closing gripper with force = "
+                                                + FmtFixed(force, 2) + " N");
                                     }
                                 } catch (const std::exception& e) {
-                                    spdlog::warn("DI1 gripper action failed: {}", e.what());
+                                    LogWarn(std::string("DI1 gripper action failed: ") + e.what());
                                 }
                             }
                         }
@@ -201,13 +229,13 @@ void ReadDigitalInputTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop,
             last_error.clear();
         } catch (const std::exception& e) {
             if (last_error != e.what()) {
-                spdlog::error("Exception in ReadDigitalInputTask: {}", e.what());
+                LogError(std::string("Exception in ReadDigitalInputTask: ") + e.what());
                 last_error = e.what();
             }
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    spdlog::info("ReadDigitalInputTask exiting.");
+    LogInfo("ReadDigitalInputTask exiting.");
 }
 
 /**
@@ -283,7 +311,7 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop,
 
     auto apply_axis_lock = [&]() {
         if (!is_leader) {
-            spdlog::warn("Axis lock is only available on the leader");
+            LogWarn("Axis lock is only available on the leader");
             return;
         }
         teleop.SetAxisLockCmd(kIdx, cmd);
@@ -295,7 +323,7 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop,
         std::getline(std::cin, user_input);
 
         if (user_input.empty()) {
-            spdlog::warn("Empty command!");
+            LogWarn("Empty command!");
             PrintCommandMenu();
             continue;
         }
@@ -304,12 +332,12 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop,
             const char command = user_input[0];
             if (std::string("GDNocstP").find(command) != std::string::npos
                 && !gripper.has_value()) {
-                spdlog::warn("Gripper commands require [-n gripper_name].");
+                LogWarn("Gripper commands require [-n gripper_name].");
                 continue;
             }
             if (gripper.has_value() && g_role != flexiv::tdk::Role::WAN_TELEOP_LEADER
                 && std::string("GDNocs").find(command) != std::string::npos) {
-                spdlog::warn("Command '{}' is only available on the leader", command);
+                LogWarn(std::string("Command '") + command + "' is only available on the leader");
                 continue;
             }
 
@@ -412,14 +440,17 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop,
                     double latency_ms {};
                     const bool ok = teleop.CheckTeleopConnectionLatency(kIdx, latency_ms);
                     if (ok) {
-                        spdlog::info(
-                            "pair {} message latency: {} ms (within limit)", kIdx, latency_ms);
+                        LogInfo("pair " + std::to_string(kIdx) + " message latency: "
+                                + FmtFixed(latency_ms, 1) + " ms (within limit)");
                     } else if (latency_ms < 0.0) {
-                        spdlog::warn("pair {} clock mismatch: latency {} ms", kIdx, latency_ms);
+                        LogWarn("pair " + std::to_string(kIdx) + " clock mismatch: latency "
+                                + FmtFixed(latency_ms, 1) + " ms");
                     } else if (latency_ms > 1.0e12) {
-                        spdlog::warn("pair {} disconnected: latency {} ms", kIdx, latency_ms);
+                        LogWarn("pair " + std::to_string(kIdx) + " disconnected: latency "
+                                + FmtFixed(latency_ms, 1) + " ms");
                     } else {
-                        spdlog::warn("pair {} latency over limit: {} ms", kIdx, latency_ms);
+                        LogWarn("pair " + std::to_string(kIdx) + " latency over limit: "
+                                + FmtFixed(latency_ms, 1) + " ms");
                     }
                     break;
                 }
@@ -428,22 +459,22 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop,
                     break;
                 case 'n': {
                     const auto pair = teleop.robot_pair_sn(kIdx);
-                    spdlog::info("pair {} role={} leader_sn={} follower_sn={}", kIdx,
-                        flexiv::tdk::RoleTypeStr[static_cast<size_t>(teleop.role())], pair.first,
-                        pair.second);
+                    LogInfo("pair " + std::to_string(kIdx) + " role="
+                            + flexiv::tdk::RoleTypeStr[static_cast<size_t>(teleop.role())]
+                            + " leader_sn=" + pair.first + " follower_sn=" + pair.second);
                     break;
                 }
                 case 'G':
                     gripper->Enable(kIdx, g_gripper_name);
-                    spdlog::info("Follower gripper [{}] enabled", g_gripper_name);
+                    LogInfo("Follower gripper [" + g_gripper_name + "] enabled");
                     break;
                 case 'D':
                     gripper->Disable(kIdx);
-                    spdlog::info("Follower gripper disabled");
+                    LogInfo("Follower gripper disabled");
                     break;
                 case 'N':
                     gripper->Init(kIdx);
-                    spdlog::info("Follower gripper initialization triggered");
+                    LogInfo("Follower gripper initialization triggered");
                     break;
                 case 'o': {
                     auto params = gripper->params(kIdx);
@@ -452,10 +483,9 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop,
                     double force_limit
                         = std::clamp(0.5 * params.max_force, params.min_force, params.max_force);
                     gripper->Move(kIdx, params.max_width, velocity, force_limit);
-                    spdlog::info(
-                        "Open command sent: width = {:.4f} m, velocity = {:.4f} m/s, "
-                        "force_limit = {:.2f} N",
-                        params.max_width, velocity, force_limit);
+                    LogInfo("Open command sent: width = " + FmtFixed(params.max_width, 4)
+                            + " m, velocity = " + FmtFixed(velocity, 4)
+                            + " m/s, force_limit = " + FmtFixed(force_limit, 2) + " N");
                     break;
                 }
                 case 'c': {
@@ -463,12 +493,12 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop,
                     double force
                         = std::clamp(0.5 * params.max_force, params.min_force, params.max_force);
                     gripper->Grasp(kIdx, force);
-                    spdlog::info("Grasp command sent: force = {:.2f} N", force);
+                    LogInfo("Grasp command sent: force = " + FmtFixed(force, 2) + " N");
                     break;
                 }
                 case 's':
                     gripper->Stop(kIdx);
-                    spdlog::info("Stop command sent");
+                    LogInfo("Stop command sent");
                     break;
                 case 't':
                     PrintGripperStates(*gripper);
@@ -476,28 +506,28 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop,
                 case 'P': {
                     try {
                         auto params = gripper->params(kIdx);
-                        spdlog::info(
-                            "Gripper params: width = [{:.4f}, {:.4f}] m, velocity = [{:.4f}, "
-                            "{:.4f}] m/s, force = [{:.2f}, {:.2f}] N",
-                            params.min_width, params.max_width, params.min_vel, params.max_vel,
-                            params.min_force, params.max_force);
+                        LogInfo("Gripper params: width = [" + FmtFixed(params.min_width, 4)
+                                + ", " + FmtFixed(params.max_width, 4) + "] m, velocity = ["
+                                + FmtFixed(params.min_vel, 4) + ", " + FmtFixed(params.max_vel, 4)
+                                + "] m/s, force = [" + FmtFixed(params.min_force, 2) + ", "
+                                + FmtFixed(params.max_force, 2) + "] N");
                     } catch (const std::exception& e) {
-                        spdlog::warn("Gripper params not available yet: {}", e.what());
+                        LogWarn(std::string("Gripper params not available yet: ") + e.what());
                     }
                     break;
                 }
                 default:
-                    spdlog::warn("Invalid command!");
+                    LogWarn("Invalid command!");
                     PrintCommandMenu();
                     break;
             }
         } catch (const std::exception& e) {
-            spdlog::error("Exception in ConsoleTask: {}", e.what());
+            LogError(std::string("Exception in ConsoleTask: ") + e.what());
             g_running.store(false);
             return;
         }
     }
-    spdlog::info("Console thread exiting.");
+    LogInfo("Console thread exiting.");
 }
 
 int main(int argc, char* argv[])
@@ -542,7 +572,7 @@ int main(int argc, char* argv[])
         return 1;
     }
     if (lan_interface_whitelist.empty()) {
-        spdlog::warn("LAN whitelist is not provided, RDK will search all network interfaces.");
+        LogWarn("LAN whitelist is not provided, RDK will search all network interfaces.");
     }
 
     if (teleop_role == "follower") {
@@ -550,7 +580,7 @@ int main(int argc, char* argv[])
     } else if (teleop_role == "leader") {
         g_role = flexiv::tdk::Role::WAN_TELEOP_LEADER;
     } else {
-        spdlog::error("Valid inputs for [-r] are: follower, leader");
+        LogError("Valid inputs for [-r] are: follower, leader");
         return 1;
     }
 
@@ -564,9 +594,9 @@ int main(int argc, char* argv[])
         flexiv::tdk::TransparentCartesianTeleopWAN tctw(robot_sn_pairs, g_role, network_cfg);
 
         const auto pair_sn = tctw.robot_pair_sn(kIdx);
-        spdlog::info("This instance role={} leader_sn={} follower_sn={}",
-            flexiv::tdk::RoleTypeStr[static_cast<size_t>(tctw.role())], pair_sn.first,
-            pair_sn.second);
+        LogInfo(std::string("This instance role=")
+                + flexiv::tdk::RoleTypeStr[static_cast<size_t>(tctw.role())]
+                + " leader_sn=" + pair_sn.first + " follower_sn=" + pair_sn.second);
 
         // Allocate the gripper remote control object on top of the arm teleop object only if
         // [-n] is provided. It reuses the role, robot serial number pairs and rdk::Robot
@@ -574,10 +604,10 @@ int main(int argc, char* argv[])
         std::optional<flexiv::tdk::GripperRemoteControl> gripper;
         if (!g_gripper_name.empty()) {
             gripper.emplace(tctw, network_cfg);
-            spdlog::info(
-                "Gripper remote control is ENABLED, target gripper device: [{}]", g_gripper_name);
+            LogInfo("Gripper remote control is ENABLED, target gripper device: [" + g_gripper_name
+                    + "]");
         } else {
-            spdlog::info("Gripper remote control is DISABLED (no [-n gripper_name] provided).");
+            LogInfo("Gripper remote control is DISABLED (no [-n gripper_name] provided).");
         }
 
         tctw.Init();
@@ -590,10 +620,9 @@ int main(int argc, char* argv[])
             try {
                 gripper->EnableLocal(kIdx, g_gripper_name);
             } catch (const std::exception& e) {
-                spdlog::error(
-                    "Failed to auto-enable gripper [{}] on follower: {}. The leader can still "
-                    "retry via the 'G' console command.",
-                    g_gripper_name, e.what());
+                LogError(std::string("Failed to auto-enable gripper [") + g_gripper_name
+                        + "] on follower: " + e.what()
+                        + ". The leader can still retry via the 'G' console command.");
             }
         }
 
@@ -601,14 +630,15 @@ int main(int argc, char* argv[])
 
         std::optional<std::thread> pedal_thread;
         if (g_role == flexiv::tdk::Role::WAN_TELEOP_LEADER && enable_digital_input) {
-            spdlog::info(
-                "Starting ReadDigitalInputTask thread as role is 'leader' and requested by -D "
-                "flag. DI0: arm teleop engagement; DI1: {}.",
-                gripper.has_value() ? "toggles follower gripper open/close"
-                                    : "unused (gripper feature disabled, no -n)");
+            LogInfo(std::string(
+                        "Starting ReadDigitalInputTask thread as role is 'leader' and requested by -D "
+                        "flag. DI0: arm teleop engagement; DI1: ")
+                    + (gripper.has_value() ? "toggles follower gripper open/close"
+                                           : "unused (gripper feature disabled, no -n)")
+                    + ".");
             pedal_thread.emplace(ReadDigitalInputTask, std::ref(tctw), std::ref(gripper));
         } else {
-            spdlog::info(
+            LogInfo(
                 "ReadDigitalInputTask thread NOT started (role is not 'leader' or -D flag not "
                 "provided).");
         }
@@ -623,7 +653,7 @@ int main(int argc, char* argv[])
         tctw.Stop();
 
     } catch (const std::exception& e) {
-        spdlog::error(e.what());
+        LogError(e.what());
         return 1;
     }
 

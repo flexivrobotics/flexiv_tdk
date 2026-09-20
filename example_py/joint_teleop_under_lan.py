@@ -12,14 +12,20 @@ Monitors pedal input from the first robot to activate/deactivate teleoperation.
 __copyright__ = "Copyright (C) 2016-2026 Flexiv Ltd. All Rights Reserved."
 __author__ = "Flexiv"
 
-import spdlog
 import argparse
+import sys
 import time
 
 # pip install flexivtdk
 import flexivtdk
 
-logger=spdlog.ConsoleLogger("Example")
+
+def log_info(msg):
+    print("[info] {}".format(msg))
+
+
+def log_error(msg):
+    print("[error] {}".format(msg), file=sys.stderr)
 
 def print_help():
     """Print usage information"""
@@ -54,19 +60,19 @@ def main():
         last_joint_shaped_inertia = 0.05
 
         # Run initialization sequence
-        logger.info("Initializing teleoperation...")
+        log_info("Initializing teleoperation...")
         joint_teleop.Init()
 
         # Set 20 degrees soft limit
-        logger.info("Setting soft limit...")
+        log_info("Setting soft limit...")
         joint_teleop.SetSoftLimit(robot_pair_idx, 20.0)
 
         # Sync pose, first robot stays still, second robot moves to its pose
-        logger.info("Synchronizing poses...")
+        log_info("Synchronizing poses...")
         joint_teleop.SyncPose(robot_pair_idx, [])
 
         # Enable inertia shaping for the last joint
-        logger.info("Setting up inertia shaping...")
+        log_info("Setting up inertia shaping...")
         dof = joint_teleop.DoF(robot_pair_idx)
         shaped_joint_inertia = []
         for i in range(dof):
@@ -86,7 +92,7 @@ def main():
         # Store last pedal input state
         last_pedal_input = False
         
-        logger.info("Teleoperation started. Press pedal to activate/deactivate.")
+        log_info("Teleoperation started. Press pedal to activate/deactivate.")
 
         # Monitor loop
         while not joint_teleop.any_fault():
@@ -96,22 +102,22 @@ def main():
             pedal_input = digital_inputs[0][0]  
             
             if pedal_input != last_pedal_input:
-                logger.info(f"Pedal state changed: {pedal_input}")
+                log_info(f"Pedal state changed: {pedal_input}")
                 joint_teleop.Activate(robot_pair_idx, pedal_input)
                 last_pedal_input = pedal_input
             
             # Sleep to prevent excessive CPU usage
             time.sleep(0.1)
 
-        logger.info("Fault detected, stopping teleoperation...")
+        log_info("Fault detected, stopping teleoperation...")
         # Fault occurred, stop the teleoperation
         joint_teleop.Stop()
 
     except Exception as e:
-        logger.info(f"Error: {e}")
+        log_error("Error: {}".format(e))
         return 1
 
-    logger.info("Teleoperation exiting.")
+    log_info("Teleoperation exiting.")
     return 0
 
 

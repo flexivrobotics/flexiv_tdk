@@ -7,11 +7,15 @@
 
 #include <flexiv/tdk/joint_teleop_lan.hpp>
 
-#include <spdlog/spdlog.h>
-
 #include <getopt.h>
 #include <iostream>
+#include <string>
 #include <thread>
+
+void LogError(const std::string& msg)
+{
+    std::cerr << "[error] " << msg << std::endl;
+}
 
 namespace {
 const std::vector<double> kJointStiffnessRatio = {0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02};
@@ -102,7 +106,7 @@ int main(int argc, char* argv[])
         joint_teleop.Stop();
 
     } catch (const std::exception& e) {
-        spdlog::error(e.what());
+        LogError(e.what());
         return 1;
     }
 
