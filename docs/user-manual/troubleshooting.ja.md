@@ -7,7 +7,7 @@
 
 ## 実行時の問題
 
-- **共有ライブラリが見つからない**：バイナリを実行する前に `LD_LIBRARY_PATH=~/tdk_install/lib` を設定してください。
+- **共有ライブラリが見つからない**：サンプルはインストール先の `lib` を rpath に埋め込んでいます。TDK と RDK のインストールに使った同じプレフィックスで再ビルドしてください（`-DCMAKE_PREFIX_PATH`）。ソースの `lib/` にはインストールしないでください。回避策：Linux では `LD_LIBRARY_PATH=~/tdk_install/lib`、macOS では `DYLD_LIBRARY_PATH=~/tdk_install/lib`。
 - **リアルタイム優先度の権限問題**：`/etc/security/limits.conf` にユーザーの `rtprio` と `nice` の設定を追加してください。
 
 ## WAN 遠隔操作

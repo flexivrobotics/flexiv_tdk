@@ -45,10 +45,26 @@ cmake --build . --config Release -j 4
 
 ## 6) Run examples
 
+CMake records the install `lib` directory in the example's rpath at link time, so Linux and macOS can run the binary directly:
+
 ```bash
 cd flexiv_tdk/example/build
-sudo ./<program_name> [arguments]
+./<program_name> [arguments]
 ```
+
+`LD_LIBRARY_PATH` / `DYLD_LIBRARY_PATH` is not required in this setup. TDK also looks up `libflexiv_rdk` next to itself (`$ORIGIN` / `@loader_path`).
+
+If the loader still cannot find `libflexiv_tdk` or `libflexiv_rdk`, rebuild the examples with `-DCMAKE_PREFIX_PATH` pointing at the **same** prefix used to install TDK and RDK (do not install into the source `lib/` folder). As a fallback:
+
+```bash
+# Linux
+LD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
+
+# macOS
+DYLD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
+```
+
+The install `lib` directory must contain both `libflexiv_tdk` and `libflexiv_rdk` (`.so` on Linux, `.dylib` on macOS).
 
 To allow a regular user to create high-priority (real-time) threads without `sudo`, configure system to apply real-time and nice priority limits (only need to set it once):
 

@@ -7,7 +7,7 @@
 
 ## Laufzeitprobleme
 
-- **Shared Library nicht gefunden**: Setzen Sie `LD_LIBRARY_PATH=~/tdk_install/lib`, bevor Sie Binärdateien ausführen.
+- **Shared Library nicht gefunden**: Die Beispiele enthalten bereits einen rpath auf das Installationsverzeichnis `lib`. Bauen Sie mit `-DCMAKE_PREFIX_PATH` auf dasselbe Präfix neu, das für TDK und RDK verwendet wurde (nicht ins Quellverzeichnis `lib/` installieren). Fallback: `LD_LIBRARY_PATH=~/tdk_install/lib` unter Linux bzw. `DYLD_LIBRARY_PATH=~/tdk_install/lib` unter macOS.
 - **Berechtigungsprobleme mit Echtzeitprioritäten**: Fügen Sie Ihren Benutzer in `/etc/security/limits.conf` für `rtprio` und `nice` hinzu.
 
 ## WAN-Teleoperation

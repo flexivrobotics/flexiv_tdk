@@ -45,10 +45,26 @@ cmake --build . --config Release -j 4
 
 ## 6) サンプルの実行
 
+CMake はリンク時にインストール先の `lib` をサンプルの rpath に書き込むため、Linux と macOS ではバイナリを直接実行できます。
+
 ```bash
 cd flexiv_tdk/example/build
-sudo ./<program_name> [arguments]
+./<program_name> [arguments]
 ```
+
+この構成では `LD_LIBRARY_PATH` / `DYLD_LIBRARY_PATH` は不要です。TDK は自身と同じディレクトリから `libflexiv_rdk` を探します（`$ORIGIN` / `@loader_path`）。
+
+ローダーが `libflexiv_tdk` または `libflexiv_rdk` を見つけられない場合は、TDK と RDK のインストールに使った**同じ**プレフィックスでサンプルを再ビルドしてください（`-DCMAKE_PREFIX_PATH`）。ソースの `lib/` にはインストールしないでください。回避策：
+
+```bash
+# Linux
+LD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
+
+# macOS
+DYLD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
+```
+
+インストール先の `lib` には `libflexiv_tdk` と `libflexiv_rdk` の両方が必要です（Linux は `.so`、macOS は `.dylib`）。
 
 一般ユーザーが `sudo` なしで高優先度（リアルタイム）スレッドを作成できるように、システムにリアルタイムおよび nice 優先度の制限を設定します（一度だけ設定すればOKです）：
 
