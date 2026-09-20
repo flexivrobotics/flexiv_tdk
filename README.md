@@ -198,6 +198,15 @@ DYLD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
 
 Check each example’s source code for usage details.
 
+## License
+
+Flexiv TDK is licensed under the [Apache License 2.0](LICENSE).
+
+The prebuilt `libflexiv_tdk` library statically embeds spdlog and fmt
+(MIT) and Eclipse Zenoh. Upstream Zenoh is dual-licensed Apache-2.0 OR
+EPL-2.0; **this SDK redistributes Zenoh under Apache-2.0 only**. Notices
+and license texts: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
 ## 📚 Generate Documentation
 
 The online [GitHub Pages](https://flexivrobotics.github.io/flexiv_tdk/) site is **TDK v2.x**. For **TDK v1.6.x** (this tag), build the user manual and Doxygen API locally:

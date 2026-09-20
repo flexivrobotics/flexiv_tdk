@@ -21,6 +21,7 @@
 # - include/subfolder/*.h or *.hpp
 # - lib/lib{PROJECT_NAME}
 # - lib/cmake/{PROJECT_NAME}/
+# - share/doc/{PROJECT_NAME}/LICENSE, THIRD_PARTY_NOTICES.md, licenses/
 
 macro(FlexivInstallLibrary)
     # copy the executables and libraries to the CMAKE_INSTALL_PREFIX DIRECTORY
@@ -93,6 +94,16 @@ macro(FlexivInstallLibrary)
             DESTINATION ${CMAKE_INSTALL_LIBDIR}
             RENAME ${_tdk_installed_lib}
             )
+
+    # Third-party notices: the prebuilt library statically embeds OSS
+    # components (spdlog, fmt, Zenoh) with hidden symbols.
+    install(FILES
+            "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE"
+            "${CMAKE_CURRENT_SOURCE_DIR}/THIRD_PARTY_NOTICES.md"
+            DESTINATION ${CMAKE_INSTALL_DOCDIR})
+    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/licenses/"
+            DESTINATION ${CMAKE_INSTALL_DOCDIR}/licenses)
+
     # Use the CPack Package Generator
     set(CPACK_PACKAGE_VENDOR "Flexiv")
     set(CPACK_PACKAGE_CONTACT "support@flexiv.com")
