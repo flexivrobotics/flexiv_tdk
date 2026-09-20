@@ -50,15 +50,15 @@ endif()
   set(TDK_LIB_URL https://github.com/flexivrobotics/flexiv_tdk/releases/download/v${PROJECT_VERSION}/${TDK_LIB})
   message(STATUS "Downloading ${TDK_LIB_URL} ...")
 file(DOWNLOAD ${TDK_LIB_URL} ${CMAKE_CURRENT_BINARY_DIR}/${TDK_LIB}
-       SHOW_PROGRESS
-       TLS_VERIFY ON
-       EXPECTED_HASH SHA256=${EXPECTED_HASH}
-       STATUS status)
-  list(GET status 0 code)
-  if(code EQUAL 0)
-    message(STATUS "Download finished")
-  else()
-    message(FATAL_ERROR "Download failed: ${status}")
+      SHOW_PROGRESS
+      TLS_VERIFY ON
+      EXPECTED_HASH SHA256=${EXPECTED_HASH}
+      STATUS status)
+list(GET status 0 code)
+if(code EQUAL 0)
+  message(STATUS "Download finished")
+else()
+  message(FATAL_ERROR "Download failed: ${status}")
 endif()
 
 # ===================================================================
