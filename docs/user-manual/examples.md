@@ -25,7 +25,17 @@ cd flexiv_tdk/example
 mkdir build && cd build
 cmake .. -DCMAKE_PREFIX_PATH=~/tdk_install
 cmake --build . --config Release -j 4
+./<program_name> [arguments]
+```
+
+If the loader cannot find `libflexiv_tdk` / `libflexiv_rdk`:
+
+```bash
+# Linux
 LD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
+
+# macOS
+DYLD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
 ```
 
 ## Python Examples

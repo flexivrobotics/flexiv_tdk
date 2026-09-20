@@ -1,11 +1,11 @@
 # Q&A
 
 ## Q: Which platforms are supported?
-**A:** Ubuntu 22.04+ on x86_64 and aarch64. C++ and Python are supported with GCC ≥ 9.4, CMake ≥ 3.16.3, and Python 3.10/3.12/3.14.
+**A:** Ubuntu 22.04+ on x86_64 and aarch64 (C++ and Python). macOS 12+ on arm64 (C++ only). Toolchain: GCC ≥ 9.4 or Apple Clang ≥ 15, CMake ≥ 3.16.3, and Python 3.10/3.12/3.14 on Linux.
 
-| TDK | RDK (C++ / Python) | zenoh | Robot software |
-| --- | ------------------ | ----- | -------------- |
-| **v1.6.4** (`flexivtdk==1.6.4`) | **v1.9.3** (`flexiv_rdk` 1.9.3 / `flexivrdk==1.9.3`) | 1.9.0 | v3.11.2 |
+| TDK | C++ RDK | Python RDK |
+| --- | ------- | ---------- |
+| **v1.6.4** (`flexivtdk==1.6.4`) | **flexiv_rdk 1.9.4** | **flexivrdk==1.9.4** |
 
 `pip install flexivtdk==1.6.4` installs `flexivrdk==1.9.3` automatically. Do not mix TDK 1.6.4 with another `flexivrdk` version.
 
