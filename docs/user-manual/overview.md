@@ -39,3 +39,4 @@ The online GitHub Pages site documents TDK v2.x and must not be used with this r
 - Need hard real-time performance? See [Real-Time Kernel](real-time-kernel.md).
 - Deploying over WAN? See [Time Sync (WAN)](time-sync.md).
 - Looking for sample usage? See [Examples](examples.md).
+- Third-party licenses for the prebuilt library: see [THIRD_PARTY_NOTICES.md](../../THIRD_PARTY_NOTICES.md) in the repository.
