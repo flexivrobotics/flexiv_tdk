@@ -33,11 +33,12 @@ For the v1.6.x user manual and C++ API, generate the docs locally from this tree
 
 ## ✅ Compatibility
 
-| OS            | Processor       | Languages   | Compiler Requirements     | Python Versions |
-| ------------- | --------------- | ----------- | ------------------------- | --------------- |
-| Ubuntu 22.04+ | x86_64, aarch64 | C++, Python | GCC ≥ 9.4, CMake ≥ 3.16.3 | 3.10, 3.12, 3.14 |
+| OS            | Processor       | Languages   | Compiler Requirements            | Python Versions |
+| ------------- | --------------- | ----------- | -------------------------------- | --------------- |
+| Ubuntu 22.04+ | x86_64, aarch64 | C++, Python | GCC ≥ 9.4, CMake ≥ 3.16.3        | 3.10, 3.12, 3.14 |
+| macOS 12+     | arm64           | C++         | Apple Clang ≥ 15, CMake ≥ 3.16.3 | —               |
 
-This release (**TDK v1.6.4**) is compatible with **flexiv_rdk 1.9.3** (`flexivrdk==1.9.3`). It also requires **zenoh 1.9.0**. Both are installed by `thirdparty/build_and_install_dependencies.sh`.
+
 
 >💡 Need support for other platforms? [Contact Flexiv](https://www.flexiv.com/contact).
 
@@ -51,7 +52,7 @@ On all supported platforms, the Python package of TDK and its dependencies for a
 
     python3.x -m pip install spdlog flexivtdk==1.6.4
 
-This installs **TDK v1.6.4** and its hard dependency **`flexivrdk==1.9.3`**. Pin both versions if you install them separately (`python3.x -m pip install flexivrdk==1.9.3 flexivtdk==1.6.4`).
+This installs **TDK v1.6.4** and its hard dependency **`flexivrdk==1.9.4`**. Pin both versions if you install them separately (`python3.x -m pip install flexivrdk==1.9.4 flexivtdk==1.6.4`).
 
 NOTE: replace `3.x` with a specific Python version.
 
@@ -65,7 +66,7 @@ After the ``flexivtdk`` Python package is installed, it can be imported from any
     import flexivrdk
     flexivrdk.__version__
 
-Confirm `flexivtdk` is `1.6.4` and `flexivrdk` is `1.9.3`. 
+Confirm `flexivtdk` is `1.6.4` and `flexivrdk` is `1.9.4`. 
 
 ### 3.🕒 System Clock Sync 
 
@@ -135,7 +136,12 @@ The TDK is distributed as a modern CMake project named `flexiv_tdk`.
 
 ### 1. Install Build Dependencies
 ```bash
+# Linux
 sudo apt install build-essential cmake cmake-qt-gui -y
+
+# macOS
+xcode-select --install
+brew install cmake
 ```
 
 ### 2. Choose an Installation Directory
@@ -173,11 +179,22 @@ NOTE: ``-D`` followed by ``CMAKE_INSTALL_PREFIX`` tells the user project's CMake
 
 
 ### 6. Run Examples
+CMake records the install `lib` directory in the example's rpath, so Linux and macOS can run the binary directly:
+
 ```bash
 cd flexiv_tdk/example/build
-LD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
+./<program_name> [arguments]
 ```
-``LD_LIBRARY_PATH`` is used to specify where the shared libraries of the dependencies are installed.
+
+TDK looks up `libflexiv_rdk` next to itself (`$ORIGIN` / `@loader_path`). The install `lib` directory must contain both `libflexiv_tdk` and `libflexiv_rdk`. Fallback:
+
+```bash
+# Linux
+LD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
+
+# macOS
+DYLD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
+```
 
 Check each example’s source code for usage details.
 
