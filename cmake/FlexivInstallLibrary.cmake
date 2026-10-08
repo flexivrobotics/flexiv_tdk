@@ -96,7 +96,8 @@ macro(FlexivInstallLibrary)
             )
 
     # Third-party notices: the prebuilt library statically embeds OSS
-    # components (spdlog, fmt, Zenoh) with hidden symbols.
+    # components (spdlog, fmt, Eigen, Zenoh and its Rust crates) with
+    # hidden symbols.
     install(FILES
             "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE"
             "${CMAKE_CURRENT_SOURCE_DIR}/THIRD_PARTY_NOTICES.md"

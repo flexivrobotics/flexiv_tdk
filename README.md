@@ -203,9 +203,10 @@ Check each example’s source code for usage details.
 Flexiv TDK is licensed under the [Apache License 2.0](LICENSE).
 
 The prebuilt `libflexiv_tdk` library statically embeds spdlog and fmt
-(MIT) and Eclipse Zenoh. Upstream Zenoh is dual-licensed Apache-2.0 OR
-EPL-2.0; **this SDK redistributes Zenoh under Apache-2.0 only**. Notices
-and license texts: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+(MIT), Eigen (MPL-2.0), Eclipse Zenoh and the Rust crates Zenoh depends
+on. Upstream Zenoh is dual-licensed Apache-2.0 OR EPL-2.0; **this SDK
+redistributes Zenoh under Apache-2.0 only**. Notices, the full Rust crate
+inventory and license texts: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## 📚 Generate Documentation
 

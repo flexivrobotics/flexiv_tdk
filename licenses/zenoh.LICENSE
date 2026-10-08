@@ -3,18 +3,23 @@ Eclipse Zenoh — license as redistributed by Flexiv Robotics
 Copyright (c) 2017, 2022 ZettaScale Technology
 Copyright (c) Eclipse Zenoh project contributors
 
-This file covers Eclipse zenoh-c, zenoh-cpp, and the Zenoh Rust
-implementation they statically include, as linked into libflexiv_tdk.
+This file is the Apache License 2.0 text elected for the components
+linked into libflexiv_tdk that are offered upstream under
+SPDX: EPL-2.0 OR Apache-2.0:
 
-Upstream offers these components under a dual license
-(SPDX: EPL-2.0 OR Apache-2.0):
-  https://github.com/eclipse-zenoh/zenoh-c/tree/1.9.0
-  https://github.com/eclipse-zenoh/zenoh-cpp/tree/1.9.0
+  Eclipse zenoh-c 1.9.0
+    https://github.com/eclipse-zenoh/zenoh-c/tree/1.9.0
+  Eclipse zenoh-cpp 1.9.0
+    https://github.com/eclipse-zenoh/zenoh-cpp/tree/1.9.0
+  Every Rust crate whose upstream license is "EPL-2.0 OR Apache-2.0" in
+  licenses/zenoh-c-rust-deps.linux.md and licenses/zenoh-c-rust-deps.macos.md
+  (the Zenoh Rust implementation, uhlc, validated_struct, stabby,
+  stabby-abi, keyed-set, token-cell, ringbuffer-spsc)
 
-Flexiv Robotics elects the Apache License, Version 2.0 as the only
-license under which that Zenoh code is redistributed in this SDK.
-The Eclipse Public License 2.0 is not used for this distribution and
-does not apply to recipients of Flexiv TDK.
+Flexiv Robotics elects the Apache License, Version 2.0 for those
+components in this SDK. This file does not relicense other statically
+linked code; the licenses of the other Rust crates are listed in the
+files named above.
 
 The Apache License 2.0 text follows.
 
