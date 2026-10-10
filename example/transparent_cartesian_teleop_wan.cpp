@@ -22,6 +22,7 @@
 #include <sstream>
 #include <string>
 #include <thread>
+#include <functional>
 
 namespace {
 
@@ -35,9 +36,9 @@ std::vector<double> kHomeJntPos = {0 * M_PI / 180.0, -40 * M_PI / 180.0, 0 * M_P
 
 /** Maximum contact wrench for soft contact*/
 const std::array<double, flexiv::tdk::kCartDoF> kDefaultMaxContactWrench
-    = {50.0, 50.0, 50.0, 40.0, 40.0, 40.0};
+    = {25.0, 25.0, 25.0, 10.0, 10.0, 10.0};
 
-/** Atomic signal to stop console and DI reading tasks */
+/** Atomic signal to stop console, fault monitor and DI reading tasks */
 std::atomic<bool> g_running {true};
 
 /** Teleop role */
@@ -73,21 +74,19 @@ void LogError(const std::string& msg)
 
 void PrintTeleopStatus(unsigned int idx, const flexiv::tdk::TeleopStatus& status)
 {
-    LogInfo("Teleop pair " + std::to_string(idx) + " status: initialized="
-            + BoolStr(status.initialized) + " started=" + BoolStr(status.started)
-            + " engaged=" + BoolStr(status.engaged) + " stopped=" + BoolStr(status.stopped)
-            + " fault=" + BoolStr(status.fault)
-            + " motion_restricted=" + BoolStr(status.motion_restricted) + " latency="
-            + FmtFixed(status.latency_ms, 1) + "/" + FmtFixed(status.latency_threshold_ms, 1)
-            + " ms");
+    LogInfo(
+        "Teleop pair " + std::to_string(idx) + " status: initialized=" + BoolStr(status.initialized)
+        + " started=" + BoolStr(status.started) + " engaged=" + BoolStr(status.engaged)
+        + " stopped=" + BoolStr(status.stopped) + " fault=" + BoolStr(status.fault)
+        + " motion_restricted=" + BoolStr(status.motion_restricted) + " latency="
+        + FmtFixed(status.latency_ms, 1) + "/" + FmtFixed(status.latency_threshold_ms, 1) + " ms");
     if (status.primary.code == flexiv::tdk::TeleopIssueCode::NONE) {
         LogInfo("No teleop restriction. Safe to continue.");
         return;
     }
     const auto& issue = status.primary;
-    LogWarn(std::string("[")
-            + flexiv::tdk::TeleopIssueLevelStr[static_cast<size_t>(issue.level)] + "/"
-            + flexiv::tdk::TeleopIssueSideStr[static_cast<size_t>(issue.side)] + "] "
+    LogWarn(std::string("[") + flexiv::tdk::TeleopIssueLevelStr[static_cast<size_t>(issue.level)]
+            + "/" + flexiv::tdk::TeleopIssueSideStr[static_cast<size_t>(issue.side)] + "] "
             + issue.title + " | " + issue.description + " | " + issue.suggestion);
     for (const auto& extra : status.issues) {
         if (extra.code == issue.code && extra.side == issue.side
@@ -170,7 +169,39 @@ void ReadDigitalInputTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
 }
 
 /**
- * @brief Task for calling TransparentCartesianTeleopLAN functions from console.
+ * @brief Task for monitoring robot fault and prompting the operator to recover.
+ */
+void FaultMonitorTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
+{
+    bool last_fault = false;
+    std::string last_error;
+    while (g_running.load()) {
+        try {
+            const bool fault = teleop.fault(0);
+            const bool fault_changed = (fault != last_fault);
+            last_fault = fault;
+            if (fault_changed && fault) {
+                LogError("Fault detected. Press 'h' for details, 'F' to clear fault, then 'u' to "
+                         "restart teleop.");
+                PrintTeleopStatus(0, teleop.GetTeleopStatus(0));
+            } else if (fault_changed) {
+                LogInfo("Fault cleared. Press 'u' to restart teleop.");
+            }
+            last_error.clear();
+        } catch (const std::exception& e) {
+            if (last_error != e.what()) {
+                LogError(std::string("Exception in FaultMonitorTask: ") + e.what());
+                last_error = e.what();
+            }
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    LogInfo("FaultMonitorTask exiting.");
+    return;
+}
+
+/**
+ * @brief Task for calling TransparentCartesianTeleopWAN functions from console.
  */
 void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
 {
@@ -195,17 +226,20 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
     p        : Set default max contact wrench
 
   --- Reinit and start ---
-    u        : Recall Init and Start 
+    u        : Recall Init and Start
     U        : Stop teleop
 
-  --- Tcp message latency ---
-    l        : print current message latency (disconnected / clock mismatch / over limit)
+  --- TCP message latency ---
+    l        : Print current message latency (disconnected / clock mismatch / over limit)
 
   --- Teleop status ---
-    h        : print why teleop is restricted / paused and what to do next
+    h        : Print why teleop is restricted / paused and what to do next
+
+  --- Fault recovery ---
+    F        : Clear fault (blocking, up to 30 s), then press 'u' to restart teleop
 
   --- Identity ---
-    n        : print role() and robot_pair_sn()
+    n        : Print role() and robot_pair_sn()
 
   --- Help ---
     Any other key to show this help menu
@@ -227,11 +261,15 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
         teleop.SetAxisLockCmd(index, cmd);
     };
 
-    while (g_running.load() && !teleop.fault(0)) {
+    while (g_running.load()) {
 
         std::string user_input {};
 
-        std::getline(std::cin, user_input);
+        // Get user input, exit when stdin is closed
+        if (!std::getline(std::cin, user_input)) {
+            LogInfo("Console input closed.");
+            break;
+        }
 
         if (user_input.empty()) {
             LogWarn("Empty command!");
@@ -342,7 +380,8 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
                         LogInfo("pair 0 message latency: " + FmtFixed(latency_ms, 1)
                                 + " ms (within limit)");
                     } else if (latency_ms < 0.0) {
-                        LogWarn("pair 0 clock mismatch: latency " + FmtFixed(latency_ms, 1) + " ms");
+                        LogWarn(
+                            "pair 0 clock mismatch: latency " + FmtFixed(latency_ms, 1) + " ms");
                     } else if (latency_ms > 1.0e12) {
                         LogWarn("pair 0 disconnected: latency " + FmtFixed(latency_ms, 1) + " ms");
                     } else {
@@ -353,6 +392,15 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
                 case 'h':
                     PrintTeleopStatus(0, teleop.GetTeleopStatus(0));
                     break;
+                case 'F': {
+                    LogInfo("Clearing fault, this may take up to 30 seconds...");
+                    const auto results = teleop.ClearFault();
+                    for (size_t i = 0; i < results.size(); ++i) {
+                        LogInfo("Teleop pair " + std::to_string(i)
+                                + " clear fault: " + BoolStr(results[i]));
+                    }
+                    break;
+                }
                 case 'n': {
                     const auto pair = teleop.robot_pair_sn(0);
                     LogInfo(std::string("pair 0 role=")
@@ -367,9 +415,12 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
                     break;
             }
         } catch (const std::exception& e) {
-            LogError(std::string("Exception in ConsoleTask: ") + e.what());
-            g_running.store(false);
-            return;
+            LogError(std::string("Command '") + user_input[0] + "' failed: " + e.what());
+            try {
+                PrintTeleopStatus(0, teleop.GetTeleopStatus(0));
+            } catch (const std::exception& status_e) {
+                LogError(std::string("Failed to query teleop status: ") + status_e.what());
+            }
         }
     }
     LogInfo("Console thread exiting.");
@@ -402,14 +453,23 @@ int main(int argc, char* argv[])
             case 'i':
                 public_server_ip = std::string(optarg);
                 break;
-            case 'p':
+            case 'p': {
+                const std::string port_str(optarg);
+                unsigned long port = 0;
+                size_t parsed = 0;
                 try {
-                    server_port = std::stoi(optarg);
+                    port = std::stoul(port_str, &parsed);
                 } catch (...) {
-                    LogError(std::string("Invalid port number: ") + optarg);
+                    parsed = 0;
+                }
+                if (port_str.empty() || port_str[0] == '-' || parsed != port_str.size()
+                    || port < 1 || port > 65535) {
+                    LogError("Invalid port number: " + port_str + ", valid range is 1-65535");
                     return 1;
                 }
+                server_port = static_cast<unsigned int>(port);
                 break;
+            }
             case 'A':
                 lan_ip = std::string(optarg);
                 lan_interface_whitelist.push_back(lan_ip);
@@ -435,8 +495,7 @@ int main(int argc, char* argv[])
         LogWarn("LAN whitelist is not provided, will search all network interfaces.");
     }
     if (wan_interface_whitelist.empty()) {
-        LogWarn(
-            "WAN interface whitelist is not provided, will search all network interfaces.");
+        LogWarn("WAN interface whitelist is not provided, will search all network interfaces.");
     }
 
     // Whether this is a TCP server or client
@@ -488,12 +547,12 @@ int main(int argc, char* argv[])
         // Set max contact wrench
         tctw.SetMaxContactWrench(0, kDefaultMaxContactWrench);
 
-        // Start console_thread
+        // Start console and fault monitor threads
         std::thread console_thread(std::bind(ConsoleTask, std::ref(tctw)));
+        std::thread fault_monitor_thread(FaultMonitorTask, std::ref(tctw));
 
-        // Start pedal_thread based on the new flag or the role
+        // Start pedal_thread only if role is leader AND -D is given
         std::optional<std::thread> pedal_thread;
-        // Modified condition: Start if -D is given OR if role is leader (original behavior)
         if (teleop_role == "leader" && enable_digital_input) {
             LogInfo(
                 "Starting ReadDigitalInputTask thread as role is 'leader' and requested by -D "
@@ -511,7 +570,8 @@ int main(int argc, char* argv[])
         // Stop all threads, notify other threads exit
         g_running = false;
 
-        // Wait for digital reading task exit
+        // Wait for fault monitor and digital reading task exit
+        fault_monitor_thread.join();
         if (pedal_thread && pedal_thread->joinable()) {
             pedal_thread->join();
         }

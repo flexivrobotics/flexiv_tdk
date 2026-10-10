@@ -24,31 +24,30 @@ def log_info(msg):
     print("[info] {}".format(msg))
 
 
+def log_warn(msg):
+    print("[warn] {}".format(msg), file=sys.stderr)
+
+
 def log_error(msg):
     print("[error] {}".format(msg), file=sys.stderr)
-
-def print_help():
-    """Print usage information"""
-    print("Usage: python joint_teleop_under_lan.py --first-sn <robot_sn> --second-sn <robot_sn>")
-    print("  --first-sn    Serial number of the first robot.")
-    print("  --second-sn   Serial number of the second robot.")
 
 
 def main():
     parser = argparse.ArgumentParser(description="Joint Teleoperation over LAN")
-    parser.add_argument("--first-sn", required=True, help="Serial number of the first robot")
-    parser.add_argument("--second-sn", required=True, help="Serial number of the second robot")
+    parser.add_argument("-1", "--first-sn", required=True, help="Serial number of the first robot")
+    parser.add_argument("-2", "--second-sn", required=True, help="Serial number of the second robot")
+    parser.add_argument("-A", "--lan-ip", action="append", default=[],
+                        help="LAN IPv4 address of the NIC connected to the robot. Repeatable.")
     
     args = parser.parse_args()
-    
-    if not args.first_sn or not args.second_sn:
-        print_help()
-        return 1
+    if not args.lan_ip:
+        log_warn("network_interface_whitelist is not provided, will search all network interfaces.")
 
-    robot_pairs= [(args.first_sn, args.second_sn)]
+    robot_pairs = [(args.first_sn, args.second_sn)]
+    joint_teleop = None
     try:
         # Create teleop control interface
-        joint_teleop = flexivtdk.JointTeleopLAN(robot_pairs)
+        joint_teleop = flexivtdk.JointTeleopLAN(robot_pairs, args.lan_ip)
 
         # Only control 1 pair of robots
         robot_pair_idx = 0
@@ -113,6 +112,15 @@ def main():
         # Fault occurred, stop the teleoperation
         joint_teleop.Stop()
 
+    except KeyboardInterrupt:
+        log_info("Program interrupted by user, stopping teleoperation...")
+        if joint_teleop:
+            try:
+                joint_teleop.Stop()
+            except Exception as e:
+                log_error("Failed to stop teleoperation: {}".format(e))
+                return 1
+        return 0
     except Exception as e:
         log_error("Error: {}".format(e))
         return 1
@@ -122,4 +130,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

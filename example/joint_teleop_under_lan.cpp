@@ -8,9 +8,16 @@
 #include <flexiv/tdk/joint_teleop_lan.hpp>
 
 #include <getopt.h>
+#include <chrono>
 #include <iostream>
 #include <string>
 #include <thread>
+#include <vector>
+
+void LogWarn(const std::string& msg)
+{
+    std::cerr << "[warn] " << msg << std::endl;
+}
 
 void LogError(const std::string& msg)
 {
@@ -25,9 +32,10 @@ constexpr double kLastJointShapedInertia = 0.05;
 void PrintHelp()
 {
     // clang-format off
-    std::cout << "Usage: sudo ./joint_teleop_under_lan [-1 serial_num] [-2 serial_num]" << std::endl;
+    std::cout << "Usage: sudo ./joint_teleop_under_lan -1 <serial_num> -2 <serial_num> [-A <lan_ipv4>]" << std::endl;
     std::cout << "  -1  --first-sn    Serial number of the first robot." << std::endl;
     std::cout << "  -2  --second-sn   Serial number of the second robot." << std::endl;
+    std::cout << "  -A  --lan-ip      [optional] LAN IPv4 address of the NIC connected to the robot. Repeatable." << std::endl;
     // clang-format on
 }
 
@@ -35,6 +43,7 @@ const struct option kLongOptions[] = {
     // clang-format off
     {"first-sn",    required_argument, 0, '1'},
     {"second-sn",   required_argument, 0, '2'},
+    {"lan-ip",      required_argument, 0, 'A'},
     {0,                             0, 0,  0}
     // clang-format on
 };
@@ -43,14 +52,18 @@ int main(int argc, char* argv[])
 {
     // Parse program arguments
     std::string first_sn, second_sn;
+    std::vector<std::string> network_interface_whitelist {};
     int opt = 0;
-    while ((opt = getopt_long(argc, argv, "1:2:", kLongOptions, nullptr)) != -1) {
+    while ((opt = getopt_long(argc, argv, "1:2:A:", kLongOptions, nullptr)) != -1) {
         switch (opt) {
             case '1':
                 first_sn = std::string(optarg);
                 break;
             case '2':
                 second_sn = std::string(optarg);
+                break;
+            case 'A':
+                network_interface_whitelist.emplace_back(optarg);
                 break;
             default:
                 PrintHelp();
@@ -61,10 +74,13 @@ int main(int argc, char* argv[])
         PrintHelp();
         return 1;
     }
+    if (network_interface_whitelist.empty()) {
+        LogWarn("network_interface_whitelist is not provided, will search all network interfaces.");
+    }
 
     try {
         // Create teleop control interface
-        flexiv::tdk::JointTeleopLAN joint_teleop({{first_sn, second_sn}});
+        flexiv::tdk::JointTeleopLAN joint_teleop({{first_sn, second_sn}}, network_interface_whitelist);
 
         // Only control 1 pair of robots
         unsigned int robot_pair_idx = 0;

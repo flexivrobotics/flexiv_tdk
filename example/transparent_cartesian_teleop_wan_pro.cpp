@@ -43,12 +43,12 @@ std::vector<double> kHomeJntPos = {0 * M_PI / 180.0, -40 * M_PI / 180.0, 0 * M_P
 
 /** Maximum contact wrench for soft contact */
 const std::array<double, flexiv::tdk::kCartDoF> kDefaultMaxContactWrench
-    = {50.0, 50.0, 50.0, 40.0, 40.0, 40.0};
+    = {25.0, 25.0, 25.0, 10.0, 10.0, 10.0};
 
 /** Robot pair index used by this example */
 constexpr unsigned int kIdx = 0;
 
-/** Atomic signal to stop console and DI reading tasks */
+/** Atomic signal to stop console, fault monitor and DI reading tasks */
 std::atomic<bool> g_running {true};
 
 /** Teleop role, assigned from [-r] */
@@ -139,7 +139,8 @@ void PrintHelp()
     std::cout<<"     -n     [optional]  Follower gripper device name configured in Elements -> Device." << std::endl;
     std::cout<<"                       To enable GripperRemoteControl, both leader and follower sides must provide the same gripper name." << std::endl;
     std::cout<<"     -D     [optional] Enable Digital Input reading task." << std::endl;
-    std::cout<<"                       Leader DI0 engages arm teleop; with [-n], DI1 toggles the follower gripper." << std::endl;
+    std::cout<<"                       Leader DI0 engages arm teleop; with [-n], DI1 toggles the follower gripper" << std::endl;
+    std::cout<<"                       and the console gripper motion commands (o/c/s) are disabled." << std::endl;
     std::cout<<"Usage: sudo ./transparent_cartesian_teleop_wan_pro -l <leader_sn> -f <follower_sn> -r leader|follower -c <client.conf> [-A <lan_ipv4>] [-n gripper_name] [-D]"<<std::endl;
     // clang-format on
 }
@@ -239,11 +240,44 @@ void ReadDigitalInputTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop,
 }
 
 /**
+ * @brief Task for monitoring robot fault and prompting the operator to recover.
+ */
+void FaultMonitorTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
+{
+    bool last_fault = false;
+    std::string last_error;
+    while (g_running.load()) {
+        try {
+            const bool fault = teleop.fault(kIdx);
+            const bool fault_changed = (fault != last_fault);
+            last_fault = fault;
+            if (fault_changed && fault) {
+                LogError("Fault detected. Press 'h' for details, 'F' to clear fault, then 'u' to "
+                         "restart teleop.");
+                PrintTeleopStatus(kIdx, teleop.GetTeleopStatus(kIdx));
+            } else if (fault_changed) {
+                LogInfo("Fault cleared. Press 'u' to restart teleop.");
+            }
+            last_error.clear();
+        } catch (const std::exception& e) {
+            if (last_error != e.what()) {
+                LogError(std::string("Exception in FaultMonitorTask: ") + e.what());
+                last_error = e.what();
+            }
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    LogInfo("FaultMonitorTask exiting.");
+}
+
+/**
  * @brief Task for calling TransparentCartesianTeleopWAN and optional GripperRemoteControl
  * functions from console.
+ * @param[in] di_controls_gripper True if the leader DI1 controls the gripper motion, in which case
+ * the console gripper motion commands are disabled.
  */
 void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop,
-    std::optional<flexiv::tdk::GripperRemoteControl>& gripper)
+    std::optional<flexiv::tdk::GripperRemoteControl>& gripper, bool di_controls_gripper)
 {
     auto PrintCommandMenu = [has_gripper = gripper.has_value()]() {
         std::cout << R"(
@@ -269,14 +303,17 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop,
     u        : Recall Init and Start
     U        : Stop teleop
 
-  --- Tcp message latency ---
-    l        : print current message latency (disconnected / clock mismatch / over limit)
+  --- TCP message latency ---
+    l        : Print current message latency (disconnected / clock mismatch / over limit)
 
   --- Teleop status ---
-    h        : print why teleop is restricted / paused and what to do next
+    h        : Print why teleop is restricted / paused and what to do next
+
+  --- Fault recovery ---
+    F        : Clear fault (blocking, up to 30 s), then press 'u' to restart teleop
 
   --- Identity ---
-    n        : print role() and robot_pair_sn()
+    n        : Print role() and robot_pair_sn()
         )" << std::endl;
 
         if (has_gripper) {
@@ -286,7 +323,7 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop,
     D        : Disable gripper on follower robot
     N        : Trigger initialization of the enabled gripper
 
-  --- Gripper Motion (Leader only, via reliable topic) ---
+  --- Gripper Motion (Leader only, via reliable topic, disabled when -D is enabled) ---
     o        : Open gripper (Move to max width)
     c        : Close gripper (Grasp with moderate force)
     s        : Stop and hold gripper
@@ -317,10 +354,15 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop,
         teleop.SetAxisLockCmd(kIdx, cmd);
     };
 
-    while (g_running.load() && !teleop.fault(kIdx)) {
+    while (g_running.load()) {
 
         std::string user_input {};
-        std::getline(std::cin, user_input);
+
+        // Get user input, exit when stdin is closed
+        if (!std::getline(std::cin, user_input)) {
+            LogInfo("Console input closed.");
+            break;
+        }
 
         if (user_input.empty()) {
             LogWarn("Empty command!");
@@ -338,6 +380,12 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop,
             if (gripper.has_value() && g_role != flexiv::tdk::Role::WAN_TELEOP_LEADER
                 && std::string("GDNocs").find(command) != std::string::npos) {
                 LogWarn(std::string("Command '") + command + "' is only available on the leader");
+                continue;
+            }
+            if (di_controls_gripper && std::string("ocs").find(command) != std::string::npos) {
+                LogWarn(std::string("Gripper motion is controlled by DI1 (-D enabled); console "
+                                    "command '")
+                        + command + "' is disabled.");
                 continue;
             }
 
@@ -457,6 +505,15 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop,
                 case 'h':
                     PrintTeleopStatus(kIdx, teleop.GetTeleopStatus(kIdx));
                     break;
+                case 'F': {
+                    LogInfo("Clearing fault, this may take up to 30 seconds...");
+                    const auto results = teleop.ClearFault();
+                    for (size_t i = 0; i < results.size(); ++i) {
+                        LogInfo("Teleop pair " + std::to_string(i)
+                                + " clear fault: " + BoolStr(results[i]));
+                    }
+                    break;
+                }
                 case 'n': {
                     const auto pair = teleop.robot_pair_sn(kIdx);
                     LogInfo("pair " + std::to_string(kIdx) + " role="
@@ -522,9 +579,12 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop,
                     break;
             }
         } catch (const std::exception& e) {
-            LogError(std::string("Exception in ConsoleTask: ") + e.what());
-            g_running.store(false);
-            return;
+            LogError(std::string("Command '") + user_input[0] + "' failed: " + e.what());
+            try {
+                PrintTeleopStatus(kIdx, teleop.GetTeleopStatus(kIdx));
+            } catch (const std::exception& status_e) {
+                LogError(std::string("Failed to query teleop status: ") + status_e.what());
+            }
         }
     }
     LogInfo("Console thread exiting.");
@@ -626,10 +686,16 @@ int main(int argc, char* argv[])
             }
         }
 
-        std::thread console_thread(std::bind(ConsoleTask, std::ref(tctw), std::ref(gripper)));
+        const bool start_pedal_thread
+            = (g_role == flexiv::tdk::Role::WAN_TELEOP_LEADER && enable_digital_input);
+        const bool di_controls_gripper = start_pedal_thread && gripper.has_value();
+
+        std::thread console_thread(
+            std::bind(ConsoleTask, std::ref(tctw), std::ref(gripper), di_controls_gripper));
+        std::thread fault_monitor_thread(FaultMonitorTask, std::ref(tctw));
 
         std::optional<std::thread> pedal_thread;
-        if (g_role == flexiv::tdk::Role::WAN_TELEOP_LEADER && enable_digital_input) {
+        if (start_pedal_thread) {
             LogInfo(std::string(
                         "Starting ReadDigitalInputTask thread as role is 'leader' and requested by -D "
                         "flag. DI0: arm teleop engagement; DI1: ")
@@ -646,6 +712,7 @@ int main(int argc, char* argv[])
         console_thread.join();
         g_running.store(false);
 
+        fault_monitor_thread.join();
         if (pedal_thread && pedal_thread->joinable()) {
             pedal_thread->join();
         }
