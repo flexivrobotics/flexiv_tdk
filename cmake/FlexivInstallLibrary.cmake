@@ -89,7 +89,7 @@ macro(FlexivInstallLibrary)
     set(_tdk_installed_lib
         "${CMAKE_SHARED_LIBRARY_PREFIX}${PROJECT_NAME}${CMAKE_SHARED_LIBRARY_SUFFIX}")
     install(CODE
-            "file(REMOVE ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${_tdk_installed_lib})")
+            "file(REMOVE \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${_tdk_installed_lib}\")")
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${TDK_LIB}
             DESTINATION ${CMAKE_INSTALL_LIBDIR}
             RENAME ${_tdk_installed_lib}
