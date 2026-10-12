@@ -67,6 +67,10 @@ if [ -z "$INSTALL_DIR" ]; then
     exit 1
 fi
 
+# Sub-scripts cd into other directories, so a relative path must be made absolute first
+mkdir -p "$INSTALL_DIR"
+INSTALL_DIR="$(cd "$INSTALL_DIR" && pwd)"
+
 echo "Dependencies will be installed to: $INSTALL_DIR"
 echo "Number of parallel build jobs: $NUM_JOBS"
 
