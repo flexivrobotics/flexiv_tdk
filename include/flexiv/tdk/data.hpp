@@ -119,11 +119,11 @@ struct NetworkCfgPro
  */
 enum Role
 {
-    UNKNOWN = 0,         ///> Unknown role.
-    LAN_TELEOP,          ///> Teleoperation in LAN.
-    WAN_TELEOP_LEADER,   ///> The leader robot operated by a human during teleoperation over WAN.
-    WAN_TELEOP_FOLLOWER, ///> The follower robot that interacts with the remote environment during
-                         /// teleoperation over WAN.
+    UNKNOWN = 0,         ///< Unknown role.
+    LAN_TELEOP,          ///< Teleoperation in LAN.
+    WAN_TELEOP_LEADER,   ///< The leader robot operated by a human during teleoperation over WAN.
+    WAN_TELEOP_FOLLOWER, ///< The follower robot that interacts with the remote environment during
+                         ///< teleoperation over WAN.
 };
 
 static const std::string RoleTypeStr[]
@@ -168,7 +168,7 @@ private:
 
 public:
     /**
-     * @brief Tread-safe read function: copy data to output parameters.
+     * @brief Thread-safe read function: copy data to output parameters.
      * @param[out] out_pose Target TCP pose in world frame.
      * @param[out] out_velocity Target TCP velocity (linear and angular) in world frame.
      * @param[out] out_acceleration Target TCP acceleration (linear and angular) in world frame.
@@ -218,9 +218,9 @@ public:
  */
 enum CoordType
 {
-    COORD_UNKNOWN = 0, ///> Unknown coordinate
-    COORD_TCP,         ///> TCP coordinate of local robot
-    COORD_WORLD        ///> WORLD coordinate of local robot
+    COORD_UNKNOWN = 0, ///< Unknown coordinate
+    COORD_TCP,         ///< TCP coordinate of local robot
+    COORD_WORLD        ///< WORLD coordinate of local robot
 };
 
 static const std::string CoordTypeStr[] = {"UNKNOWN", "TCP", "WORLD"};
@@ -243,8 +243,8 @@ static inline CoordType GetCoordType(const std::string& str)
 /**
  * @struct AxisLock
  * @brief Data for locking axis, including reference frame and axis to be locked for transparent
- * cartesian teleop. Coordinate type options are: "COORD_TCP" for TCP frame and "COORD_WORLD" for
- * WORLD frame.
+ * cartesian teleop. Coordinate type options are: COORD_TCP ("TCP") for TCP frame and COORD_WORLD
+ * ("WORLD") for WORLD frame.
  */
 struct AxisLock
 {
@@ -392,15 +392,23 @@ struct TeleopIssue
  */
 struct TeleopStatus
 {
+    /** True if Init() or InitWithIdx() has completed for this robot pair. */
     bool initialized = false;
+
+    /** True if the teleoperation control loop has been started. */
     bool started = false;
+
     /**
      * False if the operator has not engaged, or if the controller force-disengaged
      * (high latency, disconnect, or clock mismatch). Check [issues] / [primary]
      * for CLOCK_MISMATCH when [latency_ms] is negative.
      */
     bool engaged = false;
+
+    /** True if the teleoperation control loop is not running. Always the inverse of [started]. */
     bool stopped = true;
+
+    /** LAN: true if either robot in the pair is in fault state. WAN: true if the local robot is. */
     bool fault = false;
 
     /** True if the robot currently holds pose to avoid a limit or singularity. */

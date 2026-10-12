@@ -320,7 +320,7 @@ public:
      * @brief [Non-blocking] Set maximum contact wrench for the current role in the robot pairs. The
      * controller will regulate its output to maintain contact wrench (force and moment) with the
      * environment under the set values.
-     * @param[in] idx Index of the robot pair to set null-space posture for current role. This index
+     * @param[in] idx Index of the robot pair to set max contact wrench for current role. This index
      * is the same as the index of the constructor parameter [robot_pairs_sn].
      * @param[in] max_wrench Maximum contact wrench (force and moment): \f$ F_max \in \mathbb{R}^{6
      * \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ maximum force and \f$
@@ -421,7 +421,9 @@ public:
      * @param[in] timeout_sec Maximum time in seconds to wait for the fault to be successfully
      * cleared. Normally, a minor fault should take no more than 3 seconds to clear, and a critical
      * fault should take no more than 30 seconds to clear.
-     * @return True: successfully cleared fault; false: failed to clear fault.
+     * @return One element per robot pair for the robot of the current role, true: successfully
+     * cleared fault; false: failed to clear fault. The order is the same as the constructor
+     * parameter [robot_pairs_sn].
      * @throw std::runtime_error if failed to deliver the request to the connected robot.
      * @note This function blocks until the fault is successfully cleared or [timeout_sec] has
      * elapsed.

@@ -28,7 +28,7 @@ using namespace rdk;
  * @note Motion commands (Move/Grasp/Stop) are published from leader to follower; lifecycle commands
  * (Enable/Disable/Init) are issued from leader to follower via RPC with explicit acknowledgment;
  * gripper states and params are published from follower to leader.
- * @warning Per RDK 1.9.3 design, a robot can have only one enabled gripper, and it must be managed
+ * @warning A robot can have only one enabled gripper, and it must be managed
  * by exactly one rdk::Gripper instance. This interface owns that instance on the follower robot;
  * do NOT create other rdk::Gripper instances or enable/disable grippers through other tools
  * (e.g. Elements) on the follower robot while this interface is in use.
