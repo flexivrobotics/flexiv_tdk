@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 transparent_cartesian_teleop_lan.py
@@ -193,6 +193,9 @@ class TeleoperationController:
   --- Print action/states via instance ---
     P        : Print follower action and state
 
+  --- Exit ---
+    quit     : Stop teleop and exit the program
+
   --- Help ---
     Any other key to show this help menu
     """
@@ -385,7 +388,12 @@ def console_task(teleop: flexivtdk.TransparentCartesianTeleopLAN):
             log_info("Console input closed.")
             _stop_event.set()
             break
-        
+
+        if user_input == "quit":
+            log_info("Quit requested.")
+            _stop_event.set()
+            break
+
         controller.handle_command(user_input)
 
     log_info("Console thread exiting.")

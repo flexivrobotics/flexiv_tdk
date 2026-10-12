@@ -86,6 +86,12 @@ void LogError(const std::string& msg)
     std::cerr << "[error] " << msg << std::endl;
 }
 
+bool HasActiveIssue(const flexiv::tdk::TeleopStatus& status, flexiv::tdk::TeleopIssueCode code)
+{
+    return std::any_of(status.issues.begin(), status.issues.end(),
+        [code](const flexiv::tdk::TeleopIssue& issue) { return issue.code == code; });
+}
+
 void PrintTeleopStatus(unsigned int idx, const flexiv::tdk::TeleopStatus& status)
 {
     LogInfo("Teleop pair " + std::to_string(idx) + " status: initialized="
@@ -335,6 +341,9 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop,
         }
 
         std::cout << R"(
+  --- Exit ---
+    quit     : Stop teleop and exit the program
+
   --- Help ---
     Any other key to show this help menu
         )" << std::endl;
@@ -368,6 +377,11 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop,
             LogWarn("Empty command!");
             PrintCommandMenu();
             continue;
+        }
+
+        if (user_input == "quit") {
+            LogInfo("Quit requested.");
+            break;
         }
 
         try {
@@ -490,11 +504,11 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop,
                     if (ok) {
                         LogInfo("pair " + std::to_string(kIdx) + " message latency: "
                                 + FmtFixed(latency_ms, 1) + " ms (within limit)");
+                    } else if (HasActiveIssue(teleop.GetTeleopStatus(kIdx),
+                                   flexiv::tdk::TeleopIssueCode::NETWORK_DISCONNECTED)) {
+                        LogWarn("pair " + std::to_string(kIdx) + " disconnected");
                     } else if (latency_ms < 0.0) {
                         LogWarn("pair " + std::to_string(kIdx) + " clock mismatch: latency "
-                                + FmtFixed(latency_ms, 1) + " ms");
-                    } else if (latency_ms > 1.0e12) {
-                        LogWarn("pair " + std::to_string(kIdx) + " disconnected: latency "
                                 + FmtFixed(latency_ms, 1) + " ms");
                     } else {
                         LogWarn("pair " + std::to_string(kIdx) + " latency over limit: "

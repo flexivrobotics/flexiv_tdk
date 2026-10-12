@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 transparent_cartesian_teleop_wan_pro.py
@@ -71,6 +71,10 @@ def clamp(value, low, high):
 
 def role_str(role):
     return flexivtdk.RoleTypeStr[int(role)]
+
+
+def has_active_issue(status, code):
+    return any(issue.code == code for issue in status.issues)
 
 
 def print_teleop_status(idx, status):
@@ -248,6 +252,9 @@ class WanProTeleoperationController:
     P        : Print gripper params (valid command ranges)
 """
         menu += """
+  --- Exit ---
+    quit     : Stop teleop and exit the program
+
   --- Help ---
     Any other key to show this help menu
     """
@@ -318,10 +325,11 @@ class WanProTeleoperationController:
         ok, latency_ms = self.teleop.CheckTeleopConnectionLatency(kIdx)
         if ok:
             log_info("pair {} message latency: {:.1f} ms (within limit)".format(kIdx, latency_ms))
+        elif has_active_issue(self.teleop.GetTeleopStatus(kIdx),
+                              flexivtdk.TeleopIssueCode.NETWORK_DISCONNECTED):
+            log_warn("pair {} disconnected".format(kIdx))
         elif latency_ms < 0.0:
             log_warn("pair {} clock mismatch: latency {:.1f} ms".format(kIdx, latency_ms))
-        elif latency_ms > 1.0e12:
-            log_warn("pair {} disconnected: latency {:.1f} ms".format(kIdx, latency_ms))
         else:
             log_warn("pair {} latency over limit: {:.1f} ms".format(kIdx, latency_ms))
 
@@ -516,6 +524,11 @@ def console_task(controller: WanProTeleoperationController):
             user_input = input("> ").strip()
         except (EOFError, KeyboardInterrupt):
             log_info("Console input closed.")
+            _stop_event.set()
+            break
+
+        if user_input == "quit":
+            log_info("Quit requested.")
             _stop_event.set()
             break
 

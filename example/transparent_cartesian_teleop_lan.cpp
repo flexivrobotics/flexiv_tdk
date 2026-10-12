@@ -254,6 +254,9 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
   --- Print action/states via instance ---
     P        : Print follower action and state
 
+  --- Exit ---
+    quit     : Stop teleop and exit the program
+
   --- Help ---
     Any other key to show this help menu
         )" << std::endl;
@@ -277,6 +280,11 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopLAN& teleop)
             LogWarn("Empty command!");
             PrintCommandMenu();
             continue;
+        }
+
+        if (userInput == "quit") {
+            LogInfo("Quit requested.");
+            break;
         }
 
         try {

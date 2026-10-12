@@ -12,6 +12,7 @@
 #include <flexiv/tdk/transparent_cartesian_teleop_wan.hpp>
 
 #include <getopt.h>
+#include <algorithm>
 #include <array>
 #include <atomic>
 #include <chrono>
@@ -70,6 +71,12 @@ void LogWarn(const std::string& msg)
 void LogError(const std::string& msg)
 {
     std::cerr << "[error] " << msg << std::endl;
+}
+
+bool HasActiveIssue(const flexiv::tdk::TeleopStatus& status, flexiv::tdk::TeleopIssueCode code)
+{
+    return std::any_of(status.issues.begin(), status.issues.end(),
+        [code](const flexiv::tdk::TeleopIssue& issue) { return issue.code == code; });
 }
 
 void PrintTeleopStatus(unsigned int idx, const flexiv::tdk::TeleopStatus& status)
@@ -241,6 +248,9 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
   --- Identity ---
     n        : Print role() and robot_pair_sn()
 
+  --- Exit ---
+    quit     : Stop teleop and exit the program
+
   --- Help ---
     Any other key to show this help menu
         )" << std::endl;
@@ -275,6 +285,11 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
             LogWarn("Empty command!");
             PrintCommandMenu();
             continue;
+        }
+
+        if (user_input == "quit") {
+            LogInfo("Quit requested.");
+            break;
         }
 
         try {
@@ -379,11 +394,12 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop)
                     if (ok) {
                         LogInfo("pair 0 message latency: " + FmtFixed(latency_ms, 1)
                                 + " ms (within limit)");
+                    } else if (HasActiveIssue(teleop.GetTeleopStatus(0),
+                                   flexiv::tdk::TeleopIssueCode::NETWORK_DISCONNECTED)) {
+                        LogWarn("pair 0 disconnected");
                     } else if (latency_ms < 0.0) {
                         LogWarn(
                             "pair 0 clock mismatch: latency " + FmtFixed(latency_ms, 1) + " ms");
-                    } else if (latency_ms > 1.0e12) {
-                        LogWarn("pair 0 disconnected: latency " + FmtFixed(latency_ms, 1) + " ms");
                     } else {
                         LogWarn("pair 0 latency over limit: " + FmtFixed(latency_ms, 1) + " ms");
                     }

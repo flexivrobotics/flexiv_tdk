@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 transparent_cartesian_teleop_wan.py
@@ -51,6 +51,10 @@ def log_error(msg):
 
 def role_str(role):
     return flexivtdk.RoleTypeStr[int(role)]
+
+
+def has_active_issue(status, code):
+    return any(issue.code == code for issue in status.issues)
 
 
 def print_teleop_status(idx, status):
@@ -185,6 +189,9 @@ class WanTeleoperationController:
   --- Identity ---
     n        : Print role() and robot_pair_sn()
 
+  --- Exit ---
+    quit     : Stop teleop and exit the program
+
   --- Help ---
     Any other key to show this help menu
     """
@@ -247,10 +254,11 @@ class WanTeleoperationController:
         if ok:
             log_info("pair {} message latency: {:.1f} ms (within limit)".format(
                 self.index, latency_ms))
+        elif has_active_issue(self.teleop.GetTeleopStatus(self.index),
+                              flexivtdk.TeleopIssueCode.NETWORK_DISCONNECTED):
+            log_warn("pair {} disconnected".format(self.index))
         elif latency_ms < 0.0:
             log_warn("pair {} clock mismatch: latency {:.1f} ms".format(self.index, latency_ms))
-        elif latency_ms > 1.0e12:
-            log_warn("pair {} disconnected: latency {:.1f} ms".format(self.index, latency_ms))
         else:
             log_warn("pair {} latency over limit: {:.1f} ms".format(self.index, latency_ms))
 
@@ -373,7 +381,12 @@ def console_task(teleop: flexivtdk.TransparentCartesianTeleopWAN):
             log_info("Console input closed.")
             _stop_event.set()
             break
-        
+
+        if user_input == "quit":
+            log_info("Quit requested.")
+            _stop_event.set()
+            break
+
         controller.handle_command(user_input)
 
     log_info("Console thread exiting.")
