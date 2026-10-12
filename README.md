@@ -35,7 +35,7 @@ For the v1.6.x user manual and C++ API, generate the docs locally from this tree
 
 | OS            | Processor       | Languages   | Compiler Requirements            | Python Versions |
 | ------------- | --------------- | ----------- | -------------------------------- | --------------- |
-| Ubuntu 22.04+ | x86_64, aarch64 | C++, Python | GCC ≥ 9.4, CMake ≥ 3.16.3        | 3.10, 3.12, 3.14 |
+| Ubuntu 22.04+ | x86_64, aarch64 | C++, Python | GCC ≥ 11, CMake ≥ 3.16.3         | 3.10, 3.12, 3.14 |
 | macOS 14+     | arm64           | C++, Python | Apple Clang ≥ 15, CMake ≥ 3.16.3 | 3.10, 3.12       |
 
 
@@ -174,7 +174,7 @@ cmake .. -DCMAKE_PREFIX_PATH=~/tdk_install
 cmake --build . --config Release -j 4
 ```
 
-NOTE: ``-D`` followed by ``CMAKE_INSTALL_PREFIX`` tells the user project's CMake where to find the installed TDK library. 
+NOTE: ``-D`` followed by ``CMAKE_PREFIX_PATH`` tells the user project's CMake where to find the installed TDK library. 
 
 
 
