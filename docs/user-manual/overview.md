@@ -25,7 +25,7 @@ The online GitHub Pages site documents TDK v2.x and must not be used with this r
 ### User PC
 - Ubuntu 22.04+ (x86_64 or aarch64): C++ and Python 3.10/3.12/3.14
 - macOS 14+ (arm64): C++ and Python 3.10/3.12
-- C++ toolchain: GCC ≥ 9.4 (Linux) or Apple Clang ≥ 15 (macOS), CMake ≥ 3.16.3
+- C++ toolchain: GCC ≥ 11 (Linux) or Apple Clang ≥ 15 (macOS), CMake ≥ 3.16.3
 - Network access to the robot and (for WAN) reliable time synchronization
 
 ## Repository Layout
@@ -39,4 +39,4 @@ The online GitHub Pages site documents TDK v2.x and must not be used with this r
 - Need hard real-time performance? See [Real-Time Kernel](real-time-kernel.md).
 - Deploying over WAN? See [Time Sync (WAN)](time-sync.md).
 - Looking for sample usage? See [Examples](examples.md).
-- Third-party licenses for the prebuilt library: see [THIRD_PARTY_NOTICES.md](../../THIRD_PARTY_NOTICES.md) in the repository.
+- Third-party licenses for the prebuilt library: see [THIRD_PARTY_NOTICES.md](https://github.com/flexivrobotics/flexiv_tdk/blob/v1.6.4/THIRD_PARTY_NOTICES.md) in the repository.
