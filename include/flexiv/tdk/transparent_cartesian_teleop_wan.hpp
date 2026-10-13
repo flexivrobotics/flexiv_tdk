@@ -103,9 +103,13 @@ public:
      * returned via [latency_ms].
      *
      * Interpretation of return value and latency:
-     * - **Not connected:** [latency_ms] is a very large positive value. Returns false.
+     * - **Not connected:** No message has been received from the peer yet, or none for more
+     *   than 1 s. [latency_ms] is a very large positive value. Returns false.
      * - **Connected:** [latency_ms] ∈ [0, threshold_ms]. Returns true.
      *   The default threshold is 200 ms and can be modified via SetTeleopLatencyLimit().
+     * - **Over limit:** Messages arrive later than threshold_ms, or none has arrived for more
+     *   than threshold_ms (in which case [latency_ms] is at least the time since the last
+     *   message). Returns false.
      * - **Clock mismatch:** [latency_ms] is negative. Returns false.
      *   Ensure both computers synchronize system time (e.g., using chrony).
      *
