@@ -106,6 +106,12 @@ void PrintTeleopStatus(unsigned int idx, const flexiv::tdk::TeleopStatus& status
         return;
     }
     const auto& issue = status.primary;
+    if (!issue.active) {
+        LogInfo(std::string("No active teleop restriction. Last cleared issue: [")
+                + flexiv::tdk::TeleopIssueCodeStr[static_cast<size_t>(issue.code)] + "] "
+                + issue.title);
+        return;
+    }
     LogWarn(std::string("[")
             + flexiv::tdk::TeleopIssueLevelStr[static_cast<size_t>(issue.level)] + "/"
             + flexiv::tdk::TeleopIssueSideStr[static_cast<size_t>(issue.side)] + "] "
