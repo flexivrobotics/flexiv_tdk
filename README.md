@@ -33,8 +33,8 @@ For the v1.6.x user manual and C++ API, generate the docs locally from this tree
 
 ## ✅ Compatibility
 
-| OS            | Processor       | Languages   | Compiler Requirements            | Python Versions |
-| ------------- | --------------- | ----------- | -------------------------------- | --------------- |
+| OS            | Processor       | Languages   | Compiler Requirements            | Python Versions  |
+| ------------- | --------------- | ----------- | -------------------------------- | ---------------- |
 | Ubuntu 22.04+ | x86_64, aarch64 | C++, Python | GCC ≥ 11, CMake ≥ 3.16.3         | 3.10, 3.12, 3.14 |
 | macOS 14+     | arm64           | C++, Python | Apple Clang ≥ 15, CMake ≥ 3.16.3 | 3.10, 3.12       |
 
@@ -48,25 +48,27 @@ For the v1.6.x user manual and C++ API, generate the docs locally from this tree
 
 ### 1. Install the Python package
 
-On all supported platforms, the Python package of TDK and its dependencies for a specific Python version can be installed using the `pip` module:
+We recommend installing TDK into a dedicated virtual environment, e.g. with `venv` or conda/mamba:
 
-    python3.x -m pip install flexivtdk==1.6.4
+```bash
+python3.x -m venv ~/venvs/tdk && source ~/venvs/tdk/bin/activate
+# or: micromamba create -n tdk python=3.x && micromamba activate tdk
+python -m pip install flexivtdk==1.6.4
+```
 
-This installs **TDK v1.6.4** and its hard dependency **`flexivrdk==1.9.4`**. Pin both versions if you install them separately (`python3.x -m pip install flexivrdk==1.9.4 flexivtdk==1.6.4`).
+This installs **TDK v1.6.4** and its hard dependency **`flexivrdk==1.9.4`**. Replace `3.x` with a supported Python version.
 
-NOTE: replace `3.x` with a specific Python version.
+NOTE: inside an activated environment, use `python` rather than `python3.x`, which silently falls back to the system Python if the environment has none.
 
 ### 2. Use the installed Python package
 
-After the ``flexivtdk`` Python package is installed, it can be imported from any Python script. Test with the following commands in a new Terminal, which should start Flexiv TDK:
+Verify the installation in the activated environment:
 
-    python3.x
-    import flexivtdk
-    flexivtdk.__version__
-    import flexivrdk
-    flexivrdk.__version__
+    python -c "import flexivtdk, flexivrdk; print(flexivtdk.__version__, flexivrdk.__version__, flexivtdk.__file__)"
 
-Confirm `flexivtdk` is `1.6.4` and `flexivrdk` is `1.9.4`. 
+The versions should be `1.6.4` and `1.9.4`, and the path should be inside your environment.
+
+**IDE support:** `flexivtdk` ships type stubs, so VS Code, Cursor and PyCharm provide code completion, signature hints and inline docs. Select the environment's interpreter in the IDE (VS Code / Cursor: `Ctrl+Shift+P` → *Python: Select Interpreter*), since activating it in a terminal does not affect the IDE. If `import flexivtdk` is marked unresolved, the IDE is using a different interpreter.
 
 ### 3.🕒 System Clock Sync 
 
@@ -121,11 +123,11 @@ Log out and log back in (or reboot) for the settings to take effect.
 
 ### 5. Run example Python scripts
 
-To run an example Python script in this repo:
+To run an example Python script in this repo, in the activated environment:
 
 ```bash
 cd flexiv_tdk/example_py
-python3.x <example_name>.py [arguments]
+python <example_name>.py [arguments]
 ```
 
 Check each example’s source code for usage details.
