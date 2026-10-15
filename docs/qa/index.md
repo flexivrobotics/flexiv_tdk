@@ -5,9 +5,9 @@
 
 | TDK | C++ RDK | Python RDK |
 | --- | ------- | ---------- |
-| **v1.6.4** (`flexivtdk==1.6.4`) | **flexiv_rdk 1.9.4** | **flexivrdk==1.9.4** |
+| **v1.6.4** (`flexivtdk==1.6.4`) | **flexiv_rdk 1.9.4.1** | **flexivrdk==1.9.4.1** |
 
-`pip install flexivtdk==1.6.4` installs `flexivrdk==1.9.4` automatically. Do not mix TDK 1.6.4 with another `flexivrdk` version.
+`pip install flexivtdk==1.6.4` installs `flexivrdk==1.9.4.1` automatically. Do not mix TDK 1.6.4 with another `flexivrdk` version.
 
 ## Q: Do I need a real-time kernel?
 **A:** Not strictly, but a low-latency or RT kernel improves responsiveness and stability for teleoperation. See [Real-Time Kernel](../user-manual/real-time-kernel.md).

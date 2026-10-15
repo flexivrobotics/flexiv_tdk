@@ -57,7 +57,7 @@ Examples include:
 - `transparent_cartesian_teleop_wan_pro.py`
 - `joint_teleop_under_lan.py`
 
-Install **TDK v1.6.4** first. It requires **`flexivrdk==1.9.4`** (pulled in automatically):
+Install **TDK v1.6.4** first. It requires **`flexivrdk==1.9.4.1`** (pulled in automatically):
 
 ```bash
 python3.x -m pip install flexivtdk==1.6.4
