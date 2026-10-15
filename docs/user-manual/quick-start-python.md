@@ -2,7 +2,7 @@
 
 This guide walks you through installing and running the Flexiv TDK Python package.
 
-**Version mapping:** TDK **v1.6.4** (`flexivtdk==1.6.4`) requires RDK **v1.9.4** (`flexivrdk==1.9.4`). Do not mix this TDK release with another `flexivrdk` version.
+**Version mapping:** TDK **v1.6.4** (`flexivtdk==1.6.4`) requires RDK **v1.9.4.1** (`flexivrdk==1.9.4.1`). Do not mix this TDK release with another `flexivrdk` version.
 
 ## 1) Install the package
 
@@ -10,7 +10,7 @@ This guide walks you through installing and running the Flexiv TDK Python packag
 python3.x -m pip install flexivtdk==1.6.4
 ```
 
-`flexivtdk==1.6.4` declares a hard dependency on `flexivrdk==1.9.4`, so pip installs that RDK wheel automatically.
+`flexivtdk==1.6.4` declares a hard dependency on `flexivrdk==1.9.4.1`, so pip installs that RDK wheel automatically.
 
 > Replace `3.x` with your Python version. Linux supports 3.10, 3.12, and 3.14; macOS supports 3.10 and 3.12.
 
@@ -24,7 +24,7 @@ python3.x
 >>> flexivrdk.__version__
 ```
 
-Confirm `flexivtdk` is `1.6.4` and `flexivrdk` is `1.9.4`.
+Confirm `flexivtdk` is `1.6.4` and `flexivrdk` is `1.9.4.1`.
 
 ## 3) Run Python examples from this repo
 

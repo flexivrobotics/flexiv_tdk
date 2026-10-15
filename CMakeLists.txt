@@ -64,7 +64,7 @@ endif()
 # ===================================================================
 #      DEPENDENCIES
 # ===================================================================
-find_package(flexiv_rdk 1.9.4 EXACT REQUIRED)
+find_package(flexiv_rdk 1.9.4.1 EXACT REQUIRED)
 message(STATUS "Found flexiv_rdk: ${flexiv_rdk_DIR}, version: ${flexiv_rdk_VERSION}")
 
 # ===================================================================

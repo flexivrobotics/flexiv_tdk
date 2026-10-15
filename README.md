@@ -56,7 +56,7 @@ python3.x -m venv ~/venvs/tdk && source ~/venvs/tdk/bin/activate
 python -m pip install flexivtdk==1.6.4
 ```
 
-This installs **TDK v1.6.4** and its hard dependency **`flexivrdk==1.9.4`**. Replace `3.x` with a supported Python version.
+This installs **TDK v1.6.4** and its hard dependency **`flexivrdk==1.9.4.1`**. Replace `3.x` with a supported Python version.
 
 NOTE: inside an activated environment, use `python` rather than `python3.x`, which silently falls back to the system Python if the environment has none.
 
@@ -66,7 +66,7 @@ Verify the installation in the activated environment:
 
     python -c "import flexivtdk, flexivrdk; print(flexivtdk.__version__, flexivrdk.__version__, flexivtdk.__file__)"
 
-The versions should be `1.6.4` and `1.9.4`, and the path should be inside your environment.
+The versions should be `1.6.4` and `1.9.4.1`, and the path should be inside your environment.
 
 **IDE support:** `flexivtdk` ships type stubs, so VS Code, Cursor and PyCharm provide code completion, signature hints and inline docs. Select the environment's interpreter in the IDE (VS Code / Cursor: `Ctrl+Shift+P` → *Python: Select Interpreter*), since activating it in a terminal does not affect the IDE. If `import flexivtdk` is marked unresolved, the IDE is using a different interpreter.
 

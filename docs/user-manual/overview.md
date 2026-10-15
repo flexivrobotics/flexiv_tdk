@@ -6,7 +6,7 @@ This documentation source is **TDK v1.6.4**. Version mapping for this release:
 
 | TDK | C++ RDK | Python RDK |
 | --- | ------- | ---------- |
-| **v1.6.4** (`flexivtdk==1.6.4`) | **flexiv_rdk 1.9.4** (only public C++ dependency) | **flexivrdk==1.9.4** |
+| **v1.6.4** (`flexivtdk==1.6.4`) | **flexiv_rdk 1.9.4.1** (only public C++ dependency) | **flexivrdk==1.9.4.1** |
 
 The online GitHub Pages site documents TDK v2.x and must not be used with this release. Generate this manual locally (see the repository README).
 

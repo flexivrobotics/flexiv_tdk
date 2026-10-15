@@ -2,7 +2,7 @@
 
 This guide covers building and using Flexiv TDK as a CMake package.
 
-**Version mapping:** TDK **v1.6.4** is a self-contained shared library. The only public C++ dependency is **flexiv_rdk 1.9.4**. Third-party libraries are embedded and hidden. `thirdparty/build_and_install_dependencies.sh` installs RDK.
+**Version mapping:** TDK **v1.6.4** is a self-contained shared library. The only public C++ dependency is **flexiv_rdk 1.9.4.1**. Third-party libraries are embedded and hidden. `thirdparty/build_and_install_dependencies.sh` installs RDK.
 
 ## 1) Install build dependencies
 
