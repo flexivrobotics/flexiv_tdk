@@ -14,7 +14,7 @@ Public License or under MIT.
 
 ## License election
 
-`flexiv_tdk_client` builds **Eclipse zenoh-c 1.9.0** and **zenoh-cpp 1.9.0**
+`flexiv_tdk` depends on **Eclipse zenoh-c 1.9.0** and **zenoh-cpp 1.9.0**
 from the official Eclipse repositories and statically links them (with
 symbols hidden) into `libflexiv_tdk`. zenoh-c in turn statically links
 the Zenoh Rust implementation and the other Rust crates listed in
@@ -41,13 +41,13 @@ this SDK that is offered under `EPL-2.0 OR Apache-2.0`.
 
 ## Embedded C/C++ components
 
-| Component | Version | License in this SDK | Upstream |
-| --------- | ------- | ------------------- | -------- |
-| [spdlog](https://github.com/gabime/spdlog) | 1.9.2 | MIT | https://github.com/gabime/spdlog/tree/v1.9.2 |
-| [fmt](https://github.com/fmtlib/fmt) (bundled by spdlog) | 8.0.1 | MIT | https://github.com/fmtlib/fmt/tree/8.0.1 |
-| [Eigen](https://gitlab.com/libeigen/eigen) | 3.4.0 | MPL-2.0 | https://gitlab.com/libeigen/eigen/-/tree/3.4.0 |
-| [Eclipse zenoh-c](https://github.com/eclipse-zenoh/zenoh-c) | 1.9.0 | **Apache-2.0 (elected)** | https://github.com/eclipse-zenoh/zenoh-c/tree/1.9.0 |
-| [Eclipse zenoh-cpp](https://github.com/eclipse-zenoh/zenoh-cpp) | 1.9.0 | **Apache-2.0 (elected)** | https://github.com/eclipse-zenoh/zenoh-cpp/tree/1.9.0 |
+| Component                                                       | Version | License in this SDK      | Upstream                                              |
+| --------------------------------------------------------------- | ------- | ------------------------ | ----------------------------------------------------- |
+| [spdlog](https://github.com/gabime/spdlog)                      | 1.9.2   | MIT                      | https://github.com/gabime/spdlog/tree/v1.9.2          |
+| [fmt](https://github.com/fmtlib/fmt) (bundled by spdlog)        | 8.0.1   | MIT                      | https://github.com/fmtlib/fmt/tree/8.0.1              |
+| [Eigen](https://gitlab.com/libeigen/eigen)                      | 3.4.0   | MPL-2.0                  | https://gitlab.com/libeigen/eigen/-/tree/3.4.0        |
+| [Eclipse zenoh-c](https://github.com/eclipse-zenoh/zenoh-c)     | 1.9.0   | **Apache-2.0 (elected)** | https://github.com/eclipse-zenoh/zenoh-c/tree/1.9.0   |
+| [Eclipse zenoh-cpp](https://github.com/eclipse-zenoh/zenoh-cpp) | 1.9.0   | **Apache-2.0 (elected)** | https://github.com/eclipse-zenoh/zenoh-cpp/tree/1.9.0 |
 
 Eigen 3.4.0 is primarily licensed under MPL-2.0, and that license
 applies to the Eigen code compiled into `libflexiv_tdk` (including
