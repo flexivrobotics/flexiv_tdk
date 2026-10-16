@@ -16,7 +16,15 @@ using namespace rdk;
 
 /**
  * @brief Teleoperation control interface that represents leader or follower robots in transparent
- * teleoperation over WAN. Use [NetworkCfgStd] for Standard Edition TCP peer-to-peer.
+ * teleoperation over WAN. Two networking editions are supported:
+ * - Standard Edition ([NetworkCfgStd]): the two sides connect directly to each other via TCP. One
+ *   side needs a public IP address and port forwarding.
+ * - Professional Edition ([NetworkCfgPro]): both sides connect to TDK Server, which routes
+ *   messages between them. Messages are encrypted and authenticated. No public IP address or port
+ *   forwarding is required; each side only needs Internet access.
+ * @note In the documentation of this class, "WAN connection" refers to the communication link
+ * between the two sides of teleoperation, and "message latency" refers to the end-to-end latency
+ * of messages received from the other side over this link.
  * @warning This is highly transparent Cartesian teleoperation and therefore requires the robot to
  * be configured with a flange-end FT sensor before using this class.
  * @note In the documentation of this class, "leader robot" refers to the robot which operated by a
@@ -59,25 +67,61 @@ public:
         const std::vector<std::pair<std::string, std::string>>& robot_pairs_sn,
         flexiv::tdk::Role role, const NetworkCfgStd& network_cfg_std, bool verbose = true);
 
+    /**
+     * @brief [Blocking] Create an instance of the control interface using TDK Professional
+     * Edition networking, where both sides connect through TDK Server using the credential file
+     * delivered with the TDK Server deployment.
+     * @param[in] robot_pairs_sn Serial number of all leader-follower pairs to run teleoperation on.
+     * Each pair in the vector represents a pair of bilaterally teleoperated robots. For example,
+     * provide 2 pairs of robot serial numbers to start a dual-arm teleoperation that involves 2
+     * pairs of robots. The accepted formats are: "Rizon 4s-123456" and "Rizon4s-123456". In each
+     * pair, the first robot is referred to as the "leader robot", which operated by human operator
+     * during teleoperation. The second robot is referred to as the "follower robot", which
+     * interacts with the workpiece.
+     * @param[in] role The role in transparent teleoperation over WAN. There are two types of
+     * participants in teleoperation , one is the "leader", which operated by a human during
+     * teleoperation. The other is referred to as the "follower", which interacts with
+     * the environment during teleoperation.
+     * @param[in] network_cfg_pro Network configuration for TDK Professional Edition. It contains
+     * the path to `client.conf` from the TDK Server credential package, and an optional LAN IPv4
+     * whitelist.
+     * @param[in] verbose If true, periodically print WAN connection and latency warnings. Default
+     * true.
+     * @throw std::invalid_argument if the format of robot_sn or network configuration is invalid.
+     * @throw std::runtime_error if error occurred during construction.
+     * @throw std::logic_error if one of the connected robots does not have a valid TDK license; or
+     * the version of this TDK library is incompatible with one of the connected robots; or model of
+     * any connected robot is not supported; or there are multiple instantiated TDK objects.
+     * @warning This constructor blocks until the connection with the robot is established and
+     * initialization sequence is successfully finished. It does not wait for the WAN connection to
+     * be established.
+     */
+    TransparentCartesianTeleopWAN(
+        const std::vector<std::pair<std::string, std::string>>& robot_pairs_sn,
+        flexiv::tdk::Role role, const NetworkCfgPro& network_cfg_pro, bool verbose = true);
+
     virtual ~TransparentCartesianTeleopWAN();
 
     //========================================= ACCESSORS ==========================================
     /**
-     * @brief Non-blocking check of TCP connection status and average message latency.
+     * @brief Non-blocking check of WAN connection status and average message latency.
      *
-     * Estimates the average TCP message latency (in milliseconds) using an internal
-     * sliding-window filter to suppress transient spikes. The computed value is
-     * returned via [latency_ms].
+     * Estimates the average message latency (in milliseconds) using an internal sliding-window
+     * filter to suppress transient spikes. The computed value is returned via [latency_ms].
      *
      * Interpretation of return value and latency:
-     * - **Not connected:** [latency_ms] is a very large positive value. Returns false.
+     * - **Not connected:** No message has been received from the peer yet, or none for more
+     *   than 1 s. [latency_ms] is a very large positive value. Returns false.
      * - **Connected:** [latency_ms] ∈ [0, threshold_ms]. Returns true.
      *   The default threshold is 200 ms and can be modified via SetTeleopLatencyLimit().
+     * - **Over limit:** Messages arrive later than threshold_ms, or none has arrived for more
+     *   than threshold_ms (in which case [latency_ms] is at least the time since the last
+     *   message). Returns false.
      * - **Clock mismatch:** [latency_ms] is negative. Returns false.
      *   Ensure both computers synchronize system time (e.g., using chrony).
      *
      * @param[in]  idx         Index of the robot pair corresponding to [robot_pairs_sn].
-     * @param[out] latency_ms  Estimated average TCP message latency in milliseconds.
+     * @param[out] latency_ms  Estimated average message latency in milliseconds.
      *
      * @return True if the connection is established and latency is within
      *         [0, threshold_ms]; otherwise false.
@@ -165,7 +209,7 @@ public:
      * followers) specified with 'role' in constructor.
      * @throw std::logic_error if initialization sequence hasn't been triggered yet using Init().
      * @note Teleop will only work properly when the following conditions are met: a) The control
-     * loops of leaders and followers start normally b) TCP connection successfully established and
+     * loops of leaders and followers start normally b) WAN connection successfully established and
      * message latency is in valid range. c) Engaged by the leader
      */
     void Start();
@@ -221,7 +265,7 @@ public:
      * @throw std::logic_error if initialization sequence hasn't been triggered yet using Init() or
      * InitWithIdx().
      * @note Teleop will only work properly when the following conditions are met: a) The control
-     * loops of leaders and followers start normally b) TCP connection successfully established and
+     * loops of leaders and followers start normally b) WAN connection successfully established and
      * message latency is in valid range. c) Engaged by the leader
      */
     void StartWithIdx(unsigned int idx);
@@ -287,7 +331,7 @@ public:
      * @brief [Non-blocking] Set maximum contact wrench for the current role in the robot pairs. The
      * controller will regulate its output to maintain contact wrench (force and moment) with the
      * environment under the set values.
-     * @param[in] idx Index of the robot pair to set null-space posture for current role. This index
+     * @param[in] idx Index of the robot pair to set max contact wrench for current role. This index
      * is the same as the index of the constructor parameter [robot_pairs_sn].
      * @param[in] max_wrench Maximum contact wrench (force and moment): \f$ F_max \in \mathbb{R}^{6
      * \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ maximum force and \f$
@@ -300,13 +344,14 @@ public:
     void SetMaxContactWrench(unsigned int idx, const std::array<double, kCartDoF>& max_wrench);
 
     /**
-     * @brief [Non-blocking] Set the maximum acceptable TCP message latency for teleoperation.
+     * @brief [Non-blocking] Set the maximum acceptable message latency over the WAN connection
+     * for teleoperation.
      * If the measured latency exceeds this threshold or is negative (clock mismatch),
      * teleoperation will be disengaged, and follower robots will hold their pose until
      * incoming message latency is back within the acceptable range.
      * @param[in] idx Index of the robot pair. This corresponds to the index of the constructor
      * parameter [robot_pairs_sn].
-     * @param[in] threshold_ms Maximum acceptable TCP message latency in milliseconds. Default is
+     * @param[in] threshold_ms Maximum acceptable message latency in milliseconds. Default is
      * 200 ms.
      * @throw std::invalid_argument if [idx] is outside the valid range.
      * @throw std::invalid_argument if input threshold_ms is negative or exceeds 350 milliseconds.
@@ -388,7 +433,9 @@ public:
      * @param[in] timeout_sec Maximum time in seconds to wait for the fault to be successfully
      * cleared. Normally, a minor fault should take no more than 3 seconds to clear, and a critical
      * fault should take no more than 30 seconds to clear.
-     * @return True: successfully cleared fault; false: failed to clear fault.
+     * @return One element per robot pair for the robot of the current role, true: successfully
+     * cleared fault; false: failed to clear fault. The order is the same as the constructor
+     * parameter [robot_pairs_sn].
      * @throw std::runtime_error if failed to deliver the request to the connected robot.
      * @note This function blocks until the fault is successfully cleared or [timeout_sec] has
      * elapsed.

@@ -221,8 +221,8 @@ public:
      * @warning Overlarge or discontinuous force can cause the robot to report errors. Please use
      * this interface carefully. To use this API, users should possess robot programming
      * capabilities.
-     * @see SetLocalAxisLockCmd
-     * @see GetLocalAxisLockState
+     * @see SetAxisLockCmd
+     * @see GetAxisLockState
      */
     void SetRepulsiveForce(
         unsigned int idx, const std::array<double, 3>& repulsive_force, bool in_world = true);
@@ -398,10 +398,8 @@ public:
      * specified robot pair.
      * @param[in] idx Index of the robot pair to set Cartesian stiffness for. This index is the same
      * as the index of the constructor parameter [robot_pairs_sn].
-     * @param[in] stiff_scale A scale ratio to default Cartesian motion stiffness: \f$ K_x \in
-     * \mathbb{R}^{6 \times 1} \f$. Consists of \f$ \mathbb{R}^{3 \times 1} \f$ linear stiffness and
-     * \f$ \mathbb{R}^{3 \times 1} \f$ angular stiffness: \f$ [k_x, k_y, k_z, k_{Rx}, k_{Ry},
-     * k_{Rz}]^T \f$. Valid range: [0, 1]. Unit: \f$ [N/m]:[Nm/rad] \f$.
+     * @param[in] stiff_scale A scale ratio applied to all 6 axes of the default Cartesian motion
+     * stiffness \f$ K_x \in \mathbb{R}^{6 \times 1} \f$. Valid range: [0, 1].
      * @throw std::invalid_argument if outside the valid range.
      * @throw std::logic_error if teleop is not initialized.
      * @note Generally, the user does not need to adjust the stiffness of the follower robot. In
@@ -436,7 +434,6 @@ public:
      * @param[in] timeout_sec Maximum time in seconds to wait for the fault to be successfully
      * cleared. Normally, a minor fault should take no more than 3 seconds to clear, and a critical
      * fault should take no more than 30 seconds to clear.
-     * @return True: successfully cleared fault; false: failed to clear fault.
      * @return For each element in the pair vector, true: successfully cleared fault or no fault for
      * this robot, false: failed to clear fault for this robot. The pattern of the pair vector is
      * the same as the constructor parameter [robot_pairs_sn].

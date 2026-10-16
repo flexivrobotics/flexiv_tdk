@@ -3,7 +3,7 @@ name: Feature request
 about: Suggest a new feature for TDK
 title: "[FEATURE]"
 labels: enhancement
-assignees: pzhu-flexiv, ZhipengZhang-flexiv
+assignees: haining-flexiv, pzhu-flexiv, ZhipengZhang-flexiv
 
 ---
 

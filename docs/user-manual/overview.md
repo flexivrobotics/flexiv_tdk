@@ -2,11 +2,11 @@
 
 This manual guides you through installing, configuring, and using the Flexiv TDK (Teleoperation Development Kit) to build teleoperation applications over LAN or WAN.
 
-This documentation source is **TDK v1.6.3**. Version mapping for this release:
+This documentation source is **TDK v1.6.4**. Version mapping for this release:
 
-| TDK | RDK (C++ / Python) | zenoh | Robot software |
-| --- | ------------------ | ----- | -------------- |
-| **v1.6.3** (`flexivtdk==1.6.3`) | **v1.9.3** (`flexiv_rdk` 1.9.3 / `flexivrdk==1.9.3`) | 1.9.0 | v3.11.2 |
+| TDK | C++ RDK | Python RDK |
+| --- | ------- | ---------- |
+| **v1.6.4** (`flexivtdk==1.6.4`) | **flexiv_rdk 1.9.4.1** (only public C++ dependency) | **flexivrdk==1.9.4.1** |
 
 The online GitHub Pages site documents TDK v2.x and must not be used with this release. Generate this manual locally (see the repository README).
 
@@ -23,9 +23,9 @@ The online GitHub Pages site documents TDK v2.x and must not be used with this r
 - Network devices (e.g., Ethernet switch/router) with sufficient bandwidth and latency
 - CAT 6 or CAT 7 Ethernet cables
 ### User PC
-- Ubuntu 22.04+ (x86_64 or aarch64)
-- C++ toolchain: GCC ≥ 9.4, CMake ≥ 3.16.3
-- Python 3.10/3.12/3.14 (for Python SDK usage)
+- Ubuntu 22.04+ (x86_64 or aarch64): C++ and Python 3.10/3.12/3.14
+- macOS 14+ (arm64): C++ and Python 3.10/3.12
+- C++ toolchain: GCC ≥ 11 (Linux) or Apple Clang ≥ 15 (macOS), CMake ≥ 3.16.3
 - Network access to the robot and (for WAN) reliable time synchronization
 
 ## Repository Layout
@@ -39,3 +39,4 @@ The online GitHub Pages site documents TDK v2.x and must not be used with this r
 - Need hard real-time performance? See [Real-Time Kernel](real-time-kernel.md).
 - Deploying over WAN? See [Time Sync (WAN)](time-sync.md).
 - Looking for sample usage? See [Examples](examples.md).
+- Third-party licenses for the prebuilt library: see [THIRD_PARTY_NOTICES.md](https://github.com/flexivrobotics/flexiv_tdk/blob/v1.6.4/THIRD_PARTY_NOTICES.md) in the repository.

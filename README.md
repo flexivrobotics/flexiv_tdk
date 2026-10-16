@@ -1,7 +1,7 @@
 # Flexiv TDK
 
 [![CMake](https://github.com/flexivrobotics/flexiv_tdk/actions/workflows/cmake.yml/badge.svg)](https://github.com/flexivrobotics/flexiv_tdk/actions/workflows/cmake.yml)
-[![Version](https://img.shields.io/badge/version-1.6.3-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.6.4-blue.svg)]()
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 **Flexiv TDK (Teleoperation Development Kit)** is an SDK for building custom robot-to-robot or device-to-robot teleoperation applications with Flexiv's adaptive robots. It enables synchronized, force-guided motion using **high-fidelity perceptual feedback** and supports both **LAN** (Local Area Network) and **WAN** (Internet) connections.
@@ -33,11 +33,12 @@ For the v1.6.x user manual and C++ API, generate the docs locally from this tree
 
 ## ✅ Compatibility
 
-| OS            | Processor       | Languages   | Compiler Requirements     | Python Versions |
-| ------------- | --------------- | ----------- | ------------------------- | --------------- |
-| Ubuntu 22.04+ | x86_64, aarch64 | C++, Python | GCC ≥ 9.4, CMake ≥ 3.16.3 | 3.10, 3.12, 3.14 |
+| OS            | Processor       | Languages   | Compiler Requirements            | Python Versions  |
+| ------------- | --------------- | ----------- | -------------------------------- | ---------------- |
+| Ubuntu 22.04+ | x86_64, aarch64 | C++, Python | GCC ≥ 11, CMake ≥ 3.16.3         | 3.10, 3.12, 3.14 |
+| macOS 14+     | arm64           | C++, Python | Apple Clang ≥ 15, CMake ≥ 3.16.3 | 3.10, 3.12       |
 
-This release (**TDK v1.6.3**) is compatible with **flexiv_rdk 1.9.3** (`flexivrdk==1.9.3`). It also requires **zenoh 1.9.0**. Both are installed by `thirdparty/build_and_install_dependencies.sh`.
+
 
 >💡 Need support for other platforms? [Contact Flexiv](https://www.flexiv.com/contact).
 
@@ -47,25 +48,27 @@ This release (**TDK v1.6.3**) is compatible with **flexiv_rdk 1.9.3** (`flexivrd
 
 ### 1. Install the Python package
 
-On all supported platforms, the Python package of TDK and its dependencies for a specific Python version can be installed using the `pip` module:
+We recommend installing TDK into a dedicated virtual environment, e.g. with `venv` or conda/mamba:
 
-    python3.x -m pip install spdlog flexivtdk==1.6.3
+```bash
+python3.x -m venv ~/venvs/tdk && source ~/venvs/tdk/bin/activate
+# or: micromamba create -n tdk python=3.x && micromamba activate tdk
+python -m pip install flexivtdk==1.6.4
+```
 
-This installs **TDK v1.6.3** and its hard dependency **`flexivrdk==1.9.3`**. Pin both versions if you install them separately (`python3.x -m pip install flexivrdk==1.9.3 flexivtdk==1.6.3`).
+This installs **TDK v1.6.4** and its hard dependency **`flexivrdk==1.9.4.1`**. Replace `3.x` with a supported Python version.
 
-NOTE: replace `3.x` with a specific Python version.
+NOTE: inside an activated environment, use `python` rather than `python3.x`, which silently falls back to the system Python if the environment has none.
 
 ### 2. Use the installed Python package
 
-After the ``flexivtdk`` Python package is installed, it can be imported from any Python script. Test with the following commands in a new Terminal, which should start Flexiv TDK:
+Verify the installation in the activated environment:
 
-    python3.x
-    import flexivtdk
-    flexivtdk.__version__
-    import flexivrdk
-    flexivrdk.__version__
+    python -c "import flexivtdk, flexivrdk; print(flexivtdk.__version__, flexivrdk.__version__, flexivtdk.__file__)"
 
-Confirm `flexivtdk` is `1.6.3` and `flexivrdk` is `1.9.3`. 
+The versions should be `1.6.4` and `1.9.4.1`, and the path should be inside your environment.
+
+**IDE support:** `flexivtdk` ships type stubs, so VS Code, Cursor and PyCharm provide code completion, signature hints and inline docs. Select the environment's interpreter in the IDE (VS Code / Cursor: `Ctrl+Shift+P` → *Python: Select Interpreter*), since activating it in a terminal does not affect the IDE. If `import flexivtdk` is marked unresolved, the IDE is using a different interpreter.
 
 ### 3.🕒 System Clock Sync 
 
@@ -120,11 +123,11 @@ Log out and log back in (or reboot) for the settings to take effect.
 
 ### 5. Run example Python scripts
 
-To run an example Python script in this repo:
+To run an example Python script in this repo, in the activated environment:
 
 ```bash
 cd flexiv_tdk/example_py
-python3.x <example_name>.py [arguments]
+python <example_name>.py [arguments]
 ```
 
 Check each example’s source code for usage details.
@@ -135,7 +138,12 @@ The TDK is distributed as a modern CMake project named `flexiv_tdk`.
 
 ### 1. Install Build Dependencies
 ```bash
+# Linux
 sudo apt install build-essential cmake cmake-qt-gui -y
+
+# macOS
+xcode-select --install
+brew install cmake
 ```
 
 ### 2. Choose an Installation Directory
@@ -168,18 +176,39 @@ cmake .. -DCMAKE_PREFIX_PATH=~/tdk_install
 cmake --build . --config Release -j 4
 ```
 
-NOTE: ``-D`` followed by ``CMAKE_INSTALL_PREFIX`` tells the user project's CMake where to find the installed TDK library. 
+NOTE: ``-D`` followed by ``CMAKE_PREFIX_PATH`` tells the user project's CMake where to find the installed TDK library. 
 
 
 
 ### 6. Run Examples
+CMake records the install `lib` directory in the example's rpath, so Linux and macOS can run the binary directly:
+
 ```bash
 cd flexiv_tdk/example/build
-LD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
+./<program_name> [arguments]
 ```
-``LD_LIBRARY_PATH`` is used to specify where the shared libraries of the dependencies are installed.
+
+TDK looks up `libflexiv_rdk` next to itself (`$ORIGIN` / `@loader_path`). The install `lib` directory must contain both `libflexiv_tdk` and `libflexiv_rdk`. Fallback:
+
+```bash
+# Linux
+LD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
+
+# macOS
+DYLD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
+```
 
 Check each example’s source code for usage details.
+
+## License
+
+Flexiv TDK is licensed under the [Apache License 2.0](LICENSE).
+
+The prebuilt `libflexiv_tdk` library statically embeds spdlog and fmt
+(MIT), Eigen (MPL-2.0), Eclipse Zenoh and the Rust crates Zenoh depends
+on. Upstream Zenoh is dual-licensed Apache-2.0 OR EPL-2.0; **this SDK
+redistributes Zenoh under Apache-2.0 only**. Notices, the full Rust crate
+inventory and license texts: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## 📚 Generate Documentation
 

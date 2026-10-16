@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 transparent_cartesian_teleop_lan.py
@@ -17,7 +17,6 @@ import argparse
 import threading
 import time
 import sys
-import spdlog
 import math
 from typing import List, Optional, Dict, Callable
 
@@ -34,28 +33,36 @@ kPreferredJntPos = _deg2rad_list([60, -60, -85, 115, 70, 0, 0])
 kHomeJntPos = _deg2rad_list([0, -40, 0, 90, 0, 40, 0])
 
 # Example of max contact wrench setting
-kDefaultMaxContactWrench = [25.0, 25.0, 25.0, 40.0, 40.0, 40.0]
+kDefaultMaxContactWrench = [25.0, 25.0, 25.0, 10.0, 10.0, 10.0]
 
 # Global thread-safe stop event
 _stop_event = threading.Event()
 
-# Logger setup
-logger = spdlog.ConsoleLogger("Example")
+def log_info(msg):
+    print("[info] {}".format(msg))
+
+
+def log_warn(msg):
+    print("[warn] {}".format(msg), file=sys.stderr)
+
+
+def log_error(msg):
+    print("[error] {}".format(msg), file=sys.stderr)
 
 
 def print_teleop_status(idx, status):
     """Print GetTeleopStatus() snapshot and the primary operator-facing issue."""
-    logger.info(
+    log_info(
         "Teleop pair {} status: initialized={} started={} engaged={} stopped={} fault={} "
         "motion_restricted={} latency={:.1f}/{:.1f} ms".format(
             idx, status.initialized, status.started, status.engaged, status.stopped,
             status.fault, status.motion_restricted, status.latency_ms,
             status.latency_threshold_ms))
     if status.primary.code == flexivtdk.TeleopIssueCode.NONE:
-        logger.info("No teleop restriction. Safe to continue.")
+        log_info("No teleop restriction. Safe to continue.")
         return
     issue = status.primary
-    logger.warn("[{}/{}] {} | {} | {}".format(
+    log_warn("[{}/{}] {} | {} | {}".format(
         flexivtdk.TeleopIssueLevelStr[int(issue.level)],
         flexivtdk.TeleopIssueSideStr[int(issue.side)], issue.title, issue.description,
         issue.suggestion))
@@ -63,7 +70,7 @@ def print_teleop_status(idx, status):
         if (extra.code == issue.code and extra.side == issue.side
                 and extra.joint_index == issue.joint_index):
             continue
-        logger.warn("  also: [{}/{}] {}".format(
+        log_warn("  also: [{}/{}] {}".format(
             flexivtdk.TeleopIssueCodeStr[int(extra.code)],
             flexivtdk.TeleopIssueSideStr[int(extra.side)], extra.title))
 
@@ -87,7 +94,7 @@ class TeleoperationController:
             cmd.lock_trans_axis = [False, False, False]
             cmd.lock_ori_axis = [False, False, False]
             cmd.coord = flexivtdk.CoordType.TCP
-            logger.warning(f"Failed to get initial axis lock state, using default: {e}")
+            log_warn(f"Failed to get initial axis lock state, using default: {e}")
             return cmd
     
     def _create_command_map(self) -> Dict[str, Callable]:
@@ -132,9 +139,10 @@ class TeleoperationController:
             # Check teleop stopped state
             's': self._check_teleop_state,
             'h': self._print_status,
+            'F': self._clear_fault,
             'H': self._home_all,
             # Print action/state
-            'a': self._print_action_state,
+            'P': self._print_action_state,
         }
     
     def _create_menu(self) -> str:
@@ -176,11 +184,17 @@ class TeleoperationController:
   --- Teleop status ---
     h        : Print why teleop is restricted / paused and what to do next
 
+  --- Fault recovery ---
+    F        : Clear fault (blocking, up to 30 s), then press 'B' to restart teleop
+
   --- Home all robots ---
     H        : Stop teleop and home all robots. Confirm the workspace is clear first.
 
   --- Print action/states via instance ---
-    a        : Print follower action and state
+    P        : Print follower action and state
+
+  --- Exit ---
+    quit     : Stop teleop and exit the program
 
   --- Help ---
     Any other key to show this help menu
@@ -188,154 +202,144 @@ class TeleoperationController:
     
     def _toggle_axis_lock(self, axis_index: int, lock_type: str, coord_type: flexivtdk.CoordType):
         """Toggle axis lock for the specified axis and type."""
-        try:
-            attr = "lock_trans_axis" if lock_type == "trans" else "lock_ori_axis"
-            axes = list(getattr(self.cmd, attr))
-            axes[axis_index] = not axes[axis_index]
-            setattr(self.cmd, attr, axes)
-            self.cmd.coord = coord_type
-            self.teleop.SetAxisLockCmd(self.index, self.cmd)
-            logger.info(
-                f"Axis lock toggled: {lock_type}[{axis_index}] = {axes[axis_index]}, coord = {coord_type}")
-        except Exception as e:
-            logger.error(f"Failed to toggle axis lock: {e}")
+        attr = "lock_trans_axis" if lock_type == "trans" else "lock_ori_axis"
+        axes = list(getattr(self.cmd, attr))
+        axes[axis_index] = not axes[axis_index]
+        setattr(self.cmd, attr, axes)
+        self.cmd.coord = coord_type
+        self.teleop.SetAxisLockCmd(self.index, self.cmd)
+        log_info(
+            f"Axis lock toggled: {lock_type}[{axis_index}] = {axes[axis_index]}, coord = {coord_type}")
     
     def _unlock_all_axes(self):
         """Unlock all axes in TCP coordinate system."""
-        try:
-            self.cmd.lock_ori_axis = [False, False, False]
-            self.cmd.lock_trans_axis = [False, False, False]
-            self.cmd.coord = flexivtdk.CoordType.TCP
-            self.teleop.SetAxisLockCmd(self.index, self.cmd)
-            logger.info("All axes unlocked")
-        except Exception as e:
-            logger.error(f"Failed to unlock all axes: {e}")
+        self.cmd.lock_ori_axis = [False, False, False]
+        self.cmd.lock_trans_axis = [False, False, False]
+        self.cmd.coord = flexivtdk.CoordType.TCP
+        self.teleop.SetAxisLockCmd(self.index, self.cmd)
+        log_info("All axes unlocked")
     
     def _lock_all_axes(self):
         """Lock all axes in TCP coordinate system."""
-        try:
-            self.cmd.lock_ori_axis = [True, True, True]
-            self.cmd.lock_trans_axis = [True, True, True]
-            self.cmd.coord = flexivtdk.CoordType.TCP
-            self.teleop.SetAxisLockCmd(self.index, self.cmd)
-            logger.info("All axes locked")
-        except Exception as e:
-            logger.error(f"Failed to lock all axes: {e}")
+        self.cmd.lock_ori_axis = [True, True, True]
+        self.cmd.lock_trans_axis = [True, True, True]
+        self.cmd.coord = flexivtdk.CoordType.TCP
+        self.teleop.SetAxisLockCmd(self.index, self.cmd)
+        log_info("All axes locked")
     
     def _start_teleop(self):
         """Initialize and start teleoperation."""
-        try:
-            # Check if already initialized to avoid re-initialization
-            if not hasattr(self, '_initialized') or not self._initialized:
-                self.teleop.Init()
-                self._initialized = True
-            self.teleop.Start()
-            logger.info("Teleop started")
-        except Exception as e:
-            logger.error(f"Failed to start teleop: {e}")
+        self.teleop.Init()
+        self.teleop.Start()
+        log_info("Teleop started")
     
     def _stop_teleop(self):
-        """Stop teleoperation and set the stop event."""
-        try:
-            self.teleop.Stop()
-            logger.info("Teleop stopped")
-        except Exception as e:
-            logger.error(f"Failed to stop teleop: {e}")
-            _stop_event.set()
+        """Stop teleoperation."""
+        self.teleop.Stop()
+        log_info("Teleop stopped")
 
     def _home_all(self):
         """Stop teleoperation and home all robots."""
-        try:
-            self.teleop.Stop()
-            self.teleop.HomeAll()
-            logger.info("Teleop stopped for homing")
-        except Exception as e:
-            logger.error(f"Failed to home all robots: {e}")
-            _stop_event.set()
+        self.teleop.Stop()
+        self.teleop.HomeAll()
+        log_info("Teleop stopped for homing")
+
+    def _clear_fault(self):
+        """Clear fault of all robots, then teleop can be restarted with 'B'."""
+        log_info("Clearing fault, this may take up to 30 seconds...")
+        results = self.teleop.ClearFault()
+        for i, (leader_ok, follower_ok) in enumerate(results):
+            log_info("Teleop pair {} clear fault: leader={} follower={}".format(
+                i, leader_ok, follower_ok))
 
     def _print_action_state(self):
         """Print follower action and state."""
-        try:
-           leader, robot = self.teleop.instances(self.index)
-           print(f"q: {['%.2f' % i for i in robot.states().q]}")
-           print(f"q_d: {['%.2f' % i for i in robot.actions().q_d]}")
-           logger.info("Printing follower action and state")
-        except Exception as e:
-            logger.error(f"Failed to print follower action and state: {e}")
-            _stop_event.set()
+        _leader, follower = self.teleop.instances(self.index)
+        log_info("Follower q: [{}]".format(
+            ", ".join("{:.2f}".format(v) for v in follower.states().q)))
+        log_info("Follower q_d: [{}]".format(
+            ", ".join("{:.2f}".format(v) for v in follower.actions().q_d)))
     
     def _check_teleop_state(self):
         """Check and log the teleoperation state."""
-        try:
-            stopped = self.teleop.stopped(self.index)
-            logger.info("Teleop pair {} {}".format(self.index, "stopped" if stopped else "started"))
-        except Exception as e:
-            logger.error(f"Failed to check teleop state: {e}")
+        stopped = self.teleop.stopped(self.index)
+        log_info("Teleop pair {} {}".format(self.index, "stopped" if stopped else "started"))
 
     def _print_status(self):
         """Print GetTeleopStatus() for the current robot pair."""
-        try:
-            print_teleop_status(self.index, self.teleop.GetTeleopStatus(self.index))
-        except Exception as e:
-            logger.error(f"Failed to query teleop status: {e}")
+        print_teleop_status(self.index, self.teleop.GetTeleopStatus(self.index))
     
     def _safe_engage(self, engage: bool):
-        """Safely engage or disengage teleop with error handling."""
-        try:
-            self.teleop.Engage(self.index, engage)
-            logger.info(f"Teleop {'engaged' if engage else 'disengaged'}")
-        except Exception as e:
-            logger.error(f"Failed to {'engage' if engage else 'disengage'} teleop: {e}")
+        """Engage or disengage teleop."""
+        self.teleop.Engage(self.index, engage)
+        log_info(f"Teleop {'engaged' if engage else 'disengaged'}")
     
     def _safe_set_wrench_feedback_scaling(self, factor: float):
-        """Safely set wrench feedback scaling with error handling."""
-        try:
-            self.teleop.SetWrenchFeedbackScalingFactor(self.index, factor)
-            logger.info(f"Wrench feedback scaling factor set to {factor}")
-        except Exception as e:
-            logger.error(f"Failed to set wrench feedback scaling: {e}")
+        """Set wrench feedback scaling."""
+        self.teleop.SetWrenchFeedbackScalingFactor(self.index, factor)
+        log_info(f"Wrench feedback scaling factor set to {factor}")
     
     def _safe_set_leader_nullspace(self, posture: List[float]):
-        """Safely set leader nullspace posture with error handling."""
-        try:
-            self.teleop.SetLeaderNullSpacePosture(self.index, posture)
-            logger.info("Leader nullspace posture set")
-        except Exception as e:
-            logger.error(f"Failed to set leader nullspace posture: {e}")
+        """Set leader nullspace posture."""
+        self.teleop.SetLeaderNullSpacePosture(self.index, posture)
+        log_info("Leader nullspace posture set")
     
     def _safe_set_follower_nullspace(self, posture: List[float]):
-        """Safely set follower nullspace posture with error handling."""
-        try:
-            self.teleop.SetFollowerNullSpacePosture(self.index, posture)
-            logger.info("Follower nullspace posture set")
-        except Exception as e:
-            logger.error(f"Failed to set follower nullspace posture: {e}")
+        """Set follower nullspace posture."""
+        self.teleop.SetFollowerNullSpacePosture(self.index, posture)
+        log_info("Follower nullspace posture set")
     
     def _safe_set_follower_max_contact_wrench(self, wrench: List[float]):
-        """Safely set follower max contact wrench with error handling."""
-        try:
-            self.teleop.SetFollowerMaxContactWrench(self.index, wrench)
-            logger.info("Follower max contact wrench set")
-        except Exception as e:
-            logger.error(f"Failed to set follower max contact wrench: {e}")
+        """Set follower max contact wrench."""
+        self.teleop.SetFollowerMaxContactWrench(self.index, wrench)
+        log_info("Follower max contact wrench set")
     
-    def handle_command(self, user_input: str) -> bool:
-        """Handle a single user command."""
+    def handle_command(self, user_input: str):
+        """Handle a single user command. A failed command is reported but never exits."""
         if not user_input:
+            log_warn("Empty command!")
             print(self._menu)
-            return True
+            return
         
         ch = user_input[0]
-        if ch in self._command_map:
+        if ch not in self._command_map:
+            log_warn("Invalid command!")
+            print(self._menu)
+            return
+
+        try:
+            self._command_map[ch]()
+        except Exception as e:
+            log_error(f"Command '{ch}' failed: {e}")
             try:
-                self._command_map[ch]()
-                return True
-            except Exception as e:
-                logger.error(f"Exception executing command '{ch}': {e}")
-                return False
-        else:
-            print(self._menu) 
-            return True
+                print_teleop_status(self.index, self.teleop.GetTeleopStatus(self.index))
+            except Exception as status_e:
+                log_error(f"Failed to query teleop status: {status_e}")
+
+
+# monitor robot fault and prompt the operator to recover
+def fault_monitor_task(teleop: flexivtdk.TransparentCartesianTeleopLAN):
+    last_fault = False
+    last_error = None
+    while not _stop_event.is_set():
+        try:
+            fault = teleop.any_fault()
+            fault_changed = (fault != last_fault)
+            last_fault = fault
+            if fault_changed and fault:
+                log_error("Fault detected. Press 'h' for details, 'F' to clear fault, then 'B' to "
+                          "restart teleop.")
+                print_teleop_status(0, teleop.GetTeleopStatus(0))
+            elif fault_changed:
+                log_info("Fault cleared. Press 'B' to restart teleop.")
+            last_error = None
+        except Exception as e:
+            msg = str(e)
+            if msg != last_error:
+                log_error(f"Exception in FaultMonitorTask: {e}")
+                last_error = msg
+        time.sleep(0.1)
+    log_info("FaultMonitorTask exiting.")
 
 
 # read digital input and engage/disengage teleop accordingly
@@ -350,7 +354,7 @@ def read_digital_input_task(teleop: flexivtdk.TransparentCartesianTeleopLAN):
             # invalid in that state and must not be polled every cycle.
             if (not status.started) or status.stopped:
                 if not logged_idle:
-                    logger.warn(
+                    log_warn(
                         "ReadDigitalInputTask: teleop is not started, pause Engage "
                         "(call Init + Start to resume)")
                     logged_idle = True
@@ -366,10 +370,10 @@ def read_digital_input_task(teleop: flexivtdk.TransparentCartesianTeleopLAN):
         except Exception as e:
             msg = str(e)
             if msg != last_error:
-                logger.error(f"Exception in ReadDigitalInputTask: {e}")
+                log_error(f"Exception in ReadDigitalInputTask: {e}")
                 last_error = msg
         time.sleep(0.01)
-    logger.info("ReadDigitalInputTask exiting.")
+    log_info("ReadDigitalInputTask exiting.")
 
 
 # console task to read user inputs and send commands accordingly
@@ -381,15 +385,18 @@ def console_task(teleop: flexivtdk.TransparentCartesianTeleopLAN):
         try:
             user_input = input("> ").strip()
         except (EOFError, KeyboardInterrupt):
-            logger.info("Console exiting by user interrupt.")
-            _stop_event.set()
-            break
-        
-        if not controller.handle_command(user_input):
+            log_info("Console input closed.")
             _stop_event.set()
             break
 
-    logger.info("Console thread exiting.")
+        if user_input == "quit":
+            log_info("Quit requested.")
+            _stop_event.set()
+            break
+
+        controller.handle_command(user_input)
+
+    log_info("Console thread exiting.")
     return
 
 
@@ -409,9 +416,12 @@ def main(argv: Optional[List[str]] = None):
     # Parse arguments
     args = parse_args(argv)
     robot_pairs = [(args.leader_sn, args.follower_sn)]
+    if not args.lan_ip:
+        log_warn("network_interface_whitelist is not provided, will search all network interfaces.")
     
     teleop = None
     console_thr = None
+    fault_monitor_thr = None
     pedal_thread = None
     
     try:
@@ -421,43 +431,51 @@ def main(argv: Optional[List[str]] = None):
         teleop = flexivtdk.TransparentCartesianTeleopLAN(robot_pairs, args.lan_ip)
         teleop.Init()
         teleop.Start()
-        logger.info("Teleop started.")
+        log_info("Teleop started.")
 
         # Start console task thread
         console_thr = threading.Thread(target=console_task, args=(teleop,), daemon=True)
         console_thr.start()
-        logger.info("Console task started.")
+        log_info("Console task started.")
+
+        # Start fault monitor task thread
+        fault_monitor_thr = threading.Thread(target=fault_monitor_task, args=(teleop,), daemon=True)
+        fault_monitor_thr.start()
 
         # Start digital input reading task thread accordingly
         if args.enable_digital_input:
             pedal_thread = threading.Thread(target=read_digital_input_task, args=(teleop,), daemon=True)
             pedal_thread.start()
-            logger.info("DI reading task started.")
+            log_info("DI reading task started.")
 
         console_thr.join()
 
         # Set the stop event when console thread exits
         _stop_event.set()  
         
+        if fault_monitor_thr:
+            fault_monitor_thr.join(timeout=1.0)
         if pedal_thread:
             pedal_thread.join(timeout=1.0)
 
         # Stop teleop process 
         if teleop:
             teleop.Stop()
-        logger.info("Teleop stopped.")
+        log_info("Teleop stopped.")
         
     except KeyboardInterrupt:
-        logger.info("Program interrupted by user")
+        log_info("Program interrupted by user")
         _stop_event.set()
     except Exception as e:
-        logger.error(f"Exception in main: {e}")
+        log_error(f"Exception in main: {e}")
         _stop_event.set()
         sys.exit(1)
     finally:
         # Ensure threads are joined properly
         if console_thr and console_thr.is_alive():
             console_thr.join(timeout=1.0)
+        if fault_monitor_thr and fault_monitor_thr.is_alive():
+            fault_monitor_thr.join(timeout=1.0)
         if pedal_thread and pedal_thread.is_alive():
             pedal_thread.join(timeout=1.0)
         
