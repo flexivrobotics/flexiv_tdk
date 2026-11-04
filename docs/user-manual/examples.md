@@ -27,6 +27,7 @@ Examples include:
 - `transparent_cartesian_teleop_wan.cpp`
 - `transparent_cartesian_teleop_wan_pro.cpp`
 - `joint_teleop_under_lan.cpp`
+- `device_teleop_lan.cpp`
 
 Build and run:
 
@@ -56,11 +57,12 @@ Examples include:
 - `transparent_cartesian_teleop_wan.py`
 - `transparent_cartesian_teleop_wan_pro.py`
 - `joint_teleop_under_lan.py`
+- `device_teleop_lan.py`
 
-Install **TDK v1.6.4** first. It requires **`flexivrdk==1.9.4.1`** (pulled in automatically):
+Install **TDK v1.7** first. It requires **`flexivrdk==1.9.4.1`** (pulled in automatically):
 
 ```bash
-python3.x -m pip install flexivtdk==1.6.4
+python3.x -m pip install flexivtdk==1.7
 ```
 
 Some console commands in examples (for example LAN `P`, which calls `instances()`) use the underlying RDK `Robot` objects and need that matching `flexivrdk` package.

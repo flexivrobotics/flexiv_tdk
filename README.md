@@ -1,7 +1,7 @@
 # Flexiv TDK
 
 [![CMake](https://github.com/flexivrobotics/flexiv_tdk/actions/workflows/cmake.yml/badge.svg)](https://github.com/flexivrobotics/flexiv_tdk/actions/workflows/cmake.yml)
-[![Version](https://img.shields.io/badge/version-1.6.4-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.7-blue.svg)]()
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 **Flexiv TDK (Teleoperation Development Kit)** is an SDK for building custom robot-to-robot or device-to-robot teleoperation applications with Flexiv's adaptive robots. It enables synchronized, force-guided motion using **high-fidelity perceptual feedback** and supports both **LAN** (Local Area Network) and **WAN** (Internet) connections.
@@ -25,9 +25,9 @@ Flexiv TDK has been recognized on the [Manipulation Net Peg-in-Hole Leaderboard]
 
 ## References
 
-The online site [flexivrobotics.github.io/flexiv_tdk](https://flexivrobotics.github.io/flexiv_tdk/) documents **TDK v2.x**. This repository tag is **TDK v1.6.x**. Do not use the online v2.x API pages with this release.
+The online site [flexivrobotics.github.io/flexiv_tdk](https://flexivrobotics.github.io/flexiv_tdk/) documents **TDK v2.x**. This repository tag is **TDK v1.7**. Do not use the online v2.x API pages with this release.
 
-For the v1.6.x user manual and C++ API, generate the docs locally from this tree and open them in a browser (see [Generate Documentation](#-generate-documentation)).
+For the v1.7 user manual and C++ API, generate the docs locally from this tree and open them in a browser (see [Generate Documentation](#-generate-documentation)).
 
 ---
 
@@ -53,10 +53,10 @@ We recommend installing TDK into a dedicated virtual environment, e.g. with `ven
 ```bash
 python3.x -m venv ~/venvs/tdk && source ~/venvs/tdk/bin/activate
 # or: micromamba create -n tdk python=3.x && micromamba activate tdk
-python -m pip install flexivtdk==1.6.4
+python -m pip install flexivtdk==1.7
 ```
 
-This installs **TDK v1.6.4** and its hard dependency **`flexivrdk==1.9.4.1`**. Replace `3.x` with a supported Python version.
+This installs **TDK v1.7** and its hard dependency **`flexivrdk==1.9.4.1`**. Replace `3.x` with a supported Python version.
 
 NOTE: inside an activated environment, use `python` rather than `python3.x`, which silently falls back to the system Python if the environment has none.
 
@@ -66,7 +66,7 @@ Verify the installation in the activated environment:
 
     python -c "import flexivtdk, flexivrdk; print(flexivtdk.__version__, flexivrdk.__version__, flexivtdk.__file__)"
 
-The versions should be `1.6.4` and `1.9.4.1`, and the path should be inside your environment.
+The versions should be `1.7` and `1.9.4.1`, and the path should be inside your environment.
 
 **IDE support:** `flexivtdk` ships type stubs, so VS Code, Cursor and PyCharm provide code completion, signature hints and inline docs. Select the environment's interpreter in the IDE (VS Code / Cursor: `Ctrl+Shift+P` → *Python: Select Interpreter*), since activating it in a terminal does not affect the IDE. If `import flexivtdk` is marked unresolved, the IDE is using a different interpreter.
 
@@ -212,7 +212,7 @@ inventory and license texts: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## 📚 Generate Documentation
 
-The online [GitHub Pages](https://flexivrobotics.github.io/flexiv_tdk/) site is **TDK v2.x**. For **TDK v1.6.x** (this tag), build the user manual and Doxygen API locally:
+The online [GitHub Pages](https://flexivrobotics.github.io/flexiv_tdk/) site is **TDK v2.x**. For **TDK v1.7** (this tag), build the user manual and Doxygen API locally:
 
 ```bash
 pip install mkdocs-material
