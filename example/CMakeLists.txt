@@ -21,6 +21,7 @@ set(EXAMPLE_LIST
   transparent_cartesian_teleop_wan
   transparent_cartesian_teleop_wan_pro
   joint_teleop_under_lan
+  device_teleop_lan
 )
 
 # Find flexiv_tdk library
