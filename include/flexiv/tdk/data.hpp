@@ -187,6 +187,14 @@ public:
      * @param in_pose Target TCP pose in world frame.
      * @param in_velocity Target TCP velocity (linear and angular) in world frame.
      * @param in_acceleration Target TCP acceleration (linear and angular) in world frame.
+     * @warning DeviceTeleopLan reads this object at 1 kHz and passes the values straight to robot.
+     * That real-time interface has no trajectory generator and tracks the commanded TCP pose
+     * directly, so every sample written here must be smooth and continuous. Do not introduce a
+     * large jump relative to the previous write, and do not command a pose far from the robot's
+     * current TCP pose. A large step or a large tracking error is applied immediately and can cause
+     * a sudden movement, instability, or a fault. Seed the first write from the current tcp_pose
+     * and then change the pose in small increments. Velocity and acceleration may be left at 0;
+     * non-zero values must match the pose sequence.
      */
     void write(const std::array<double, kPoseSize>& in_pose,
         const std::array<double, kCartDoF>& in_velocity,
