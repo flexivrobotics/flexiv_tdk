@@ -20,6 +20,7 @@ set(EXAMPLE_LIST
   transparent_cartesian_teleop_lan
   transparent_cartesian_teleop_wan
   transparent_cartesian_teleop_wan_pro
+  transparent_cartesian_teleop_wifi
   joint_teleop_under_lan
 )
 
