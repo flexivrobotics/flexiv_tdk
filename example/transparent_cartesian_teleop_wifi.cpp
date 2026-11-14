@@ -442,8 +442,9 @@ class FollowerGrippers
 {
 public:
     /**
-     * @brief Enable the named gripper on the follower robot of every pair. The robots must be
-     * operational, i.e. construct this after TransparentCartesianTeleopWAN::Init().
+     * @brief Enable the named gripper on the follower robot of every pair and trigger its
+     * initialization. The robots must be operational, i.e. construct this after
+     * TransparentCartesianTeleopWAN::Init().
      */
     FollowerGrippers(const flexiv::tdk::TransparentCartesianTeleopWAN& teleop,
         unsigned int num_pairs, const std::string& name)
@@ -451,10 +452,12 @@ public:
         for (unsigned int idx = 0; idx < num_pairs; ++idx) {
             auto gripper = std::make_unique<flexiv::rdk::Gripper>(*teleop.instance(idx));
             gripper->Enable(name);
+            gripper->Init();
             params_.push_back(gripper->params());
             grippers_.push_back(std::move(gripper));
             closed_.push_back(-1);
-            LogInfo("Pair " + std::to_string(idx) + " gripper [" + name + "] enabled");
+            LogInfo("Pair " + std::to_string(idx) + " gripper [" + name
+                    + "] enabled, initialization triggered");
         }
     }
 
