@@ -31,6 +31,8 @@ Console commands added in v1.6.4:
 - `-W <iface>`: WiFi interface name (for example `wlo1`), so the teleop link stays on WiFi.
 - `-T <ms>`: optional. Maximum acceptable message latency, 0-350 ms (default 200).
 - `-D`: optional, leader only. DI0 on the pair 0 leader robot engages and disengages all pairs.
+- `-H`: optional. Moves all local robots to their home posture after connecting, before teleop starts. Each computer homes only its own robots, so pass `-H` on both computers to home every arm.
+- Uses the TDK default Cartesian stiffness and sets no max contact wrench limit. Restarting with `u` leaves the restarted pairs disengaged.
 - Console commands act on all pairs. With two pairs, append `0` or `1` to act on one pair only, for example `u1` restarts pair 1. `m` toggles printing the message latency every second.
 
 Leader computer (TCP server), dual-arm:

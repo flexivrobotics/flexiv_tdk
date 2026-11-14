@@ -6,8 +6,9 @@
  * TransparentCartesianTeleopWAN instance with one or two robot pairs. Only the teleop messages
  * between the two computers travel over WiFi, through one TCP connection (Standard Edition), so no
  * public IP address or port forwarding is needed. A single pedal (DI0 on the first leader robot)
- * engages all pairs. Also supports per-pair restart, message latency monitoring, nullspace posture
- * tuning, max contact wrench setting and fault recovery.
+ * engages all pairs. Uses the TDK default Cartesian stiffness and sets no max contact wrench limit.
+ * Optionally homes all local robots after connecting. Also supports per-pair restart, message
+ * latency monitoring, nullspace posture tuning and fault recovery.
  * @copyright Copyright (C) 2016-2026 Flexiv Ltd. All Rights Reserved.
  * @author Flexiv
  */
@@ -46,10 +47,6 @@ const std::array<std::vector<double>, kMaxPairs> kPreferredJntPos
 /** Nullspace to Home posture */
 const std::vector<double> kHomeJntPos = {0 * M_PI / 180.0, -40 * M_PI / 180.0, 0 * M_PI / 180.0,
     90 * M_PI / 180.0, 0 * M_PI / 180.0, 40 * M_PI / 180.0, 0 * M_PI / 180.0};
-
-/** Maximum contact wrench for soft contact*/
-const std::array<double, flexiv::tdk::kCartDoF> kDefaultMaxContactWrench
-    = {25.0, 25.0, 25.0, 10.0, 10.0, 10.0};
 
 /** Upper bound of the latency limit accepted by SetTeleopLatencyLimit() */
 constexpr double kMaxLatencyLimitMs = 350.0;
@@ -193,9 +190,11 @@ void PrintHelp()
     std::cout<<"     -W     [optional] WiFi interface name, e.g. wlo1. Repeatable."<<std::endl;
     std::cout<<"     -T     [optional] Maximum acceptable message latency in ms, range [0, 350]. Default 200."<<std::endl;
     std::cout<<"     -D     [optional] Leader only. DI0 on the 1st leader robot engages all pairs."<<std::endl;
+    std::cout<<"     -H     [optional] Move all local robots to home posture after connecting, before teleop starts."<<std::endl;
     std::cout<<"Pass -L and -F together for dual-arm teleop, or neither for single-arm teleop."<<std::endl;
     std::cout<<"Both computers must pass the same serial numbers in the same order, and the same -i and -p."<<std::endl;
-    std::cout<<"Usage: sudo ./transparent_cartesian_teleop_wifi -l <sn> -f <sn> [-L <sn> -F <sn>] -r leader|follower -t server|client -i <server_wifi_ip> -p <port> [-A <lan_ipv4>] [-W <wifi_iface>] [-T <ms>] [-D]"<<std::endl;
+    std::cout<<"Pass -H on both computers to home every arm; each computer homes only its own robots."<<std::endl;
+    std::cout<<"Usage: sudo ./transparent_cartesian_teleop_wifi -l <sn> -f <sn> [-L <sn> -F <sn>] -r leader|follower -t server|client -i <server_wifi_ip> -p <port> [-A <lan_ipv4>] [-W <wifi_iface>] [-T <ms>] [-D] [-H]"<<std::endl;
     // clang-format on
 }
 
@@ -235,6 +234,7 @@ const struct option kLongOptions[] = {
     {"wifi interface name",         required_argument,  0, 'W'},
     {"latency limit ms",            required_argument,  0, 'T'},
     {"enable digital input",        no_argument,        0, 'D'},
+    {"home on start",               no_argument,        0, 'H'},
     {0,                             0,                  0,  0 }
     // clang-format on
 };
@@ -363,9 +363,6 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop, unsigned in
   --- Null Space Posture ---
     i/I      : Set local nullspace to Preferred/Home posture
 
-  --- Max Contact Wrench ---
-    p        : Set default max contact wrench
-
   --- Start/Stop ---
     u        : Init and start teleop
     U        : Stop teleop
@@ -445,11 +442,6 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop, unsigned in
                         teleop.SetNullSpacePosture(idx, kHomeJntPos);
                     }
                     break;
-                case 'p':
-                    for (auto idx : targets) {
-                        teleop.SetMaxContactWrench(idx, kDefaultMaxContactWrench);
-                    }
-                    break;
                 case 'u':
                     if (all_pairs) {
                         teleop.Init();
@@ -458,9 +450,11 @@ void ConsoleTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop, unsigned in
                         teleop.InitWithIdx(targets[0]);
                         teleop.StartWithIdx(targets[0]);
                     }
-                    // Re-apply the contact wrench limit after the control mode is switched
-                    for (auto idx : targets) {
-                        teleop.SetMaxContactWrench(idx, kDefaultMaxContactWrench);
+                    // Engagement survives Stop/Init/Start, so restart disengaged
+                    if (teleop.role() == flexiv::tdk::Role::WAN_TELEOP_LEADER) {
+                        for (auto idx : targets) {
+                            teleop.Engage(idx, false);
+                        }
                     }
                     break;
                 case 'U':
@@ -541,9 +535,10 @@ int main(int argc, char* argv[])
     std::vector<std::string> lan_interface_whitelist {};
     std::vector<std::string> wan_interface_whitelist {};
     bool enable_digital_input = false;
+    bool home_on_start = false;
 
     int opt = 0;
-    while ((opt = getopt_long_only(argc, argv, "l:f:L:F:r:t:i:p:A:W:T:D", kLongOptions, nullptr))
+    while ((opt = getopt_long_only(argc, argv, "l:f:L:F:r:t:i:p:A:W:T:DH", kLongOptions, nullptr))
            != -1) {
         switch (opt) {
             case 'l':
@@ -610,6 +605,9 @@ int main(int argc, char* argv[])
             }
             case 'D':
                 enable_digital_input = true;
+                break;
+            case 'H':
+                home_on_start = true;
                 break;
             default:
                 PrintHelp();
@@ -705,16 +703,21 @@ int main(int argc, char* argv[])
             LogInfo("Message latency limit set to " + FmtFixed(*latency_limit_ms, 1) + " ms");
         }
 
+        // Optionally move all local robots to home posture first. HomeAll() needs enabled robots,
+        // so enable them with an Init() that skips sensor zeroing; the Init() below then zeroes the
+        // force/torque sensors at the home posture and switches back to teleop control.
+        if (home_on_start) {
+            LogWarn("Moving all local robots to home posture, make sure the workspace is clear");
+            tctw.Init(true, flexiv::tdk::ZeroFTSensor::Disable);
+            tctw.HomeAll();
+            LogInfo("All local robots are at home posture");
+        }
+
         // Init high transparency teleop for all pairs
         tctw.Init();
 
         // Start high transparency teleop for all pairs
         tctw.Start();
-
-        // Set max contact wrench
-        for (unsigned int idx = 0; idx < num_pairs; ++idx) {
-            tctw.SetMaxContactWrench(idx, kDefaultMaxContactWrench);
-        }
 
         // Start console, fault monitor and link monitor threads
         std::thread console_thread(ConsoleTask, std::ref(tctw), num_pairs);
