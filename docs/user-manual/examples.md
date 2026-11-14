@@ -30,7 +30,8 @@ Console commands added in v1.6.4:
 - `-A <lan_ipv4>`: IPv4 address of the NIC wired to the robots, so robot traffic stays off WiFi.
 - `-W <iface>`: WiFi interface name (for example `wlo1`), so the teleop link stays on WiFi.
 - `-T <ms>`: optional. Maximum acceptable message latency, 0-350 ms (default 200).
-- `-D`: optional, leader only. DI0 on the pair 0 leader robot engages and disengages all pairs.
+- `-D`: optional, leader only. The pedal on DI1 of the pair 0 leader robot engages and disengages all pairs.
+- `-n <gripper_name>`: optional, pass the same name on both computers, for example `-n Flexiv-GN01` (the gripper device name in Elements -> Device on the follower robots). DI0 of each leader robot closes (high) or opens (low) the gripper on its follower robot, so the grippers open when the computers connect while DI0 is low. The follower enables its grippers at startup. Gripper commands travel over a second TCP connection on port `-p` + 1. On the follower, console `g` prints gripper states and `N` initializes the gripper.
 - `-H`: optional. Moves all local robots to their home posture after connecting, before teleop starts. Each computer homes only its own robots, so pass `-H` on both computers to home every arm.
 - Uses the TDK default Cartesian stiffness and sets no max contact wrench limit. Restarting with `u` leaves the restarted pairs disengaged.
 - Console commands act on all pairs. With two pairs, append `0` or `1` to act on one pair only, for example `u1` restarts pair 1. `m` toggles printing the message latency every second.
@@ -38,13 +39,13 @@ Console commands added in v1.6.4:
 Leader computer (TCP server), dual-arm:
 
 ```bash
-sudo ./transparent_cartesian_teleop_wifi -l <L0> -f <F0> -L <L1> -F <F1> -r leader -t server -i <server_wifi_ip> -p 50000 -A <wired_ipv4> -W <wifi_iface> -D
+sudo ./transparent_cartesian_teleop_wifi -l <L0> -f <F0> -L <L1> -F <F1> -r leader -t server -i <server_wifi_ip> -p 50000 -A <wired_ipv4> -W <wifi_iface> -D -n Flexiv-GN01
 ```
 
 Follower computer (TCP client), dual-arm:
 
 ```bash
-sudo ./transparent_cartesian_teleop_wifi -l <L0> -f <F0> -L <L1> -F <F1> -r follower -t client -i <server_wifi_ip> -p 50000 -A <wired_ipv4> -W <wifi_iface>
+sudo ./transparent_cartesian_teleop_wifi -l <L0> -f <F0> -L <L1> -F <F1> -r follower -t client -i <server_wifi_ip> -p 50000 -A <wired_ipv4> -W <wifi_iface> -n Flexiv-GN01
 ```
 
 For single-arm teleop, drop `-L <L1> -F <F1>` on both computers.
@@ -53,7 +54,7 @@ Before running:
 
 1. Use a WiFi network without AP/client isolation. Guest and corporate networks often block traffic between devices; a dedicated 5 GHz router works best. Its subnet must not overlap the robot subnet.
 2. Turn off WiFi power saving on both computers: `sudo iw dev <wifi_iface> set power_save off`.
-3. Open the port on the server computer, for example `sudo ufw allow 50000/tcp`.
+3. Open the port on the server computer, for example `sudo ufw allow 50000/tcp`, or `sudo ufw allow 50000:50001/tcp` with `-n`.
 4. Synchronize the two clocks, see [Time Sync (WAN)](time-sync.md). Without Internet access, make the server computer the time source: add `local stratum 8` and `allow <wifi_subnet>` to its `/etc/chrony/chrony.conf`, add `server <server_wifi_ip> iburst prefer` on the client, then restart chrony on both. Local WiFi latency is only a few milliseconds, so even a small clock offset reads as negative latency and forces teleop to disengage.
 
 ## C++ Examples
