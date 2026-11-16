@@ -12,8 +12,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: gh-pages
-  cancel-in-progress: false
+  group: pages-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
@@ -34,7 +34,7 @@ jobs:
       - name: Install MkDocs
         run: |
           python -m pip install --upgrade pip
-          pip install mkdocs-material
+          pip install "mkdocs-material<9.7.2"
 
       - name: Install Doxygen
         run: |
@@ -57,7 +57,7 @@ jobs:
           path: site
 
       - name: Publish v1 to gh-pages
-        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/v1.x'
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/v1.x'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash docs/publish_gh_pages.sh v1
