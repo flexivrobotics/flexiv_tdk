@@ -1,0 +1,17 @@
+.tdk-site-version {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: 0.75rem;
+  color: inherit;
+  font-size: 0.75rem;
+}
+
+.tdk-site-version select {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 1px solid currentColor;
+  border-radius: 0.2rem;
+  padding: 0.15rem 0.4rem;
+}
