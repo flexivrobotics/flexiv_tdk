@@ -25,7 +25,7 @@ Flexiv TDK has been recognized on the [Manipulation Net Peg-in-Hole Leaderboard]
 
 ## References
 
-[Flexiv TDK Page](https://flexivrobotics.github.io/flexiv_tdk/) is the main reference. It contains important information including user manual and API documentation. The instructions below serve as a quick reference, and you can find the full documentation at [Flexiv TDK Manual](https://flexivrobotics.github.io/flexiv_tdk/user-manual/overview/).
+[Flexiv TDK Page](https://flexivrobotics.github.io/flexiv_tdk/v2/) is the main reference for this line. The site opens on v2, and the header can switch to [v1](https://flexivrobotics.github.io/flexiv_tdk/v1/). The instructions below serve as a quick reference, and you can find the full documentation at [Flexiv TDK Manual](https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/overview/).
 
 ---
 
@@ -170,4 +170,4 @@ LD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
 Check each example’s source code for usage details.
 
 ## 📚 API Documentation
-The complete and detailed API documentation of all releases can be found at [API Reference](https://flexivrobotics.github.io/flexiv_tdk/api/). Use the version dropdown on that page to switch between releases. The latest release is always available directly at [Doxygen API (latest)](https://flexivrobotics.github.io/flexiv_tdk/api/doxygen/index.html).
+The v2 C++ API documentation is at [API Reference](https://flexivrobotics.github.io/flexiv_tdk/v2/api/). Use the version dropdown on that page to switch between v2 releases. The latest v2 release is at [Doxygen API (latest)](https://flexivrobotics.github.io/flexiv_tdk/v2/api/doxygen/index.html). v1 documentation is published separately at [v1](https://flexivrobotics.github.io/flexiv_tdk/v1/).

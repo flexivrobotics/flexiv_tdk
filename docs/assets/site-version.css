@@ -1,0 +1,24 @@
+.tdk-site-version {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: 0.75rem;
+  color: #fff;
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+.tdk-site-version select {
+  font: inherit;
+  color: #1f2328;
+  background-color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 0.2rem;
+  padding: 0.2rem 0.35rem;
+  min-width: 7.5rem;
+}
+
+.tdk-site-version select option {
+  color: #1f2328;
+  background-color: #fff;
+}

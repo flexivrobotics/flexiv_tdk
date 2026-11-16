@@ -14,3 +14,4 @@ log/
 .history/
 cloned/
 docs/api/versions.json
+.worktrees/

@@ -1,6 +1,6 @@
 site_name: Flexiv TDK Documentation
 site_description: User Manual, API docs, and Q&A for Flexiv TDK
-site_url: https://flexivrobotics.github.io/flexiv_tdk/
+site_url: https://flexivrobotics.github.io/flexiv_tdk/v2/
 repo_url: https://github.com/flexivrobotics/flexiv_tdk
 repo_name: flexivrobotics/flexiv_tdk
 edit_uri: edit/main/docs/
@@ -45,9 +45,11 @@ markdown_extensions:
 # carousel in the home page, automatically generate relative path based on the page depth, multi-language compatible
 extra_css:
   - assets/carousel/carousel.css
+  - assets/site-version.css
 
 extra_javascript:
   - assets/carousel/carousel.js
+  - assets/site-version.js
 
 plugins:
   - search

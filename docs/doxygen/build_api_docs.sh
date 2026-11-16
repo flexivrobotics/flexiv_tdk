@@ -2,8 +2,9 @@
 # Build Doxygen API docs for multiple versions of Flexiv TDK.
 #
 # Output layout (under docs/api/doxygen/, which is git-ignored):
-#   docs/api/doxygen/           latest release (backward-compatible entry point)
-#   docs/api/doxygen/<tag>/     each release tag that ships docs/doxygen/Doxyfile.in
+#   docs/api/doxygen/           latest matching release (backward-compatible entry point)
+#   docs/api/doxygen/<tag>/     each matching release tag that ships docs/doxygen/Doxyfile.in
+# API_VERSION_PREFIX=v2 limits the tags to that line and always skips *_draft.
 #
 # Usage: bash docs/doxygen/build_api_docs.sh
 # Requires: git, doxygen, graphviz. All release tags must be fetched (git fetch --tags).
@@ -25,13 +26,31 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# Optional API_VERSION_PREFIX=v2 keeps that tag and v2.*, and always skips *_draft.
+API_VERSION_PREFIX="${API_VERSION_PREFIX:-}"
+
+tag_included() {
+  local tag="$1"
+  case "$tag" in
+    *_draft) return 1 ;;
+  esac
+  if [ -n "$API_VERSION_PREFIX" ]; then
+    case "$tag" in
+      "$API_VERSION_PREFIX"|"${API_VERSION_PREFIX}".*) ;;
+      *) return 1 ;;
+    esac
+  fi
+  return 0
+}
+
 # Release tags that ship a Doxyfile, oldest to newest
 TAGS="$(git -C "$REPO_ROOT" tag | while read -r t; do
+  tag_included "$t" || continue
   git -C "$REPO_ROOT" cat-file -e "${t}:docs/doxygen/Doxyfile.in" 2>/dev/null && echo "$t"
 done | sort -V)"
 
 if [ -z "$TAGS" ]; then
-  echo "No release tag with docs/doxygen/Doxyfile.in found; run 'git fetch --tags' first" >&2
+  echo "No release tag with docs/doxygen/Doxyfile.in matched (prefix: ${API_VERSION_PREFIX:-any}); run 'git fetch --tags' first" >&2
   exit 1
 fi
 
