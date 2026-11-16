@@ -3,15 +3,22 @@
   align-items: center;
   gap: 0.4rem;
   margin-left: 0.75rem;
-  color: inherit;
+  color: #fff;
   font-size: 0.75rem;
+  line-height: 1.2;
 }
 
 .tdk-site-version select {
   font: inherit;
-  color: inherit;
-  background: transparent;
-  border: 1px solid currentColor;
+  color: #1f2328;
+  background-color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.85);
   border-radius: 0.2rem;
-  padding: 0.15rem 0.4rem;
+  padding: 0.2rem 0.35rem;
+  min-width: 7.5rem;
+}
+
+.tdk-site-version select option {
+  color: #1f2328;
+  background-color: #fff;
 }
