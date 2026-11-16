@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Publish the built MkDocs site/ directory onto the orphan gh-pages branch.
-# Only the requested directory (v1 or v2) is replaced. The root index.html,
-# when absent, redirects visitors to v2/.
+# Only the requested directory (v1 or v2) is replaced. When absent, the root
+# index.html redirects visitors to v2/, and the root 404.html sends links from
+# the old unversioned site to the same page under v2/.
 #
 # Usage: bash docs/publish_gh_pages.sh v2
 # Runs from GitHub Actions, which provides GITHUB_TOKEN and GITHUB_REPOSITORY.
@@ -34,10 +35,10 @@ SERVER="${SERVER#https://}"
 SERVER="${SERVER#http://}"
 # Username only. The token stays in the environment and is supplied when Git asks for a password.
 REMOTE="https://x-access-token@${SERVER}/${GITHUB_REPOSITORY}.git"
-PUBLISH="$(mktemp -d)"
+WORK="$(mktemp -d)"
 ASKPASS="$(mktemp)"
 cleanup() {
-  rm -rf "$PUBLISH"
+  rm -rf "$WORK"
   rm -f "$ASKPASS"
 }
 trap cleanup EXIT
@@ -55,19 +56,31 @@ git_auth() {
   git -c credential.helper= "$@"
 }
 
-if git_auth ls-remote --exit-code --heads "$REMOTE" gh-pages >/dev/null 2>&1; then
-  git_auth clone --branch gh-pages --depth 1 "$REMOTE" "$PUBLISH"
-else
-  git init -b gh-pages "$PUBLISH"
-  git -C "$PUBLISH" remote add origin "$REMOTE"
-fi
+# Sets RESULT to pushed, unchanged, or rejected. Any other failure exits the script.
+publish_once() {
+  local publish="$1" status=0
+  RESULT=""
 
-# Identity applies only to the temporary publish checkout.
-git -C "$PUBLISH" config user.email "github-actions[bot]@users.noreply.github.com"
-git -C "$PUBLISH" config user.name "github-actions[bot]"
+  # Exit code 2 means the branch does not exist yet. Anything else non-zero is an access or network failure.
+  git_auth ls-remote --exit-code --heads "$REMOTE" gh-pages >/dev/null || status=$?
+  case "$status" in
+    0) git_auth clone --quiet --branch gh-pages --depth 1 "$REMOTE" "$publish" ;;
+    2)
+      git init -q -b gh-pages "$publish"
+      git -C "$publish" remote add origin "$REMOTE"
+      ;;
+    *)
+      echo "Cannot read gh-pages from ${GITHUB_REPOSITORY} (git ls-remote exit ${status})." >&2
+      exit 1
+      ;;
+  esac
 
-if [ ! -f "${PUBLISH}/index.html" ]; then
-  cat > "${PUBLISH}/index.html" <<'EOF'
+  # Identity applies only to the temporary publish checkout.
+  git -C "$publish" config user.email "github-actions[bot]@users.noreply.github.com"
+  git -C "$publish" config user.name "github-actions[bot]"
+
+  if [ ! -f "${publish}/index.html" ]; then
+    cat > "${publish}/index.html" <<'EOF'
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -82,19 +95,71 @@ if [ ! -f "${PUBLISH}/index.html" ]; then
 </body>
 </html>
 EOF
-fi
-touch "${PUBLISH}/.nojekyll"
+  fi
+  if [ ! -f "${publish}/404.html" ]; then
+    cat > "${publish}/404.html" <<'EOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Page not found - Flexiv TDK Documentation</title>
+  <script>
+    (function () {
+      var siteRoot = "/flexiv_tdk/";
+      var path = location.pathname;
+      if (path.indexOf(siteRoot) !== 0) return;
+      var rest = path.slice(siteRoot.length);
+      if (/^(v1|v2)(\/|$)/.test(rest)) return;
+      location.replace(siteRoot + "v2/" + rest + location.search + location.hash);
+    })();
+  </script>
+</head>
+<body>
+  <p>Page not found. Open the <a href="/flexiv_tdk/v2/">v2</a> or <a href="/flexiv_tdk/v1/">v1</a> documentation.</p>
+</body>
+</html>
+EOF
+  fi
+  touch "${publish}/.nojekyll"
 
-rm -rf "${PUBLISH:?}/${VERSION_DIR}"
-mkdir -p "${PUBLISH}/${VERSION_DIR}"
-cp -a "${SITE}/." "${PUBLISH}/${VERSION_DIR}/"
+  rm -rf "${publish:?}/${VERSION_DIR}"
+  mkdir -p "${publish}/${VERSION_DIR}"
+  cp -a "${SITE}/." "${publish}/${VERSION_DIR}/"
 
-git -C "$PUBLISH" add -A -- "$VERSION_DIR" index.html .nojekyll
-if git -C "$PUBLISH" diff --cached --quiet; then
-  echo "No documentation changes to publish."
-  exit 0
-fi
+  git -C "$publish" add -A -- "$VERSION_DIR" index.html 404.html .nojekyll
+  if git -C "$publish" diff --cached --quiet; then
+    RESULT=unchanged
+    return
+  fi
 
-git -C "$PUBLISH" commit -m "Publish ${VERSION_DIR} documentation"
-git_auth -C "$PUBLISH" push origin HEAD:gh-pages
-echo "Published ${VERSION_DIR} to gh-pages."
+  git -C "$publish" commit -q -m "Publish ${VERSION_DIR} documentation"
+  if git_auth -C "$publish" push origin HEAD:gh-pages; then
+    RESULT=pushed
+  else
+    RESULT=rejected
+  fi
+}
+
+# The v1 and v2 workflows publish independently, so a push can lose a race to the other line.
+ATTEMPTS=3
+for attempt in $(seq 1 "$ATTEMPTS"); do
+  rm -rf "${WORK:?}/publish"
+  publish_once "${WORK}/publish"
+  case "$RESULT" in
+    pushed)
+      echo "Published ${VERSION_DIR} to gh-pages."
+      exit 0
+      ;;
+    unchanged)
+      echo "No documentation changes to publish."
+      exit 0
+      ;;
+  esac
+  echo "Push to gh-pages was rejected (attempt ${attempt}/${ATTEMPTS})." >&2
+  if [ "$attempt" -lt "$ATTEMPTS" ]; then
+    sleep $((attempt * 5))
+  fi
+done
+
+echo "Could not publish ${VERSION_DIR} to gh-pages after ${ATTEMPTS} attempts." >&2
+exit 1
