@@ -33,6 +33,7 @@ Console commands added in v1.6.4:
 - `-D`: optional, leader only. The pedal on DI1 of the pair 0 leader robot engages and disengages all pairs.
 - `-n <gripper_name>`: optional, pass the same name on both computers, for example `-n Flexiv-GN01` (the gripper device name in Elements -> Device on the follower robots). DI0 of each leader robot closes (high) or opens (low) the gripper on its follower robot, so the grippers open when the computers connect while DI0 is low. The follower enables its grippers and triggers their initialization at startup. Gripper commands travel over a second TCP connection on port `-p` + 1. On the follower, console `g` prints gripper states and `N` initializes the gripper.
 - `-H`: optional. Moves all local robots to their home posture after connecting, before teleop starts. Each computer homes only its own robots, so pass `-H` on both computers to home every arm.
+- At startup, each computer clears the fault of any of its robots that is in fault and moves only that robot to its home posture; robots without fault stay where they are. The program exits if a fault cannot be cleared.
 - Uses the TDK default Cartesian stiffness and sets no max contact wrench limit. Restarting with `u` leaves the restarted pairs disengaged.
 - Console commands act on all pairs. With two pairs, append `0` or `1` to act on one pair only, for example `u1` restarts pair 1. `m` toggles printing the message latency every second.
 

@@ -8,9 +8,10 @@
  * public IP address or port forwarding is needed. A pedal on DI1 of the first leader robot engages
  * all pairs. Optionally, DI0 of each leader robot opens and closes the gripper on its follower
  * robot (hold to close); these commands travel over a second TCP connection on the next port. Uses
- * the TDK default Cartesian stiffness and sets no max contact wrench limit. Optionally homes all
- * local robots after connecting. Also supports per-pair restart, message latency monitoring,
- * nullspace posture tuning and fault recovery.
+ * the TDK default Cartesian stiffness and sets no max contact wrench limit. At startup, clears the
+ * fault of any local robot in fault and moves only that robot home. Optionally homes all local
+ * robots after connecting. Also supports per-pair restart, message latency monitoring, nullspace
+ * posture tuning and fault recovery.
  * @copyright Copyright (C) 2016-2026 Flexiv Ltd. All Rights Reserved.
  * @author Flexiv
  */
@@ -44,8 +45,10 @@
 #include <numeric>
 #include <optional>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <thread>
+#include <variant>
 #include <vector>
 
 #ifndef MSG_NOSIGNAL
@@ -580,6 +583,7 @@ void PrintHelp()
     std::cout<<"Pass -L and -F together for dual-arm teleop, or neither for single-arm teleop."<<std::endl;
     std::cout<<"Both computers must pass the same serial numbers in the same order, and the same -i and -p."<<std::endl;
     std::cout<<"Pass -H on both computers to home every arm; each computer homes only its own robots."<<std::endl;
+    std::cout<<"At startup, a local robot in fault has its fault cleared and moves home; other robots stay put."<<std::endl;
     std::cout<<"Usage: sudo ./transparent_cartesian_teleop_wifi -l <sn> -f <sn> [-L <sn> -F <sn>] -r leader|follower -t server|client -i <server_wifi_ip> -p <port> [-A <lan_ipv4>] [-W <wifi_iface>] [-T <ms>] [-D] [-n <gripper_name>] [-H]"<<std::endl;
     // clang-format on
 }
@@ -717,6 +721,66 @@ void ReadDigitalInputTask(flexiv::tdk::TransparentCartesianTeleopWAN& teleop,
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
     LogInfo("ReadDigitalInputTask exiting.");
+}
+
+/**
+ * @brief Clear the fault of each local robot that is in fault, then move only those robots to
+ * their home posture. Robots without fault stay where they are.
+ * @param[in] home Whether to home the recovered robots. False when all robots are homed anyway.
+ * @throw std::runtime_error if a fault cannot be cleared, or a robot stops while homing.
+ */
+void RecoverFaultedRobots(
+    flexiv::tdk::TransparentCartesianTeleopWAN& teleop, unsigned int num_pairs, bool home)
+{
+    const bool is_leader = (teleop.role() == flexiv::tdk::Role::WAN_TELEOP_LEADER);
+    const auto robot_name = [&](unsigned int idx) {
+        const auto pair_sn = teleop.robot_pair_sn(idx);
+        return "pair " + std::to_string(idx) + " robot "
+               + (is_leader ? pair_sn.first : pair_sn.second);
+    };
+
+    std::vector<unsigned int> faulted;
+    for (unsigned int idx = 0; idx < num_pairs; ++idx) {
+        if (teleop.fault(idx)) {
+            faulted.push_back(idx);
+        }
+    }
+    if (faulted.empty()) {
+        return;
+    }
+
+    for (auto idx : faulted) {
+        LogWarn("Fault on " + robot_name(idx) + ", clearing it (may take up to 30 seconds)...");
+        if (!teleop.instance(idx)->ClearFault()) {
+            throw std::runtime_error("Failed to clear the fault on " + robot_name(idx)
+                                     + ". Check the robot, power cycle it if needed, then restart "
+                                       "this program.");
+        }
+        LogInfo("Fault cleared on " + robot_name(idx));
+    }
+    if (!home) {
+        return;
+    }
+
+    // Homing needs an enabled robot: InitWithIdx() enables it without zeroing the force/torque
+    // sensor; the Init() that follows in main() zeroes it at the home posture
+    for (auto idx : faulted) {
+        LogWarn("Moving " + robot_name(idx) + " to home posture, make sure its workspace is clear");
+        teleop.InitWithIdx(idx, true, flexiv::tdk::ZeroFTSensor::Disable);
+        teleop.instance(idx)->SwitchMode(flexiv::rdk::Mode::NRT_PRIMITIVE_EXECUTION);
+        teleop.instance(idx)->ExecutePrimitive("Home", {});
+    }
+    for (auto idx : faulted) {
+        const auto robot = teleop.instance(idx);
+        while (!std::get<int>(robot->primitive_states()["reachedTarget"])) {
+            if (!robot->operational()) {
+                throw std::runtime_error(
+                    "Homing stopped: " + robot_name(idx) + " is no longer operational");
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        }
+        LogInfo(robot_name(idx) + " is at home posture");
+    }
 }
 
 /**
@@ -1184,6 +1248,10 @@ int main(int argc, char* argv[])
             }
             LogInfo("Message latency limit set to " + FmtFixed(*latency_limit_ms, 1) + " ms");
         }
+
+        // Clear the fault of any local robot that starts in fault, then home only that robot.
+        // With -H all robots are homed below, so the recovered ones are not homed twice.
+        RecoverFaultedRobots(tctw, num_pairs, !home_on_start);
 
         // Optionally move all local robots to home posture first. HomeAll() needs enabled robots,
         // so enable them with an Init() that skips sensor zeroing; the Init() below then zeroes the
