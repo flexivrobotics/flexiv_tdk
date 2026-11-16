@@ -29,13 +29,30 @@ if [ ! -d "$SITE" ]; then
   exit 1
 fi
 
-REMOTE="${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY}.git"
+SERVER="${GITHUB_SERVER_URL:-https://github.com}"
+SERVER="${SERVER#https://}"
+SERVER="${SERVER#http://}"
+# Username only. The token stays in the environment and is supplied when Git asks for a password.
+REMOTE="https://x-access-token@${SERVER}/${GITHUB_REPOSITORY}.git"
 PUBLISH="$(mktemp -d)"
-cleanup() { rm -rf "$PUBLISH"; }
+ASKPASS="$(mktemp)"
+cleanup() {
+  rm -rf "$PUBLISH"
+  rm -f "$ASKPASS"
+}
 trap cleanup EXIT
 
+cat > "$ASKPASS" << 'EOF'
+#!/bin/sh
+printf '%s\n' "$GITHUB_TOKEN"
+EOF
+chmod 700 "$ASKPASS"
+export GIT_ASKPASS="$ASKPASS"
+export GIT_TERMINAL_PROMPT=0
+
 git_auth() {
-  git -c "http.extraheader=AUTHORIZATION: bearer ${GITHUB_TOKEN}" "$@"
+  # Drop the runner credential helper. It is configured for the source checkout, not this clone.
+  git -c credential.helper= "$@"
 }
 
 if git_auth ls-remote --exit-code --heads "$REMOTE" gh-pages >/dev/null 2>&1; then
