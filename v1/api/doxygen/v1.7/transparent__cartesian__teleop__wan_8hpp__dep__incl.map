@@ -1,0 +1,10 @@
+<map id="include/flexiv/tdk/transparent_cartesian_teleop_wan.hpp" name="include/flexiv/tdk/transparent_cartesian_teleop_wan.hpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="156,5,324,67"/>
+<area shape="rect" id="Node000002" href="$transparent__cartesian__teleop__wan_8cpp_source.html" title=" " alt="" coords="5,115,203,160"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="184,78,135,117,132,112,188,74"/>
+<area shape="rect" id="Node000003" href="$transparent__cartesian__teleop__wan__pro_8cpp_source.html" title=" " alt="" coords="224,208,394,269"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="247,80,256,120,268,159,292,208,287,207,263,161,251,121,245,85"/>
+<area shape="rect" id="Node000004" href="$gripper__remote__control_8hpp.html" title=" " alt="" coords="277,115,483,160"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="296,74,352,114,347,115,295,79"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="358,171,332,209,329,205,354,174"/>
+</map>

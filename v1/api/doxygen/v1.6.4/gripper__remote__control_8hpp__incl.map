@@ -1,0 +1,27 @@
+<map id="include/flexiv/tdk/gripper_remote_control.hpp" name="include/flexiv/tdk/gripper_remote_control.hpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="426,5,632,50"/>
+<area shape="rect" id="Node000002" href="$data_8hpp.html" title="Header file containing various constant expressions, data structs, and enums." alt="" coords="166,191,244,218"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="423,49,362,70,301,100,278,118,257,138,224,179,220,176,253,135,274,114,298,96,360,65,428,46"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="352,266,410,294"/>
+<area shape="poly" id="edge12_Node000001_Node000006" title=" " alt="" coords="546,48,570,84,589,128,595,152,597,176,593,199,582,220,567,237,549,250,508,268,465,278,426,282,425,277,464,273,506,263,546,245,563,233,577,217,588,197,592,175,590,153,584,130,565,87,545,53"/>
+<area shape="rect" id="Node000008" href="$transparent__cartesian__teleop__wan_8hpp.html" title=" " alt="" coords="311,98,475,143"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="499,49,439,92,437,87,494,52"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="491,191,567,218"/>
+<area shape="poly" id="edge13_Node000001_Node000009" title=" " alt="" coords="531,48,531,176,527,174,527,52"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="643,106,802,134"/>
+<area shape="poly" id="edge14_Node000001_Node000011" title=" " alt="" coords="576,48,683,99,678,100,575,53"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,266,61,294"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="175,221,76,263,74,259,173,216"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="84,266,147,294"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="192,218,145,259,142,254,187,220"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="170,266,240,294"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="207,217,207,252,203,249,203,221"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="237,216,340,260,335,261,236,221"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="264,266,327,294"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="222,216,270,256,265,256,220,221"/>
+<area shape="poly" id="edge8_Node000008_Node000002" title=" " alt="" coords="341,144,250,187,248,182,346,142"/>
+<area shape="poly" id="edge9_Node000008_Node000006" title=" " alt="" coords="354,142,328,166,309,192,306,209,313,226,327,242,346,258,340,257,323,246,309,229,301,210,304,190,324,162,350,145"/>
+<area shape="poly" id="edge10_Node000008_Node000009" title=" " alt="" coords="430,141,497,182,492,182,429,146"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="319,191,467,218"/>
+<area shape="poly" id="edge11_Node000008_Node000010" title=" " alt="" coords="395,141,395,176,391,174,391,145"/>
+</map>

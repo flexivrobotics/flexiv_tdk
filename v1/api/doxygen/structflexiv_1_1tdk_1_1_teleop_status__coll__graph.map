@@ -1,0 +1,5 @@
+<map id="flexiv::tdk::TeleopStatus" name="flexiv::tdk::TeleopStatus">
+<area shape="rect" id="Node000001" title="Snapshot of teleoperation health for one robot pair." alt="" coords="5,106,182,134"/>
+<area shape="rect" id="Node000002" href="$structflexiv_1_1tdk_1_1_teleop_issue.html" title="One restriction or interruption that the operator should understand." alt="" coords="9,5,178,33"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="96,47,96,106,91,105,91,50"/>
+</map>
