@@ -14,10 +14,10 @@
     return { version: match[1], rest: match[2] || "/" };
   }
 
-  var parsed = splitPath(location.pathname);
-  var current = parsed ? parsed.version : fallback;
+  var loaded = splitPath(location.pathname);
+  var current = loaded ? loaded.version : fallback;
 
-  function destination(version) {
+  function destination(version, parsed) {
     var rest = parsed ? parsed.rest : "/";
     if (version === "v1") {
       rest = rest.replace(/^\/(?:zh-Hant|zh|de|ja)(?=\/|$)/, "");
@@ -28,7 +28,9 @@
   }
 
   function go(version) {
-    var next = destination(version);
+    // Instant navigation changes the page without reloading this script.
+    var parsed = splitPath(location.pathname);
+    var next = destination(version, parsed);
     if (!parsed) {
       location.href = "https://flexivrobotics.github.io" + next;
       return;
