@@ -1,9 +1,9 @@
 site_name: Flexiv TDK Documentation
 site_description: User Manual, API docs, and Q&A for Flexiv TDK
-site_url: https://flexivrobotics.github.io/flexiv_tdk/
+site_url: https://flexivrobotics.github.io/flexiv_tdk/v1/
 repo_url: https://github.com/flexivrobotics/flexiv_tdk
 repo_name: flexivrobotics/flexiv_tdk
-edit_uri: edit/main/docs/
+edit_uri: edit/v1.x/docs/
 exclude_docs: |
   README.md
 
@@ -34,6 +34,12 @@ theme:
     - navigation.sections
     - navigation.top
     - content.code.copy
+
+extra_css:
+  - assets/site-version.css
+
+extra_javascript:
+  - assets/site-version.js
 
 markdown_extensions:
   - admonition

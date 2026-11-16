@@ -25,9 +25,7 @@ Flexiv TDK has been recognized on the [Manipulation Net Peg-in-Hole Leaderboard]
 
 ## References
 
-The online site [flexivrobotics.github.io/flexiv_tdk](https://flexivrobotics.github.io/flexiv_tdk/) documents **TDK v2.x**. This repository tag is **TDK v1.6.x**. Do not use the online v2.x API pages with this release.
-
-For the v1.6.x user manual and C++ API, generate the docs locally from this tree and open them in a browser (see [Generate Documentation](#-generate-documentation)).
+This line is published at [TDK v1 documentation](https://flexivrobotics.github.io/flexiv_tdk/v1/). The site root opens [v2](https://flexivrobotics.github.io/flexiv_tdk/v2/), and the header switches between the two. Do not use the v2 API pages with this release.
 
 ---
 
@@ -212,14 +210,13 @@ inventory and license texts: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## 📚 Generate Documentation
 
-The online [GitHub Pages](https://flexivrobotics.github.io/flexiv_tdk/) site is **TDK v2.x**. For **TDK v1.6.x** (this tag), build the user manual and Doxygen API locally:
+The published v1 manual and API are at [TDK v1 documentation](https://flexivrobotics.github.io/flexiv_tdk/v1/). To preview this tree locally:
 
 ```bash
 pip install mkdocs-material
-sudo apt install doxygen-latex graphviz
-cd flexiv_tdk
-doxygen docs/doxygen/Doxyfile.in
+sudo apt install doxygen graphviz
+API_VERSION_PREFIX=v1 bash docs/doxygen/build_api_docs.sh
 mkdocs serve
 ```
 
-Open http://127.0.0.1:8000/ in a browser. The C++ API is at http://127.0.0.1:8000/flexiv_tdk/api/doxygen/. More detail: `docs/README.md`.
+Open http://127.0.0.1:8000/ in a browser. The C++ API dropdown is at http://127.0.0.1:8000/api/. More detail: `docs/README.md`.
