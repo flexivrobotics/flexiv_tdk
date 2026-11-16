@@ -9,13 +9,11 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
-  group: "pages"
-  cancel-in-progress: true
+  group: gh-pages
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -24,9 +22,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          # Full history + tags are required by docs/doxygen/build_api_docs.sh
-          # to build versioned Doxygen docs for every release tag
+          # Full history and tags are required to build Doxygen for each v2 release.
           fetch-depth: 0
+          fetch-tags: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -43,10 +41,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y doxygen graphviz
 
-      - name: Generate Doxygen HTML (all release tags)
-        # Builds docs/api/doxygen/<tag>/ for every release tag that contains
-        # docs/doxygen/Doxyfile.in, mirrors the latest tag to docs/api/doxygen/,
-        # and writes docs/api/versions.json for the API version dropdown
+      - name: Generate Doxygen HTML (v2 release tags)
+        env:
+          API_VERSION_PREFIX: v2
         run: bash docs/doxygen/build_api_docs.sh
 
       - name: Build MkDocs site
@@ -59,20 +56,8 @@ jobs:
           name: pr-preview-site
           path: site
 
-      - name: Upload Pages artifact
-        if: github.event_name == 'push'
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
-
-  deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Publish v2 to gh-pages
+        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash docs/publish_gh_pages.sh v2
