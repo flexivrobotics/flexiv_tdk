@@ -1,0 +1,22 @@
+<map id="include/flexiv/tdk/device_teleop_lan.hpp" name="include/flexiv/tdk/device_teleop_lan.hpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="411,5,583,50"/>
+<area shape="rect" id="Node000002" href="$data_8hpp.html" title="Header file containing various constant expressions, data structs, and enums." alt="" coords="256,98,335,126"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="446,50,343,94,341,89,441,52"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="520,174,578,201"/>
+<area shape="poly" id="edge8_Node000001_Node000006" title=" " alt="" coords="490,49,483,87,483,106,487,125,501,145,519,165,514,163,496,148,483,127,477,107,477,86,486,52"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="498,98,574,126"/>
+<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="508,48,526,85,521,83,506,53"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="598,98,746,126"/>
+<area shape="poly" id="edge10_Node000001_Node000010" title=" " alt="" coords="544,48,633,91,627,91,543,53"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,174,61,201"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="257,126,76,176,75,170,256,121"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="84,174,147,201"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="266,126,162,170,160,165,261,127"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="170,174,240,201"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="282,125,234,166,232,161,277,127"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="336,122,507,172,502,173,335,127"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="264,174,327,201"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="298,124,298,160,293,156,294,128"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="352,174,495,201"/>
+<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="319,124,391,166,385,166,318,129"/>
+</map>

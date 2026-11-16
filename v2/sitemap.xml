@@ -1,0 +1,503 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/api/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/api/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/api/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/api/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/api/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/api/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/qa/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/qa/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/qa/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/qa/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/qa/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/qa/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/overview/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/overview/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/overview/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/overview/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/overview/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/overview/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/quick-start-cpp/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/quick-start-cpp/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/quick-start-cpp/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/quick-start-cpp/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/quick-start-cpp/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/quick-start-cpp/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/quick-start-python/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/quick-start-python/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/quick-start-python/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/quick-start-python/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/quick-start-python/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/quick-start-python/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/real-time-kernel/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/real-time-kernel/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/real-time-kernel/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/real-time-kernel/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/real-time-kernel/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/real-time-kernel/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/system-setup/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/system-setup/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/system-setup/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/system-setup/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/system-setup/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/system-setup/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/time-sync/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/time-sync/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/time-sync/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/time-sync/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/time-sync/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/time-sync/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/troubleshooting/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/troubleshooting/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/zh/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/zh/api/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/api/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/api/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/api/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/api/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/api/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/zh/qa/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/qa/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/qa/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/qa/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/qa/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/qa/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/overview/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/overview/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/overview/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/overview/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/overview/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/overview/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/quick-start-cpp/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/quick-start-cpp/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/quick-start-cpp/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/quick-start-cpp/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/quick-start-cpp/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/quick-start-cpp/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/quick-start-python/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/quick-start-python/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/quick-start-python/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/quick-start-python/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/quick-start-python/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/quick-start-python/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/real-time-kernel/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/real-time-kernel/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/real-time-kernel/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/real-time-kernel/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/real-time-kernel/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/real-time-kernel/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/system-setup/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/system-setup/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/system-setup/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/system-setup/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/system-setup/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/system-setup/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/time-sync/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/time-sync/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/time-sync/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/time-sync/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/time-sync/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/time-sync/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/troubleshooting/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/troubleshooting/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/api/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/api/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/api/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/api/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/api/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/api/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/qa/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/qa/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/qa/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/qa/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/qa/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/qa/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/overview/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/overview/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/overview/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/overview/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/overview/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/overview/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/quick-start-cpp/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/quick-start-cpp/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/quick-start-cpp/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/quick-start-cpp/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/quick-start-cpp/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/quick-start-cpp/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/quick-start-python/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/quick-start-python/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/quick-start-python/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/quick-start-python/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/quick-start-python/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/quick-start-python/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/real-time-kernel/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/real-time-kernel/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/real-time-kernel/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/real-time-kernel/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/real-time-kernel/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/real-time-kernel/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/system-setup/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/system-setup/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/system-setup/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/system-setup/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/system-setup/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/system-setup/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/time-sync/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/time-sync/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/time-sync/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/time-sync/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/time-sync/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/time-sync/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/troubleshooting/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/troubleshooting/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/de/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/de/api/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/api/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/api/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/api/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/api/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/api/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/de/qa/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/qa/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/qa/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/qa/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/qa/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/qa/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/overview/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/overview/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/overview/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/overview/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/overview/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/overview/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/quick-start-cpp/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/quick-start-cpp/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/quick-start-cpp/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/quick-start-cpp/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/quick-start-cpp/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/quick-start-cpp/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/quick-start-python/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/quick-start-python/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/quick-start-python/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/quick-start-python/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/quick-start-python/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/quick-start-python/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/real-time-kernel/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/real-time-kernel/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/real-time-kernel/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/real-time-kernel/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/real-time-kernel/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/real-time-kernel/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/system-setup/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/system-setup/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/system-setup/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/system-setup/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/system-setup/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/system-setup/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/time-sync/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/time-sync/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/time-sync/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/time-sync/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/time-sync/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/time-sync/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/troubleshooting/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/troubleshooting/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/ja/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/ja/api/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/api/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/api/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/api/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/api/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/api/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/ja/qa/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/qa/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/qa/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/qa/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/qa/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/qa/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/overview/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/overview/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/overview/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/overview/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/overview/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/overview/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/quick-start-cpp/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/quick-start-cpp/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/quick-start-cpp/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/quick-start-cpp/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/quick-start-cpp/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/quick-start-cpp/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/quick-start-python/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/quick-start-python/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/quick-start-python/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/quick-start-python/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/quick-start-python/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/quick-start-python/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/real-time-kernel/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/real-time-kernel/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/real-time-kernel/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/real-time-kernel/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/real-time-kernel/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/real-time-kernel/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/system-setup/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/system-setup/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/system-setup/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/system-setup/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/system-setup/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/system-setup/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/time-sync/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/time-sync/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/time-sync/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/time-sync/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/time-sync/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/time-sync/"/>
+    </url>
+    <url>
+        <loc>https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/troubleshooting/</loc>
+        <lastmod>2026-11-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://flexivrobotics.github.io/flexiv_tdk/v2/ja/user-manual/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://flexivrobotics.github.io/flexiv_tdk/v2/de/user-manual/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://flexivrobotics.github.io/flexiv_tdk/v2/user-manual/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh/user-manual/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://flexivrobotics.github.io/flexiv_tdk/v2/zh-Hant/user-manual/troubleshooting/"/>
+    </url>
+</urlset>

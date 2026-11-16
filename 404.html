@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Page not found - Flexiv TDK Documentation</title>
+  <script>
+    (function () {
+      var siteRoot = "/flexiv_tdk/";
+      var path = location.pathname;
+      if (path.indexOf(siteRoot) !== 0) return;
+      var rest = path.slice(siteRoot.length);
+      if (/^(v1|v2)(\/|$)/.test(rest)) return;
+      location.replace(siteRoot + "v2/" + rest + location.search + location.hash);
+    })();
+  </script>
+</head>
+<body>
+  <p>Page not found. Open the <a href="/flexiv_tdk/v2/">v2</a> or <a href="/flexiv_tdk/v1/">v1</a> documentation.</p>
+</body>
+</html>
