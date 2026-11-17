@@ -16,7 +16,7 @@
 **A:** Use Chrony to sync system clocks on both ends. See [Time Sync (WAN)](../user-manual/time-sync.md).
 
 ## Q: Where is the API reference?
-**A:** The online GitHub Pages site is TDK v2.x. For this v1.7 tree, generate Doxygen locally (`doxygen docs/doxygen/Doxyfile.in`) and serve the site with `mkdocs serve`. See the repository README.
+**A:** Open the [C++ API Reference](../api/index.md) and choose your release from the version dropdown. Do not use the TDK v2 API pages with this release. To preview this tree locally, see the repository README.
 
 ## Q: What if my app cannot find shared libraries?
 **A:** Set `LD_LIBRARY_PATH=~/tdk_install/lib` (Linux) or `DYLD_LIBRARY_PATH=~/tdk_install/lib` (macOS) before running binaries.

@@ -8,7 +8,7 @@ This documentation source is **TDK v1.7**. Version mapping for this release:
 | --- | ------- | ---------- |
 | **v1.7** (`flexivtdk==1.7`) | **flexiv_rdk 1.9.4.1** (only public C++ dependency) | **flexivrdk==1.9.4.1** |
 
-The online GitHub Pages site documents TDK v2.x and must not be used with this release. Generate this manual locally (see the repository README).
+This manual is the TDK v1 documentation site. The TDK v2 site, reachable from the version menu in the header, must not be used with this release.
 
 ## Audience
 - Application developers integrating teleoperation features
