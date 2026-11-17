@@ -6,7 +6,7 @@
   if (!select) return;
 
   var base = select.getAttribute("data-api-base") || "./";
-  var fallback = { versions: ["v2.1", "v1.6.1"], latest: "v2.1" };
+  var fallback = { versions: ["v2.1"], latest: "v2.1" };
 
   function populate(data) {
     data.versions.forEach(function (v) {
