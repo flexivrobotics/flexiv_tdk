@@ -5,7 +5,7 @@
 - **Missing dependencies**: Re-run `thirdparty/build_and_install_dependencies.sh` and ensure the install directory exists.
 
 ## Runtime Issues
-- **Shared library not found**: Set `LD_LIBRARY_PATH=~/tdk_install/lib` before running binaries.
+- **Shared library not found**: Examples already embed rpath to the install `lib` directory. Rebuild with `-DCMAKE_PREFIX_PATH` pointing at the same prefix used to install TDK and RDK (do not install into the source `lib/` folder). Fallback: `LD_LIBRARY_PATH=~/tdk_install/lib` on Linux, or `DYLD_LIBRARY_PATH=~/tdk_install/lib` on macOS.
 - **Permission issues with real-time priorities**: Add your user to `/etc/security/limits.conf` for `rtprio` and `nice`.
 
 ## WAN Teleoperation

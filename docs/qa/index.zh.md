@@ -1,7 +1,7 @@
 # 常见问题
 
 ## 问：支持哪些平台？
-**答：** x86_64 和 aarch64 架构的 Ubuntu 22.04+。支持 C++ 和 Python，要求 GCC ≥ 9.4、CMake ≥ 3.16.3。
+**答：** Ubuntu 22.04+（x86_64 和 aarch64）支持 C++ 和 Python 3.10/3.12/3.14。macOS 14+（arm64）支持 C++ 和 Python 3.10/3.12。工具链要求 GCC ≥ 9.4（Linux）或 Apple Clang ≥ 15（macOS），CMake ≥ 3.16.3。
 
 ## 问：我需要实时内核吗？
 **答：** 不是必须的，但低延迟或 RT 内核可以提升遥操作的响应性和稳定性。参见[实时内核](../user-manual/real-time-kernel.md)。

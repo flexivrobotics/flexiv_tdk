@@ -7,7 +7,7 @@
 
 ## 运行时问题
 
-- **找不到共享库**：运行二进制文件前设置 `LD_LIBRARY_PATH=~/tdk_install/lib`。
+- **找不到共享库**：示例已将安装目录的 `lib` 写入 rpath。请用安装 TDK 和 RDK 时同一个前缀重新编译（`-DCMAKE_PREFIX_PATH`），不要安装到源码的 `lib/` 目录。备用：Linux 设置 `LD_LIBRARY_PATH=~/tdk_install/lib`，macOS 设置 `DYLD_LIBRARY_PATH=~/tdk_install/lib`。
 - **实时优先级权限问题**：在 `/etc/security/limits.conf` 中为你的用户添加 `rtprio` 和 `nice` 配置。
 
 ## WAN 遥操作

@@ -22,9 +22,9 @@
 - CAT 6 または CAT 7 イーサネットケーブル
 
 ### ユーザー PC
-- Ubuntu 22.04+（x86_64 または aarch64）
-- C++ ツールチェーン：GCC ≥ 9.4、CMake ≥ 3.16.3
-- Python 3.10/3.12/3.14
+- Ubuntu 22.04+（x86_64 または aarch64）：C++ および Python 3.10/3.12/3.14
+- macOS 14+（arm64）：C++ および Python 3.10/3.12
+- C++ ツールチェーン：GCC ≥ 9.4（Linux）または Apple Clang ≥ 15（macOS）、CMake ≥ 3.16.3
 - ロボットおよびインターネットへのネットワークアクセス（WAN の場合）
 
 ## 始め方

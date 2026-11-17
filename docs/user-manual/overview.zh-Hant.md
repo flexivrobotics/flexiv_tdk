@@ -22,9 +22,9 @@
 - CAT 6 或 CAT 7 網線
 
 ### 使用者電腦
-- Ubuntu 22.04+（x86_64 或 aarch64）
-- C++ 工具鏈：GCC ≥ 9.4，CMake ≥ 3.16.3
-- Python 3.10/3.12/3.14
+- Ubuntu 22.04+（x86_64 或 aarch64）：C++ 和 Python 3.10/3.12/3.14
+- macOS 14+（arm64）：C++ 和 Python 3.10/3.12
+- C++ 工具鏈：GCC ≥ 9.4（Linux）或 Apple Clang ≥ 15（macOS），CMake ≥ 3.16.3
 - 可存取機器人網路及網際網路（WAN 場景）
 
 ## 從這裡開始

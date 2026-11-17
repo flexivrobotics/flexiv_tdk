@@ -20,9 +20,9 @@ This manual guides you through installing, configuring, and using the Flexiv TDK
 - Network devices (e.g., Ethernet switch/router) with sufficient bandwidth and latency
 - CAT 6 or CAT 7 Ethernet cables
 ### User PC
-- Ubuntu 22.04+ (x86_64 or aarch64)
-- C++ toolchain: GCC ≥ 9.4, CMake ≥ 3.16.3
-- Python 3.10/3.12/3.14
+- Ubuntu 22.04+ (x86_64 or aarch64): C++ and Python 3.10/3.12/3.14
+- macOS 14+ (arm64): C++ and Python 3.10/3.12
+- C++ toolchain: GCC ≥ 9.4 (Linux) or Apple Clang ≥ 15 (macOS), CMake ≥ 3.16.3
 - Network access to the robot and Internet (for WAN)
 
 ## Where to Start
@@ -31,3 +31,4 @@ This manual guides you through installing, configuring, and using the Flexiv TDK
 - Need hard real-time performance? See [Real-Time Kernel](real-time-kernel.md).
 - Deploying over WAN? See [Time Sync (WAN)](time-sync.md).
 - Looking for API doc? See [API doc](../api/index.md).
+- Third-party licenses for the prebuilt library: see [THIRD_PARTY_NOTICES.md](../../THIRD_PARTY_NOTICES.md) in the repository.

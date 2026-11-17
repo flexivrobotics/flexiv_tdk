@@ -269,6 +269,38 @@ public:
     AxisLock GetAxisLockState(unsigned int idx, JointGroup group);
 
     /**
+     * @brief [Non-blocking] Query why teleoperation is restricted, paused, or stopped, and
+     * what the operator should do next.
+     *
+     * Covers joint limits, singularities, high joint velocity,
+     * robot fault, and control-mode mismatch on both the leader and the follower.
+     * [status.primary] is the issue the host should show first; [status.issues] lists
+     * every condition that is active right now.
+     *
+     * @param[in] idx Index of the robot pair. This index is the same as the index of the
+     * constructor parameter [robot_pairs_sn].
+     * @param[in] group Joint group of the robot pair to query.
+     * @param[out] status Snapshot of teleoperation health and operator-facing advice.
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @see TeleopStatus
+     * @see TeleopIssue
+     */
+    void GetTeleopStatus(unsigned int idx, JointGroup group, TeleopStatus& status) const;
+
+    /**
+     * @brief [Non-blocking] Query why teleoperation is restricted, paused, or stopped.
+     * @param[in] idx Index of the robot pair. This index is the same as the index of the
+     * constructor parameter [robot_pairs_sn].
+     * @param[in] group Joint group of the robot pair to query.
+     * @throw std::invalid_argument if [idx] is outside the valid range.
+     * @warning This overload is less efficient than the other one as additional runtime
+     * memory allocation and data copying are performed.
+     * @return TeleopStatus
+     * @see GetTeleopStatus(unsigned int, JointGroup, TeleopStatus&)
+     */
+    TeleopStatus GetTeleopStatus(unsigned int idx, JointGroup group) const;
+
+    /**
      * @brief [Blocking] Set reference joint positions used in the robot's null-space posture
      * control module for the specified leader robot. By "leader robot" we mean the first robot in
      * [robot_pairs_sn], which interacts with human hands. Call this only after Start() is

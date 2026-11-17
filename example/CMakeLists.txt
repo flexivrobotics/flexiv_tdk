@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.16.3)
+if(APPLE)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "14.0" CACHE STRING "Minimum macOS version" FORCE)
+endif()
 project(flexiv_tdk-examples)
 
 # Show verbose build info
@@ -16,6 +19,7 @@ endif()
 set(EXAMPLE_LIST
   transparent_cartesian_teleop_lan
   transparent_cartesian_teleop_wan
+  transparent_cartesian_teleop_wan_pro
 )
 
 # Find flexiv_tdk library

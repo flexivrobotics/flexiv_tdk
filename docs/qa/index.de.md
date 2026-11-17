@@ -1,7 +1,7 @@
 # Häufige Fragen (FAQ)
 
 ## F: Welche Plattformen werden unterstützt?
-**A:** Ubuntu 22.04+ auf x86_64 und aarch64. C++ und Python werden mit GCC ≥ 9.4 und CMake ≥ 3.16.3 unterstützt.
+**A:** Ubuntu 22.04+ auf x86_64 und aarch64 (C++ und Python 3.10/3.12/3.14). macOS 14+ auf arm64 (C++ und Python 3.10/3.12). Toolchain: GCC ≥ 9.4 (Linux) oder Apple Clang ≥ 15 (macOS), CMake ≥ 3.16.3.
 
 ## F: Benötige ich einen Echtzeit-Kernel?
 **A:** Nicht unbedingt, aber ein Low-Latency- oder RT-Kernel verbessert Reaktionsfähigkeit und Stabilität für die Teleoperation. Siehe [Echtzeit-Kernel](../user-manual/real-time-kernel.md).

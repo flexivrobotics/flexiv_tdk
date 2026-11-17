@@ -45,10 +45,26 @@ cmake --build . --config Release -j 4
 
 ## 6) 运行示例
 
+CMake 会在链接时把安装目录的 `lib` 写入示例的 rpath，因此 Linux 和 macOS 都可以直接运行：
+
 ```bash
 cd flexiv_tdk/example/build
-sudo ./<program_name> [arguments]
+./<program_name> [arguments]
 ```
+
+此配置下不需要设置 `LD_LIBRARY_PATH` / `DYLD_LIBRARY_PATH`。TDK 会在自身所在目录查找 `libflexiv_rdk`（`$ORIGIN` / `@loader_path`）。
+
+如果动态加载器仍然找不到 `libflexiv_tdk` 或 `libflexiv_rdk`，请用安装 TDK 和 RDK 时**同一个**前缀重新编译示例（`-DCMAKE_PREFIX_PATH`），不要安装到源码的 `lib/` 目录。备用方式：
+
+```bash
+# Linux
+LD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
+
+# macOS
+DYLD_LIBRARY_PATH=~/tdk_install/lib ./<program_name> [arguments]
+```
+
+安装目录的 `lib` 中必须同时包含 `libflexiv_tdk` 和 `libflexiv_rdk`（Linux 为 `.so`，macOS 为 `.dylib`）。
 
 为允许普通用户在不使用 `sudo` 的情况下创建高优先级（实时）线程，请配置系统应用实时和 nice 优先级限制（只需设置一次）：
 

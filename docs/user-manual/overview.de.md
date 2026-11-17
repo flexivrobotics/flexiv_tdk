@@ -22,9 +22,9 @@ Dieses Handbuch führt Sie durch die Installation, Konfiguration und Nutzung des
 - CAT-6- oder CAT-7-Ethernet-Kabel
 
 ### Benutzer-PC
-- Ubuntu 22.04+ (x86_64 oder aarch64)
-- C++-Toolchain: GCC ≥ 9.4, CMake ≥ 3.16.3
-- Python 3.10/3.12/3.14
+- Ubuntu 22.04+ (x86_64 oder aarch64): C++ und Python 3.10/3.12/3.14
+- macOS 14+ (arm64): C++ und Python 3.10/3.12
+- C++-Toolchain: GCC ≥ 9.4 (Linux) oder Apple Clang ≥ 15 (macOS), CMake ≥ 3.16.3
 - Netzwerkzugang zum Roboter und zum Internet (für WAN)
 
 ## Einstieg
