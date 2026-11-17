@@ -5,6 +5,7 @@ install/
 config.h
 site/
 docs/api/doxygen/
+docs/api/versions.json
 .vscode
 *.pyc
 release/
