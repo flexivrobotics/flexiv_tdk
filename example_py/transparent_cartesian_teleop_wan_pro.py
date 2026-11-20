@@ -7,7 +7,8 @@ Example usage of Transparent Cartesian teleoperation over WAN (TDK Professional 
 TDK Server credential). Controls a follower robot from a leader robot with transparent force
 feedback. Supports keyboard and digital input engage/disengage, message latency query, nullspace
 posture tuning, max contact wrench setting, and teleop status query. Optionally enables
-GripperRemoteControl when a follower gripper device name is provided.
+GripperRemoteControl when a follower gripper device name is provided. Supports one or two
+leader-follower robot pairs.
 
 Note: This program is provided only as an example. Users must adapt it to their own application
 requirements, safety procedures, and software architecture before deployment.
@@ -38,9 +39,6 @@ kHomeJntPos = _deg2rad_list([0, -40, 0, 90, 0, 40, 0])
 
 # Example of max contact wrench setting
 kDefaultMaxContactWrench = [25.0, 25.0, 25.0, 10.0, 10.0, 10.0]
-
-# Robot pair index used by this example
-kIdx = 0
 
 # Gripper commands that require [-n gripper_name]
 kGripperCommands = "GDNocstP"
@@ -82,7 +80,7 @@ def print_teleop_status(idx, status):
     log_info(
         "Teleop pair {} status: initialized={} started={} engaged={} stopped={} fault={} "
         "motion_restricted={} latency={:.1f}/{:.1f} ms".format(
-            idx, status.initialized, status.started, status.engaged, status.stopped,
+            idx + 1, status.initialized, status.started, status.engaged, status.stopped,
             status.fault, status.motion_restricted, status.latency_ms,
             status.latency_threshold_ms))
     if status.primary.code == flexivtdk.TeleopIssueCode.NONE:
@@ -102,13 +100,14 @@ def print_teleop_status(idx, status):
             flexivtdk.TeleopIssueSideStr[int(extra.side)], extra.title))
 
 
-def print_gripper_states(gripper: flexivtdk.GripperRemoteControl):
+def print_gripper_states(gripper: flexivtdk.GripperRemoteControl, idx: int):
     try:
-        states = gripper.states(kIdx)
-        log_info("Gripper states: width = {:.4f} m, force = {:.2f} N, is_moving = {}".format(
-            states.width, states.force, states.is_moving))
+        states = gripper.states(idx)
+        log_info(
+            "Pair {} gripper states: width = {:.4f} m, force = {:.2f} N, is_moving = {}".format(
+                idx + 1, states.width, states.force, states.is_moving))
     except Exception as e:
-        log_warn(f"Gripper states not available yet: {e}")
+        log_warn(f"Pair {idx + 1} gripper states not available yet: {e}")
 
 
 class WanProTeleoperationController:
@@ -116,13 +115,18 @@ class WanProTeleoperationController:
 
     def __init__(self, teleop: flexivtdk.TransparentCartesianTeleopWAN,
                  gripper: Optional[flexivtdk.GripperRemoteControl], gripper_name: str,
-                 di_controls_gripper: bool):
+                 di_controls_gripper: bool, pair_count: int):
         self.teleop = teleop
         self.gripper = gripper
         self.gripper_name = gripper_name
+        self.pair_count = pair_count
+        self.index = 0
         # True if the leader DI1 controls the gripper motion, then console motion commands are disabled
         self.di_controls_gripper = di_controls_gripper
-        self.cmd = self._get_initial_axis_lock_cmd()
+        self.axis_lock_cmds = [
+            self._get_initial_axis_lock_cmd(idx) for idx in range(pair_count)
+        ]
+        self.cmd = self.axis_lock_cmds[0]
         self._command_map = self._create_command_map()
         self._menu = self._create_menu()
 
@@ -136,14 +140,14 @@ class WanProTeleoperationController:
         cmd.coord = flexivtdk.CoordType.TCP
         return cmd
 
-    def _get_initial_axis_lock_cmd(self):
+    def _get_initial_axis_lock_cmd(self, idx: int):
         """Initialize axis lock command. GetAxisLockState is leader-only on WAN."""
         if not self._is_leader():
             return self._default_axis_lock_cmd()
         try:
-            return self.teleop.GetAxisLockState(kIdx)
+            return self.teleop.GetAxisLockState(idx)
         except Exception as e:
-            log_warn(f"Failed to get initial axis lock state, using default: {e}")
+            log_warn(f"Failed to get pair {idx + 1} initial axis lock state, using default: {e}")
             return self._default_axis_lock_cmd()
 
     def _create_command_map(self) -> Dict[str, Callable]:
@@ -194,13 +198,17 @@ class WanProTeleoperationController:
             'c': self._gripper_close,
             's': self._gripper_stop,
             # Gripper states
-            't': lambda: print_gripper_states(self.gripper),
+            't': lambda: print_gripper_states(self.gripper, self.index),
             'P': self._print_gripper_params,
         }
 
     def _create_menu(self) -> str:
         """Create the command menu string."""
-        menu = """
+        pair_selection = "pair 1" if self.pair_count == 1 else f"pair 1-{self.pair_count}"
+        menu = f"""
+  --- Robot Pair ---
+    {pair_selection} : Select the active pair for pair-specific commands
+
   --- Axis Lock (leader only) ---
     x/y/z    : Toggle translation lock in WORLD coord (X/Y/Z)
     q/w/e    : Toggle orientation lock in WORLD coord (Rx/Ry/Rz)
@@ -264,7 +272,7 @@ class WanProTeleoperationController:
         if not self._is_leader():
             log_warn("Axis lock is only available on the leader")
             return False
-        self.teleop.SetAxisLockCmd(kIdx, self.cmd)
+        self.teleop.SetAxisLockCmd(self.index, self.cmd)
         return True
 
     def _toggle_axis_lock(self, axis_index: int, lock_type: str, coord_type: flexivtdk.CoordType):
@@ -296,18 +304,18 @@ class WanProTeleoperationController:
 
     def _engage(self, engage: bool):
         """Engage or disengage teleop."""
-        self.teleop.Engage(kIdx, engage)
-        log_info(f"Teleop {'engaged' if engage else 'disengaged'}")
+        self.teleop.Engage(self.index, engage)
+        log_info(f"Pair {self.index + 1} teleop {'engaged' if engage else 'disengaged'}")
 
     def _set_nullspace(self, posture: List[float]):
         """Set nullspace posture."""
-        self.teleop.SetNullSpacePosture(kIdx, posture)
-        log_info("Nullspace posture set")
+        self.teleop.SetNullSpacePosture(self.index, posture)
+        log_info(f"Pair {self.index + 1} nullspace posture set")
 
     def _set_max_contact_wrench(self, wrench: List[float]):
         """Set max contact wrench."""
-        self.teleop.SetMaxContactWrench(kIdx, wrench)
-        log_info("Max contact wrench set")
+        self.teleop.SetMaxContactWrench(self.index, wrench)
+        log_info(f"Pair {self.index + 1} max contact wrench set")
 
     def _start_teleop(self):
         """Initialize and start teleoperation."""
@@ -322,67 +330,80 @@ class WanProTeleoperationController:
 
     def _print_latency(self):
         """Print current TCP message latency."""
-        ok, latency_ms = self.teleop.CheckTeleopConnectionLatency(kIdx)
+        ok, latency_ms = self.teleop.CheckTeleopConnectionLatency(self.index)
         if ok:
-            log_info("pair {} message latency: {:.1f} ms (within limit)".format(kIdx, latency_ms))
-        elif has_active_issue(self.teleop.GetTeleopStatus(kIdx),
+            log_info("pair {} message latency: {:.1f} ms (within limit)".format(
+                self.index + 1, latency_ms))
+        elif has_active_issue(self.teleop.GetTeleopStatus(self.index),
                               flexivtdk.TeleopIssueCode.NETWORK_DISCONNECTED):
-            log_warn("pair {} disconnected".format(kIdx))
+            log_warn("pair {} disconnected".format(self.index + 1))
         elif latency_ms < 0.0:
-            log_warn("pair {} clock mismatch: latency {:.1f} ms".format(kIdx, latency_ms))
+            log_warn("pair {} clock mismatch: latency {:.1f} ms".format(
+                self.index + 1, latency_ms))
         else:
-            log_warn("pair {} latency over limit: {:.1f} ms".format(kIdx, latency_ms))
+            log_warn("pair {} latency over limit: {:.1f} ms".format(
+                self.index + 1, latency_ms))
 
     def _print_status(self):
         """Print GetTeleopStatus() for the current robot pair."""
-        print_teleop_status(kIdx, self.teleop.GetTeleopStatus(kIdx))
+        print_teleop_status(self.index, self.teleop.GetTeleopStatus(self.index))
 
     def _clear_fault(self):
         """Clear fault of all robots, then teleop can be restarted with 'u'."""
         log_info("Clearing fault, this may take up to 30 seconds...")
         results = self.teleop.ClearFault()
         for i, ok in enumerate(results):
-            log_info("Teleop pair {} clear fault: {}".format(i, ok))
+            log_info("Teleop pair {} clear fault: {}".format(i + 1, ok))
 
     def _print_identity(self):
         """Print role() and robot_pair_sn()."""
-        leader_sn, follower_sn = self.teleop.robot_pair_sn(kIdx)
-        log_info(f"pair {kIdx} role={role_str(self.teleop.role())} "
+        leader_sn, follower_sn = self.teleop.robot_pair_sn(self.index)
+        log_info(f"pair {self.index + 1} role={role_str(self.teleop.role())} "
                  f"leader_sn={leader_sn} follower_sn={follower_sn}")
 
+    def _select_pair(self, pair_number: int):
+        if pair_number < 1 or pair_number > self.pair_count:
+            log_warn(f"Select a pair from 1 to {self.pair_count}.")
+            return
+        self.index = pair_number - 1
+        self.cmd = self.axis_lock_cmds[self.index]
+        leader_sn, follower_sn = self.teleop.robot_pair_sn(self.index)
+        log_info(f"Selected pair {pair_number}: leader_sn={leader_sn} "
+                 f"follower_sn={follower_sn}")
+
     def _gripper_enable(self):
-        self.gripper.Enable(kIdx, self.gripper_name)
-        log_info(f"Follower gripper [{self.gripper_name}] enabled")
+        self.gripper.Enable(self.index, self.gripper_name)
+        log_info(f"Pair {self.index + 1} follower gripper [{self.gripper_name}] enabled")
 
     def _gripper_disable(self):
-        self.gripper.Disable(kIdx)
-        log_info("Follower gripper disabled")
+        self.gripper.Disable(self.index)
+        log_info(f"Pair {self.index + 1} follower gripper disabled")
 
     def _gripper_init(self):
-        self.gripper.Init(kIdx)
-        log_info("Follower gripper initialization triggered")
+        self.gripper.Init(self.index)
+        log_info(f"Pair {self.index + 1} follower gripper initialization triggered")
 
     def _gripper_open(self):
-        params = self.gripper.params(kIdx)
+        params = self.gripper.params(self.index)
         velocity = clamp(0.5 * params.max_vel, params.min_vel, params.max_vel)
         force_limit = clamp(0.5 * params.max_force, params.min_force, params.max_force)
-        self.gripper.Move(kIdx, params.max_width, velocity, force_limit)
+        self.gripper.Move(self.index, params.max_width, velocity, force_limit)
         log_info("Open command sent: width = {:.4f} m, velocity = {:.4f} m/s, "
                  "force_limit = {:.2f} N".format(params.max_width, velocity, force_limit))
 
     def _gripper_close(self):
-        params = self.gripper.params(kIdx)
+        params = self.gripper.params(self.index)
         force = clamp(0.5 * params.max_force, params.min_force, params.max_force)
-        self.gripper.Grasp(kIdx, force)
+        self.gripper.Grasp(self.index, force)
         log_info("Grasp command sent: force = {:.2f} N".format(force))
 
     def _gripper_stop(self):
-        self.gripper.Stop(kIdx)
+        self.gripper.Stop(self.index)
         log_info("Stop command sent")
 
     def _print_gripper_params(self):
         try:
-            params = self.gripper.params(kIdx)
+            params = self.gripper.params(self.index)
             log_info("Gripper params: width = [{:.4f}, {:.4f}] m, velocity = [{:.4f}, {:.4f}] m/s, "
                      "force = [{:.2f}, {:.2f}] N".format(
                          params.min_width, params.max_width, params.min_vel, params.max_vel,
@@ -398,6 +419,13 @@ class WanProTeleoperationController:
             return
 
         ch = user_input[0]
+        if user_input.lower().startswith("pair"):
+            parts = user_input.split()
+            if len(parts) != 2 or parts[0].lower() != "pair" or not parts[1].isdigit():
+                log_warn(f"Use 'pair 1' through 'pair {self.pair_count}' to select a pair.")
+                return
+            self._select_pair(int(parts[1]))
+            return
         if ch in kGripperCommands and self.gripper is None:
             log_warn("Gripper commands require [-n gripper_name].")
             return
@@ -418,7 +446,7 @@ class WanProTeleoperationController:
         except Exception as e:
             log_error(f"Command '{ch}' failed: {e}")
             try:
-                print_teleop_status(kIdx, self.teleop.GetTeleopStatus(kIdx))
+                print_teleop_status(self.index, self.teleop.GetTeleopStatus(self.index))
             except Exception as status_e:
                 log_error(f"Failed to query teleop status: {status_e}")
 
@@ -426,91 +454,95 @@ class WanProTeleoperationController:
 # Read digital input and engage/disengage teleop accordingly. Leader DI0 follows the deadman
 # switch. With [-n], a rising edge on DI1 toggles the follower gripper open/closed.
 def read_digital_input_task(teleop: flexivtdk.TransparentCartesianTeleopWAN,
-                            gripper: Optional[flexivtdk.GripperRemoteControl]):
-    logged_idle = False
-    di1_stable = False
-    di1_counter = 0
-    gripper_opened = False
-    last_error = None
+                            gripper: Optional[flexivtdk.GripperRemoteControl],
+                            pair_count: int):
+    logged_idle = set()
+    di1_stable = [False] * pair_count
+    di1_counter = [0] * pair_count
+    gripper_opened = [False] * pair_count
+    last_error = [None] * pair_count
 
     while not _stop_event.is_set():
-        try:
-            status = teleop.GetTeleopStatus(kIdx)
-            # Robot fault / Stop() drops teleop back to not-started. Engage() is
-            # invalid in that state and must not be polled every cycle.
-            if (not status.started) or status.stopped:
-                if not logged_idle:
-                    log_warn(
-                        "ReadDigitalInputTask: teleop is not started, pause Engage "
-                        "(call Init + Start to resume)")
-                    logged_idle = True
-            else:
-                logged_idle = False
-                digital_inputs = teleop.digital_inputs(kIdx)
-                teleop.Engage(kIdx, bool(digital_inputs[0]))
+        for idx in range(pair_count):
+            try:
+                status = teleop.GetTeleopStatus(idx)
+                # Robot fault / Stop() drops teleop back to not-started. Engage() is
+                # invalid in that state and must not be polled every cycle.
+                if (not status.started) or status.stopped:
+                    if idx not in logged_idle:
+                        log_warn(
+                            f"ReadDigitalInputTask: pair {idx + 1} is not started, pause Engage "
+                            "(call Init + Start to resume)")
+                        logged_idle.add(idx)
+                else:
+                    logged_idle.discard(idx)
+                    digital_inputs = teleop.digital_inputs(idx)
+                    teleop.Engage(idx, bool(digital_inputs[0]))
 
-                if gripper is not None and len(digital_inputs) > 1:
-                    di1_raw = bool(digital_inputs[1])
-                    if di1_raw != di1_stable:
-                        di1_counter += 1
-                        if di1_counter >= 3:
-                            di1_stable = di1_raw
-                            di1_counter = 0
-                            if di1_stable:
-                                try:
-                                    params = gripper.params(kIdx)
-                                    if not gripper_opened:
-                                        width = clamp(0.5 * params.max_width, params.min_width,
-                                                      params.max_width)
-                                        velocity = clamp(0.5 * params.max_vel, params.min_vel,
-                                                         params.max_vel)
-                                        force_limit = clamp(0.5 * params.max_force,
-                                                            params.min_force, params.max_force)
-                                        gripper.Move(kIdx, width, velocity, force_limit)
-                                        gripper_opened = True
-                                        log_info("DI1 pressed: opening gripper to width = "
-                                                 "{:.4f} m".format(width))
-                                    else:
-                                        force = clamp(40.0, params.min_force, params.max_force)
-                                        gripper.Grasp(kIdx, force)
-                                        gripper_opened = False
-                                        log_info("DI1 pressed: closing gripper with force = "
-                                                 "{:.2f} N".format(force))
-                                except Exception as e:
-                                    log_warn(f"DI1 gripper action failed: {e}")
-                    else:
-                        di1_counter = 0
-            last_error = None
-        except Exception as e:
-            msg = str(e)
-            if msg != last_error:
-                log_error(f"Exception in ReadDigitalInputTask: {e}")
-                last_error = msg
+                    if gripper is not None and len(digital_inputs) > 1:
+                        di1_raw = bool(digital_inputs[1])
+                        if di1_raw != di1_stable[idx]:
+                            di1_counter[idx] += 1
+                            if di1_counter[idx] >= 3:
+                                di1_stable[idx] = di1_raw
+                                di1_counter[idx] = 0
+                                if di1_stable[idx]:
+                                    try:
+                                        params = gripper.params(idx)
+                                        if not gripper_opened[idx]:
+                                            width = clamp(0.5 * params.max_width,
+                                                          params.min_width, params.max_width)
+                                            velocity = clamp(0.5 * params.max_vel,
+                                                             params.min_vel, params.max_vel)
+                                            force_limit = clamp(0.5 * params.max_force,
+                                                                params.min_force,
+                                                                params.max_force)
+                                            gripper.Move(idx, width, velocity, force_limit)
+                                            gripper_opened[idx] = True
+                                            log_info("Pair {} DI1 pressed: opening gripper to "
+                                                     "width = {:.4f} m".format(idx + 1, width))
+                                        else:
+                                            force = clamp(40.0, params.min_force, params.max_force)
+                                            gripper.Grasp(idx, force)
+                                            gripper_opened[idx] = False
+                                            log_info("Pair {} DI1 pressed: closing gripper with "
+                                                     "force = {:.2f} N".format(idx + 1, force))
+                                    except Exception as e:
+                                        log_warn(f"Pair {idx + 1} DI1 gripper action failed: {e}")
+                        else:
+                            di1_counter[idx] = 0
+                last_error[idx] = None
+            except Exception as e:
+                msg = str(e)
+                if msg != last_error[idx]:
+                    log_error(f"Pair {idx + 1} ReadDigitalInputTask exception: {e}")
+                    last_error[idx] = msg
         time.sleep(0.01)
     log_info("ReadDigitalInputTask exiting.")
 
 
 # monitor robot fault and prompt the operator to recover
-def fault_monitor_task(teleop: flexivtdk.TransparentCartesianTeleopWAN):
-    last_fault = False
-    last_error = None
+def fault_monitor_task(teleop: flexivtdk.TransparentCartesianTeleopWAN, pair_count: int):
+    last_fault = [False] * pair_count
+    last_error = [None] * pair_count
     while not _stop_event.is_set():
-        try:
-            fault = teleop.fault(kIdx)
-            fault_changed = (fault != last_fault)
-            last_fault = fault
-            if fault_changed and fault:
-                log_error("Fault detected. Press 'h' for details, 'F' to clear fault, then 'u' to "
-                          "restart teleop.")
-                print_teleop_status(kIdx, teleop.GetTeleopStatus(kIdx))
-            elif fault_changed:
-                log_info("Fault cleared. Press 'u' to restart teleop.")
-            last_error = None
-        except Exception as e:
-            msg = str(e)
-            if msg != last_error:
-                log_error(f"Exception in FaultMonitorTask: {e}")
-                last_error = msg
+        for idx in range(pair_count):
+            try:
+                fault = teleop.fault(idx)
+                fault_changed = (fault != last_fault[idx])
+                last_fault[idx] = fault
+                if fault_changed and fault:
+                    log_error(f"Pair {idx + 1} fault detected. Press 'h' for details, 'F' to clear "
+                              "fault, then 'u' to restart teleop.")
+                    print_teleop_status(idx, teleop.GetTeleopStatus(idx))
+                elif fault_changed:
+                    log_info(f"Pair {idx + 1} fault cleared. Press 'u' to restart teleop.")
+                last_error[idx] = None
+            except Exception as e:
+                msg = str(e)
+                if msg != last_error[idx]:
+                    log_error(f"Pair {idx + 1} FaultMonitorTask exception: {e}")
+                    last_error[idx] = msg
         time.sleep(0.1)
     log_info("FaultMonitorTask exiting.")
 
@@ -539,23 +571,33 @@ def console_task(controller: WanProTeleoperationController):
 
 def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Transparent Cartesian Teleop WAN example, TDK Professional Edition (Python)")
-    parser.add_argument("-l", "--leader_sn", required=True, help="serial number of leader robot")
-    parser.add_argument("-f", "--follower_sn", required=True, help="serial number of follower robot")
+        description="Transparent Cartesian Teleop WAN example, TDK Professional Edition (Python)",
+        epilog=("Pair serial numbers by order: the first -l and -f form pair 1, and the second "
+                "-l and -f form pair 2. At the console, use 'pair 1' or (with two pairs) "
+                "'pair 2' to select a pair."))
+    parser.add_argument("-l", "--leader_sn", action="append", required=True, metavar="SN",
+                        help="leader serial number; repeat once for each robot pair (1 or 2)")
+    parser.add_argument("-f", "--follower_sn", action="append", required=True, metavar="SN",
+                        help="follower serial number; repeat once for each robot pair (1 or 2)")
     parser.add_argument("-r", "--role", required=True, choices=["leader", "follower"], help="role in teleop")
     parser.add_argument("-c", "--client-config", required=True,
                         help="path to client.conf from the TDK Server credential package")
     parser.add_argument("-A", "--lan-ip", action="append", default=[],
                         help="LAN IPv4 address of the NIC connected to the robot")
     parser.add_argument("-n", "--gripper-name", default="",
-                        help="follower gripper device name configured in Elements -> Device. To enable "
-                             "GripperRemoteControl, both leader and follower sides must provide the same "
-                             "gripper name")
+                        help="follower gripper device name configured in Elements -> Device. For "
+                             "two pairs, use this name on both follower robots; both sides must "
+                             "provide the same name")
     parser.add_argument("-D", "--enable-digital-input", action="store_true",
-                        help="enable digital input reading task. Leader DI0 engages arm teleop; with -n, "
-                             "DI1 toggles the follower gripper and the console gripper motion commands "
-                             "(o/c/s) are disabled")
-    return parser.parse_args(argv)
+                        help="enable digital input reading task. Each leader's DI0 engages its pair; "
+                             "with -n, DI1 toggles the follower gripper and console gripper motion "
+                             "commands (o/c/s) are disabled")
+    args = parser.parse_args(argv)
+    if len(args.leader_sn) != len(args.follower_sn):
+        parser.error("provide the same number of -l and -f serial numbers")
+    if not 1 <= len(args.leader_sn) <= 2:
+        parser.error("provide serial numbers for one or two robot pairs")
+    return args
 
 
 def main(argv: Optional[List[str]] = None):
@@ -576,7 +618,8 @@ def main(argv: Optional[List[str]] = None):
     network_cfg.client_config_file = args.client_config
     network_cfg.lan_interface_whitelist = args.lan_ip
 
-    robot_pairs = [(args.leader_sn, args.follower_sn)]
+    robot_pairs = list(zip(args.leader_sn, args.follower_sn))
+    pair_count = len(robot_pairs)
 
     teleop = None
     console_thr = None
@@ -587,9 +630,10 @@ def main(argv: Optional[List[str]] = None):
         # TDK Initialization
         # ==========================================================================================
         teleop = flexivtdk.TransparentCartesianTeleopWAN(robot_pairs, role, network_cfg)
-        leader_sn, follower_sn = teleop.robot_pair_sn(kIdx)
-        log_info(f"This instance role={role_str(teleop.role())} leader_sn={leader_sn} "
-                 f"follower_sn={follower_sn}")
+        for idx in range(pair_count):
+            leader_sn, follower_sn = teleop.robot_pair_sn(idx)
+            log_info(f"This instance pair {idx + 1} role={role_str(teleop.role())} "
+                     f"leader_sn={leader_sn} follower_sn={follower_sn}")
 
         # Allocate the gripper remote control object on top of the arm teleop object only if
         # [-n] is provided. It reuses the role, robot serial number pairs and rdk::Robot
@@ -603,26 +647,30 @@ def main(argv: Optional[List[str]] = None):
 
         teleop.Init()
         teleop.Start()
-        teleop.SetMaxContactWrench(kIdx, kDefaultMaxContactWrench)
+        for idx in range(pair_count):
+            teleop.SetMaxContactWrench(idx, kDefaultMaxContactWrench)
 
         # Follower side: enable the configured gripper locally so the leader can see states and
         # send commands without waiting for the Enable RPC.
         if role == flexivtdk.Role.WAN_TELEOP_FOLLOWER and gripper is not None:
-            try:
-                gripper.EnableLocal(kIdx, args.gripper_name)
-            except Exception as e:
-                log_error(f"Failed to auto-enable gripper [{args.gripper_name}] on follower: {e}. "
-                          "The leader can still retry via the 'G' console command.")
+            for idx in range(pair_count):
+                try:
+                    gripper.EnableLocal(idx, args.gripper_name)
+                except Exception as e:
+                    log_error(f"Failed to auto-enable gripper [{args.gripper_name}] on follower "
+                              f"pair {idx + 1}: {e}. The leader can still retry via the 'G' "
+                              "console command.")
 
         start_pedal_thread = (role == flexivtdk.Role.WAN_TELEOP_LEADER and args.enable_digital_input)
         di_controls_gripper = start_pedal_thread and gripper is not None
 
         controller = WanProTeleoperationController(
-            teleop, gripper, args.gripper_name, di_controls_gripper)
+            teleop, gripper, args.gripper_name, di_controls_gripper, pair_count)
         console_thr = threading.Thread(target=console_task, args=(controller,), daemon=True)
         console_thr.start()
 
-        fault_monitor_thr = threading.Thread(target=fault_monitor_task, args=(teleop,), daemon=True)
+        fault_monitor_thr = threading.Thread(
+            target=fault_monitor_task, args=(teleop, pair_count), daemon=True)
         fault_monitor_thr.start()
 
         if start_pedal_thread:
@@ -631,7 +679,7 @@ def main(argv: Optional[List[str]] = None):
                      + ("toggles follower gripper open/close" if gripper is not None
                         else "unused (gripper feature disabled, no -n)") + ".")
             pedal_thread = threading.Thread(
-                target=read_digital_input_task, args=(teleop, gripper), daemon=True)
+                target=read_digital_input_task, args=(teleop, gripper, pair_count), daemon=True)
             pedal_thread.start()
         else:
             log_info("ReadDigitalInputTask thread NOT started (role is not 'leader' or -D flag not "
